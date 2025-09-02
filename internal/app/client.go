@@ -20,10 +20,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mdboynton/cortex-cloud-go/api"
-	"github.com/mdboynton/cortex-cloud-go/errors"
-	"github.com/mdboynton/cortex-cloud-go/internal/types"
-	internalLog "github.com/mdboynton/cortex-cloud-go/log"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/types"
+	internalLog "github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
 const (

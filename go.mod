@@ -1,24 +1,6 @@
-module github.com/mdboynton/cortex-cloud-go
+module github.com/PaloAltoNetworks/cortex-cloud-go
 
 go 1.24.3
-
-replace github.com/mdboynton/cortex-cloud-go => .
-
-replace github.com/mdboynton/cortex-cloud-go/internal/app => ./internal/app
-
-replace github.com/mdboynton/cortex-cloud-go/errors => ./errors
-
-replace github.com/mdboynton/cortex-cloud-go/enums => ./enums
-
-replace github.com/mdboynton/cortex-cloud-go/log => ./log
-
-replace github.com/mdboynton/cortex-cloud-go/api => ./api
-
-replace github.com/mdboynton/cortex-cloud-go/appsec => ./appsec
-
-replace github.com/mdboynton/cortex-cloud-go/cloudonboarding => ./cloudonboarding
-
-replace github.com/mdboynton/cortex-cloud-go/platform => ./platform
 
 require github.com/go-playground/validator/v10 v10.27.0
 

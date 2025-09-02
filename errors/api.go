@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mdboynton/cortex-cloud-go/internal/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/types"
 )
 
 type CortexCloudAPIError struct {

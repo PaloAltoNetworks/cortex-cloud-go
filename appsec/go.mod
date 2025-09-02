@@ -1,11 +1,17 @@
-module github.com/mdboynton/cortex-cloud-go/appsec
+module github.com/PaloAltoNetworks/cortex-cloud-go/appsec
 
 go 1.24.3
 
 require (
-	github.com/mdboynton/cortex-cloud-go v0.0.0-20250530204549-8c630f4f6da1
+	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.1-beta
+	github.com/PaloAltoNetworks/cortex-cloud-go/enums v0.0.1-beta
+	github.com/PaloAltoNetworks/cortex-cloud-go/internal/app v0.0.0
 	github.com/stretchr/testify v1.10.0
 )
+
+replace github.com/PaloAltoNetworks/cortex-cloud-go/api => ../api
+replace github.com/PaloAltoNetworks/cortex-cloud-go/enums => ../enums
+replace github.com/PaloAltoNetworks/cortex-cloud-go/internal/app => ../internal/app
 
 require (
 	dario.cat/mergo v1.0.2

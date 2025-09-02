@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	_log "github.com/mdboynton/cortex-cloud-go/log"
+	_log "github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
 const (
