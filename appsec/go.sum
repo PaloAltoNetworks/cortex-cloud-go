@@ -1,3 +1,5 @@
+dario.cat/mergo v1.0.2 h1:85+piFYR1tMbRrLcDwR18y4UKJ3aH1Tbzi24VRW1TK8=
+dario.cat/mergo v1.0.2/go.mod h1:E/hbnu0NxMFBjpMIE34DRGLWqDy0g5FuKDhCb31ngxA=
 github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.5 h1:dJ2OE4XsHIoozuowIcleKEnRTwmMWpPslu8ygj+llYE=
 github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.5/go.mod h1:oGxU/58mP8tsX/6T9iXdB/N94W3BCtBItmhLqjWsuvs=
 github.com/PaloAltoNetworks/cortex-cloud-go/enums v0.0.5 h1:UdRPrU0ypzhYYfaQFdsgEY4uN32OJuvkYB71YmM1KI4=

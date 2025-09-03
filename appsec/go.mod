@@ -3,6 +3,7 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/appsec
 go 1.25.0
 
 require (
+	dario.cat/mergo v1.0.2 // indirect
 	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.5 // indirect
 	github.com/PaloAltoNetworks/cortex-cloud-go/enums v0.0.5 // indirect
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/app v0.0.4 // indirect
