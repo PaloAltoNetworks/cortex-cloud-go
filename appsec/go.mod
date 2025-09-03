@@ -16,6 +16,7 @@ require (
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
