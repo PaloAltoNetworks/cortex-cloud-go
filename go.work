@@ -1,0 +1,12 @@
+go 1.25.0
+
+use (
+	./api
+	./appsec
+	./cloudonboarding
+	./enums
+	./errors
+	./internal/app
+	./log
+	./platform
+)
