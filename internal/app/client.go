@@ -22,7 +22,6 @@ import (
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/types"
 	internalLog "github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
@@ -305,8 +304,8 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 		// If unmarshaling fails, create a generic API error with the raw body
 		c.config.Logger.Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
 		return &errors.CortexCloudAPIError{
-			Code: types.Pointer(errors.CodeAPIResponseParsingFailure),
-			Message: types.Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
+			Code: Pointer(errors.CodeAPIResponseParsingFailure),
+			Message: Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
 		}
 	}
 }

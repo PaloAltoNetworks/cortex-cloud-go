@@ -1,1 +1,4 @@
-github.com/mdboynton/cortex-cloud-go v0.0.0-20250530204549-8c630f4f6da1 h1:VJeIWtHT07FUL46Kx0EUPFoy44mZp5qvQ4cz+ukb2WE=
+github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.5 h1:dJ2OE4XsHIoozuowIcleKEnRTwmMWpPslu8ygj+llYE=
+github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.5/go.mod h1:oGxU/58mP8tsX/6T9iXdB/N94W3BCtBItmhLqjWsuvs=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/app v0.0.4 h1:C3FPLrZSqMMQwB0BvmtzGp8I/sB7Y91b43kErJlQVN4=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/app v0.0.4/go.mod h1:EuQtkEsY5/wh234kbEHIj6kxgTzAs1R2yeaSy14cR7Y=
