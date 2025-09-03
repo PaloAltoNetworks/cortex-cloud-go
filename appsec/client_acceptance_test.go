@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mdboynton/cortex-cloud-go/api"
-	"github.com/mdboynton/cortex-cloud-go/enums"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 	"github.com/stretchr/testify/assert"
 )
 

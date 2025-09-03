@@ -4,8 +4,8 @@
 package cloudonboarding
 
 import (
-	"github.com/mdboynton/cortex-cloud-go/api"
-	"github.com/mdboynton/cortex-cloud-go/internal/app"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
 )
 
 // API endpoint path specification.

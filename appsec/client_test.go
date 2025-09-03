@@ -13,7 +13,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mdboynton/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -8,7 +8,7 @@ import (
 	"maps"
 	"net/http"
 
-	sdkLog "github.com/mdboynton/cortex-cloud-go/log"
+	sdkLog "github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
 type Option func(*Config)

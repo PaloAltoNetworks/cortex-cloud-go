@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/mdboynton/cortex-cloud-go/enums"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 	"dario.cat/mergo"
 )
 
