@@ -1,4 +1,4 @@
-module github.com/mdboynton/cortex-cloud-go/log
+module github.com/PaloAltoNetworks/cortex-cloud-go/log
 
 go 1.24.3
 
