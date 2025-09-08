@@ -22,6 +22,15 @@ type Client struct {
 
 // NewClient returns a new client for this namespace.
 func NewClient(config *api.Config) (*Client, error) {
+	initVersion()
 	internalClient, err := app.NewClient(config)
 	return &Client{internalClient: internalClient}, err
+}
+
+func (c *Client) BuildInfo() map[string]string {
+	return map[string]string{
+		"gitCommit": GitCommit,
+		"goVersion": GoVersion,
+		"buildDate": BuildDate,
+	}
 }
