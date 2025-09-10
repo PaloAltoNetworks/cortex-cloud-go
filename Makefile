@@ -46,7 +46,20 @@ format:
 	@gofmt -l -w ${PROJECT_DIR}/. 2> /dev/null
 	@echo "Done!"
 
-# Build module binaries
+# Run go mod tidy on all modules
+.PHONY: tidy
+tidy:
+	@echo "Tidying all modules..."
+	@$(foreach mod,$(MODULE_NAMES), \
+		printf "  - Tidying \"$(mod)\"... "; \
+		cd $(PROJECT_DIR)/$(mod); \
+		go mod tidy; \
+		[ $$? -eq 0 ] && printf "Success\n" || printf "FAILED\n";)
+ifeq ($(shell echo $$?), 0)
+	@echo "Done!"
+endif
+
+# Build modules
 .PHONY: build
 build: #format
 	@echo "Building modules..."
