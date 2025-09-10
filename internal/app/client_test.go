@@ -12,10 +12,26 @@ import (
 	"strings"
 	"testing"
 	//"time"
+	"runtime"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/stretchr/testify/assert"
 )
+
+// TODO: Can we skip or automatically pass this test if the `go test` execution
+// occurs outside of the Makefile? Otherwise, the user will have to know to
+// provide the correct test values via the -ldflags argument...
+func TestBuildInfo(t *testing.T) {
+	expectedGitCommit := "test123"
+	expectedGoVersion := runtime.Version()
+	expectedBuildDate := "0000-00-00T00:00:00+0000"
+
+	t.Run("should return expected build info", func(t *testing.T) {
+		assert.Equal(t, expectedGitCommit, GitCommit)
+		assert.Equal(t, expectedGoVersion, GoVersion)
+		assert.Equal(t, expectedBuildDate, BuildDate)
+	})
+}
 
 func TestNewClient(t *testing.T) {
 	t.Run("should return error for nil config", func(t *testing.T) {

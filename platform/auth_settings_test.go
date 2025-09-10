@@ -19,10 +19,10 @@ import (
 func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
 	server := httptest.NewServer(handler)
 	config := &api.Config{
-		ApiUrl:     server.URL,
-		ApiKey:     "test-key",
-		ApiKeyId:   123,
-		Transport:  server.Client().Transport.(*http.Transport),
+		ApiUrl:    server.URL,
+		ApiKey:    "test-key",
+		ApiKeyId:  123,
+		Transport: server.Client().Transport.(*http.Transport),
 	}
 	client, err := NewClient(config)
 	assert.NoError(t, err)
