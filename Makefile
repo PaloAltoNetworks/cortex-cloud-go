@@ -51,7 +51,6 @@ format:
 build: #format
 	@echo "Building modules..."
 	@$(foreach mod,$(MODULE_NAMES), \
-		echo "go build -ldflags="-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BUILD_DATE=$(BUILD_DATE)'" ./$(mod) 2> /dev/null;" \
 		printf "  - Building \"$(mod)\"... "; \
 		go build -ldflags="-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BUILD_DATE=$(BUILD_DATE)'" ./$(mod) 2> /dev/null; \
 		[ $$? -eq 0 ] && printf "Success\n" || printf "FAILED\n";)
