@@ -4,8 +4,8 @@ import (
 	//"bytes"
 	//"encoding/json"
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // TODO: remove after creating internal/util package
@@ -62,9 +62,9 @@ func convertInterfaceToString(value any) (string, error) {
 }
 
 type CortexCloudAPIError struct {
-	Reply *CortexCloudAPIErrorReply `json:"reply,omitempty"`
-	Code *string `json:"errorCode,omitempty"`
-	Message *string `json:"message,omitempty"`
+	Reply   *CortexCloudAPIErrorReply `json:"reply,omitempty"`
+	Code    *string                   `json:"errorCode,omitempty"`
+	Message *string                   `json:"message,omitempty"`
 	//Details map[string]any `json:"details,omitempty"`
 	Details *CortexCloudAPIErrorDetails `json:"details"`
 }
@@ -129,7 +129,7 @@ func (e CortexCloudAPIErrorExtra) inputAsString() string {
 
 func NewCortexCloudAPIError(code string, message string, details CortexCloudAPIErrorDetails) CortexCloudAPIError {
 	return CortexCloudAPIError{
-		Code: &code,
+		Code:    &code,
 		Message: &message,
 		Details: &details,
 	}
@@ -157,7 +157,7 @@ func (e CortexCloudAPIError) Error() string {
 		}
 	} else {
 		var (
-			code string
+			code    string
 			message string
 			details CortexCloudAPIErrorDetails
 		)

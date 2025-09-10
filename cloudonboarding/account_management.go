@@ -26,8 +26,8 @@ type ListAccountsByInstanceResponse struct {
 
 type ListAccountsByInstanceResponseReply struct {
 	Data        ListAccountsByInstanceResponseData `json:"DATA"`
-	FilterCount int                    `json:"FILTER_COUNT"`
-	TotalCount  int                    `json:"TOTAL_COUNT"`
+	FilterCount int                                `json:"FILTER_COUNT"`
+	TotalCount  int                                `json:"TOTAL_COUNT"`
 }
 
 type ListAccountsByInstanceResponseData struct {
@@ -80,8 +80,8 @@ func (c *Client) enableDisableAccountsInInstance(ctx context.Context, instanceId
 	req := EnableDisableAccountsInInstancesRequest{
 		Data: EnableDisableAccountsInInstancesRequestData{
 			InstanceId: instanceId,
-			Ids: accountIds,
-			Enable: enable,
+			Ids:        accountIds,
+			Enable:     enable,
 		},
 	}
 

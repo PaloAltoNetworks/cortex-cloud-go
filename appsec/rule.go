@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 	"dario.cat/mergo"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 )
 
 // ---------------------------
@@ -222,7 +222,7 @@ type UpdateRequest struct {
 	SubCategory string `json:"subCategory,omitempty"`
 }
 
-func (r Rule) ToUpdateRequest() UpdateRequest{
+func (r Rule) ToUpdateRequest() UpdateRequest {
 	var labels []string
 	if r.Labels == nil {
 		labels = []string{}
@@ -231,25 +231,25 @@ func (r Rule) ToUpdateRequest() UpdateRequest{
 	}
 
 	return UpdateRequest{
-		CloudProvider: r.CloudProvider,
-		Category: r.Category,
-		Description: r.Description,
-		DocLink: r.DocLink,
-		Domain: r.Domain,
+		CloudProvider:   r.CloudProvider,
+		Category:        r.Category,
+		Description:     r.Description,
+		DocLink:         r.DocLink,
+		Domain:          r.Domain,
 		FindingCategory: r.FindingCategory,
-		FindingDocs: r.FindingDocs,
-		FindingTypeId: r.FindingTypeId,
+		FindingDocs:     r.FindingDocs,
+		FindingTypeId:   r.FindingTypeId,
 		FindingTypeName: r.FindingTypeName,
-		Frameworks: r.Frameworks,
-		IsEnabled: r.IsEnabled,
-		Labels: labels,
-		MitreTactics: r.MitreTactics,
+		Frameworks:      r.Frameworks,
+		IsEnabled:       r.IsEnabled,
+		Labels:          labels,
+		MitreTactics:    r.MitreTactics,
 		MitreTechniques: r.MitreTechniques,
-		Name: r.Name,
-		Owner: r.Owner,
-		Scanner: r.Scanner,
-		Source: r.Source,
-		SubCategory: r.SubCategory,
+		Name:            r.Name,
+		Owner:           r.Owner,
+		Scanner:         r.Scanner,
+		Source:          r.Source,
+		SubCategory:     r.SubCategory,
 	}
 }
 

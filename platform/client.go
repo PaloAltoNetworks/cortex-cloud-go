@@ -19,8 +19,8 @@ const (
 	ListRiskyUsersEndpoint = "public_api/v1/get_risky_users"
 	ListRiskyHostsEndpoint = "public_api/v1/get_risky_hosts"
 	// Authentication Settings
-	ListIDPMetadataEndpoint = "public_api/v1/authentication-settings/get/metadata"
-	ListAuthSettingsEndpoint = "public_api/v1/authentication-settings/get/settings"
+	ListIDPMetadataEndpoint    = "public_api/v1/authentication-settings/get/metadata"
+	ListAuthSettingsEndpoint   = "public_api/v1/authentication-settings/get/settings"
 	CreateAuthSettingsEndpoint = "public_api/v1/authentication-settings/create"
 	UpdateAuthSettingsEndpoint = "public_api/v1/authentication-settings/update"
 	DeleteAuthSettingsEndpoint = "public_api/v1/authentication-settings/delete"

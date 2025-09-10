@@ -22,7 +22,6 @@ type Client struct {
 
 // NewClient returns a new client for this namespace.
 func NewClient(config *api.Config) (*Client, error) {
-	initVersion()
 	internalClient, err := app.NewClient(config)
 	return &Client{internalClient: internalClient}, err
 }

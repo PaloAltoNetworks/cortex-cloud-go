@@ -304,7 +304,7 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 		// If unmarshaling fails, create a generic API error with the raw body
 		c.config.Logger.Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
 		return &errors.CortexCloudAPIError{
-			Code: Pointer(errors.CodeAPIResponseParsingFailure),
+			Code:    Pointer(errors.CodeAPIResponseParsingFailure),
 			Message: Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
 		}
 	}
@@ -312,7 +312,7 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 
 // Do performs the given API request with iterative retry logic.
 // This is the core method for making authenticated calls to the Cortex Cloud API.
-// It returns the raw response body and a structured SDK error if any error 
+// It returns the raw response body and a structured SDK error if any error
 // occurs (network, HTTP status, or unmarshaling).
 func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any) ([]byte, error) {
 	if c.httpClient == nil {

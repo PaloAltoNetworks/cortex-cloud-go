@@ -3,8 +3,7 @@
 
 package enums
 
-import (
-)
+import ()
 
 type Category string
 
