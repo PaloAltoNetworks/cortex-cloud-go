@@ -1,7 +1,11 @@
 package platform
 
+import (
+	"runtime"
+)
+
 var (
-	version 	= "unknown"
-	goVersion 	= "unknown"
-	buildTime 	= "unknown"
+	GitCommit = "NOCOMMIT"
+	GoVersion = runtime.Version()
+	BuildDate = ""
 )
