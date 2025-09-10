@@ -82,6 +82,18 @@ work:
 	@echo ""
 	@echo "Done!"
 
+# Check for missing copyright headers
+.PHONY: copyright-check
+copyright-check:
+	@echo "Checking for missing file headers..."
+	@copywrite headers --config .copywrite.hcl --plan
+
+# Add copywrite headers to all files
+.PHONY: copyright
+copyright:
+	@echo "Adding any missing file headers..."
+	@copywrite headers --config .copywrite.hcl
+
 # Scan modules with gosec
 .PHONY: sec
 sec:
