@@ -1,57 +1,107 @@
-# Get project root directory to allow for execution from other
-# filesystem locations (e.g. "make -C /path/to/cortex-cloud-go build")
-PROJECT_DIR=$(shell pwd)
+# -----------------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------------
 
-# Define the Go modules to be included in the workspace.
-# These are the relative paths to the root of each module.
-MODULES := \
-    . \
-    ./api/ \
-    ./appsec/ \
-    ./cloudonboarding/ \
-    ./enums/ \
-    ./errors/ \
-    ./internal/app/ \
-    ./log/ \
-    ./xsiam/ \
+# CI execution flag
+IS_CI_EXECUTION 	?= 0
 
+# Build flags
+GIT_COMMIT 			:= $(shell git rev-parse HEAD)
+GIT_DIRTY			?= $(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
+BUILD_DATE 			?= $(shell TZ=UTC0 git show --quiet --date='format-local:%Y-%m-%dT%T%z' --format="%cd")
+
+# Test scope
+TEST_PACKAGE ?= all
+
+
+# -----------------------------------------------------------------------------
+# System Values
+# -----------------------------------------------------------------------------
+
+# Project root directory
+PROJECT_DIR := $(shell pwd)
+
+# Project modules (relative paths)
+MODULES := $(shell find . -name go.mod -exec dirname {} \; )
+MODULE_NAMES := $(shell find . -name go.mod -exec dirname {} \; | sed 's|^\./||' | tr '\n' ' ' | sed 's/,$$//')
+
+TEST_GIT_COMMIT := test123
+TEST_GO_VERSION := go1.2.3
+TEST_BUILD_DATE := 0000-00-00T00:00:00+0000
+
+#LDFLAGS := -X "main.BuildDate=$(BUILD_DATE)" \
+#           -X "main.GitCommit=$(GIT_COMMIT)" \
+#           -s -w # -s to omit symbol table, -w to omit DWARF debugging info
+
+# -----------------------------------------------------------------------------
+# Recipes
+# -----------------------------------------------------------------------------
 
 default: build
 
 # Format with gofmt
 .PHONY: format
 format:
-	@echo "Running gofmt..."
-	@gofmt -l -w ${PROJECT_DIR}/.
+	@printf "Running gofmt... "
+	@gofmt -l -w ${PROJECT_DIR}/. 2> /dev/null
+	@echo "Done!"
 
-# Build provider binary
+# Build module binaries
 .PHONY: build
-build: format
-	@echo "Building SDK plugin..."
-	@go build ${PROJECT_DIR}
+build: #format
+	@echo "Building modules..."
+	@$(foreach mod,$(MODULE_NAMES), \
+		echo "go build -ldflags="-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BUILD_DATE=$(BUILD_DATE)'" ./$(mod) 2> /dev/null;" \
+		printf "  - Building \"$(mod)\"... "; \
+		go build -ldflags="-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BUILD_DATE=$(BUILD_DATE)'" ./$(mod) 2> /dev/null; \
+		[ $$? -eq 0 ] && printf "Success\n" || printf "FAILED\n";)
 ifeq ($(shell echo $$?), 0)
 	@echo "Done!"
 endif
 
-# Init go workspace / Uses MODULES
-.PHONY: init
-init:
+# Initialize and populate Go workspace
+.PHONY: work
+work:
 	@echo "Initializing Go workspace..."
-	@rm -f go.work go.work.sum
-	go work init
-	@for mod in $(MODULES); do \
-		echo "Adding module: $$mod"; \
-		go work use $$mod; \
-	done
-	@echo "Workspace initialized successfully."
+	@go work init
+	@$(foreach mod,$(MODULE_NAMES), \
+		echo "Adding module: $(mod)"; \
+		go work use $(mod);)
+	@echo ""
+	@echo "Done!"
 
-# Test current directory and all subdirs
+# Scan modules with gosec
+.PHONY: sec
+sec:
+	@echo "Running gosec..."
+	@gosec -quiet ./...
+	@echo ""
+	@echo "gosec check passed!"
+
+# Run all tests
 .PHONY: test
-test:
-	@echo "Running tests for all workspace modules..."
-	@go test -v ./...
-	@echo "Testing complete"
+test: test-unit test-acc
 
-# TODO: acceptance tests
+# Run unit tests
+.PHONY: test-unit
+test-unit:
+ifeq ($(TEST_PACKAGE), all)
+	@$(foreach mod,$(MODULE_NAMES), \
+		echo "Running $(mod) unit tests..."; \
+		echo "---"; \
+		go test -v -race -ldflags="-s -w -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GoVersion=$(TEST_GO_VERSION)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(TEST_GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BuildDate=$(TEST_BUILD_DATE)'" ./$(mod);)
+else
+	@echo "Running ${TEST_PACKAGE} unit tests..."
+	@echo "---"
+	@go test -v -race -ldflags="-s -w -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(TEST_PACKAGE).GoVersion=$(TEST_GO_VERSION)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(TEST_PACKAGE).GitCommit=$(TEST_GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(TEST_PACKAGE).BuildDate=$(TEST_BUILD_DATE)'" ./$(TEST_PACKAGE)
+endif
+
+# Run acceptance tests
+.PHONY: test-acc
+test-acc: build
+	@echo "Running acceptance tests..."
+	@TF_ACC=1 go test -v -cover -race $$(go list ./... | grep /acceptance)
+
+
 # TODO: doc generation
 # TODO: copywrite
