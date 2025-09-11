@@ -1,131 +1,197 @@
-# -----------------------------------------------------------------------------
-# Configuration
-# -----------------------------------------------------------------------------
+SHELL := bash
+.ONESHELL:
+.SHELLFLAGS := -eu -o pipefail -c
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rule
 
-# CI execution flag
-IS_CI_EXECUTION 	?= 0
+.DEFAULT_GOAL := help
 
-# Build flags
-GIT_COMMIT 			:= $(shell git rev-parse HEAD)
-GIT_DIRTY			?= $(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
-BUILD_DATE 			?= $(shell TZ=UTC0 git show --quiet --date='format-local:%Y-%m-%dT%T%z' --format="%cd")
+#------------------------------------------------------------------------------
+# System & Build Configuration
+#------------------------------------------------------------------------------
 
-# Test scope
-TEST_PACKAGE ?= all
-
-
-# -----------------------------------------------------------------------------
-# System Values
-# -----------------------------------------------------------------------------
+# Build info values
+VERSION 		:= $(shell git describe --tags --always --dirty)
+GIT_COMMIT 		:= $(shell git rev-parse HEAD)
+BUILD_DATE 		?= $(shell TZ=UTC0 git show --quiet --date='format-local:%Y-%m-%dT%T%z' --format="%cd")
+GO_VERSION          := $(shell go version)
 
 # Project root directory
-PROJECT_DIR := $(shell pwd)
+PROJECT_DIR := $(CURDIR)
 
-# Project modules (relative paths)
-MODULES := $(shell find . -name go.mod -exec dirname {} \; )
-MODULE_NAMES := $(shell find . -name go.mod -exec dirname {} \; | sed 's|^\./||' | tr '\n' ' ' | sed 's/,$$//')
+# Find all go.mod files and list their directories.
+MODULES := $(shell find . -name go.mod -exec dirname {} \;)
+# Create a clean list of module names (e.g., "api", "appsec") from the paths.
+MODULE_NAMES := $(patsubst ./%,%,$(MODULES))
 
+# Test values
 TEST_GIT_COMMIT := test123
 TEST_GO_VERSION := go1.2.3
 TEST_BUILD_DATE := 0000-00-00T00:00:00+0000
+TEST_VERSION    := test-version
 
-#LDFLAGS := -X "main.BuildDate=$(BUILD_DATE)" \
-#           -X "main.GitCommit=$(GIT_COMMIT)" \
-#           -s -w # -s to omit symbol table, -w to omit DWARF debugging info
+# Package to test (defaults to all)
+TEST_PACKAGE ?= all
 
-# -----------------------------------------------------------------------------
-# Recipes
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# LDFLAGS (Linker Flags) Definitions
+#------------------------------------------------------------------------------
 
-default: build
+define LDFLAGS_template
+-s -w \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(GIT_COMMIT)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).BuildDate=$(BUILD_DATE)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GoVersion=$(GO_VERSION)'
+endef
+#-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).Version=$(VERSION)' \
 
-# Format with gofmt
-.PHONY: format
-format:
-	@printf "Running gofmt... "
-	@gofmt -l -w ${PROJECT_DIR}/. 2> /dev/null
-	@echo "Done!"
+define TEST_LDFLAGS_template
+-s -w \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(TEST_GIT_COMMIT)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).BuildDate=$(TEST_BUILD_DATE)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GoVersion=$(TEST_GO_VERSION)'
+endef
+#-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).Version=$(TEST_VERSION)' \
 
-# Run go mod tidy on all modules
-.PHONY: tidy
-tidy:
+#------------------------------------------------------------------------------
+# Phony Targets
+#------------------------------------------------------------------------------
+
+.PHONY: help format tidy lint build work copyright-check copyright sec test test-unit test-acc tag clean
+
+#------------------------------------------------------------------------------
+# Main Targets
+#------------------------------------------------------------------------------
+
+help: ## Show this help message.
+	@sed -rn 's/^([^:]+):.*[ ]##[ ](.+)/\1:\2/p' $(MAKEFILE_LIST) | column -ts:
+
+format: ## Format all Go source files.
+	@echo "Running gofmt..."
+	@gofmt -l -w .
+	@echo "Done."
+
+tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@$(foreach mod,$(MODULE_NAMES), \
-		printf "  - Tidying \"$(mod)\"... "; \
-		cd $(PROJECT_DIR)/$(mod); \
-		go mod tidy; \
-		[ $$? -eq 0 ] && printf "Success\n" || printf "FAILED\n";)
-ifeq ($(shell echo $$?), 0)
-	@echo "Done!"
-endif
+	@$(foreach mod,$(MODULES), \
+		echo "  - Tidying $(mod)"; \
+		(cd $(mod) && go mod tidy) || exit 1; \
+	)
+	@echo "Tidy successful."
 
-# Build modules
-.PHONY: build
-build: #format
-	@echo "Building modules..."
+lint: ## Lint all modules with go vet.
+	@echo "Linting all modules..."
 	@$(foreach mod,$(MODULE_NAMES), \
-		printf "  - Building \"$(mod)\"... "; \
-		go build -ldflags="-X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BUILD_DATE=$(BUILD_DATE)'" ./$(mod) 2> /dev/null; \
-		[ $$? -eq 0 ] && printf "Success\n" || printf "FAILED\n";)
-ifeq ($(shell echo $$?), 0)
-	@echo "Done!"
-endif
+		echo "  - Linting $(mod)"; \
+		(cd $(mod) && go vet ./...) || exit 1; \
+	)
+	@echo "Lint successful."
 
-# Initialize and populate Go workspace
-.PHONY: work
-work:
-	@echo "Initializing Go workspace..."
-	@go work init
+build: ## Build all modules.
+	@echo "Building all modules..."
 	@$(foreach mod,$(MODULE_NAMES), \
-		echo "Adding module: $(mod)"; \
-		go work use $(mod);)
-	@echo ""
-	@echo "Done!"
+		echo "  - Building $(mod)"; \
+		go build -ldflags="$(call LDFLAGS_template,$(mod))" ./$(mod) || exit 1; \
+	)
+	@echo "Build successful."
 
-# Check for missing copyright headers
-.PHONY: copyright-check
-copyright-check:
+work: ## Initialize or update the Go workspace file (go.work).
+	@echo "Setting up Go workspace..."
+	@if [ ! -f "go.work" ]; then go work init; fi
+	@go work use $(MODULES)
+	@go work sync
+	@echo "Workspace ready."
+
+copyright-check: ## Check for missing copyright headers.
 	@echo "Checking for missing file headers..."
 	@copywrite headers --config .copywrite.hcl --plan
 
-# Add copywrite headers to all files
-.PHONY: copyright
-copyright:
+copyright: ## Add missing copyright headers to all files.
 	@echo "Adding any missing file headers..."
 	@copywrite headers --config .copywrite.hcl
 
-# Scan modules with gosec
-.PHONY: sec
-sec:
+sec: ## Scan modules for security issues with gosec.
 	@echo "Running gosec..."
 	@gosec -quiet ./...
-	@echo ""
 	@echo "gosec check passed!"
 
-# Run all tests
-.PHONY: test
-test: test-unit test-acc
+test: test-unit test-acc ## Run all tests.
 
-# Run unit tests
-.PHONY: test-unit
-test-unit:
+test-unit: ## Run unit tests for all or a specific module (e.g., make test-unit TEST_PACKAGE=api).
 ifeq ($(TEST_PACKAGE), all)
+	@echo "Running unit tests for all modules..."
 	@$(foreach mod,$(MODULE_NAMES), \
-		echo "Running $(mod) unit tests..."; \
-		echo "---"; \
-		go test -v -race -ldflags="-s -w -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GoVersion=$(TEST_GO_VERSION)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).GitCommit=$(TEST_GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(mod).BuildDate=$(TEST_BUILD_DATE)'" ./$(mod);)
+		echo "--- Running tests for $(mod) ---"; \
+		go test -v -race -ldflags="$(call TEST_LDFLAGS_template,$(mod))" ./$(mod) || exit 1; \
+	)
+	@echo "All unit tests passed."
 else
-	@echo "Running ${TEST_PACKAGE} unit tests..."
-	@echo "---"
-	@go test -v -race -ldflags="-s -w -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(TEST_PACKAGE).GoVersion=$(TEST_GO_VERSION)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(TEST_PACKAGE).GitCommit=$(TEST_GIT_COMMIT)' -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(TEST_PACKAGE).BuildDate=$(TEST_BUILD_DATE)'" ./$(TEST_PACKAGE)
+	@echo "--- Running tests for $(TEST_PACKAGE) ---"
+	@go test -v -race -ldflags="$(call TEST_LDFLAGS_template,$(TEST_PACKAGE))" ./$(TEST_PACKAGE)
 endif
 
-# Run acceptance tests
-.PHONY: test-acc
-test-acc: build
+test-acc: build ## Run acceptance tests.
 	@echo "Running acceptance tests..."
 	@TF_ACC=1 go test -v -cover -race $$(go list ./... | grep /acceptance)
 
+#tag: ## Create new patch version tags for all modules (e.g., make tag AUTO_APPROVE=true).
+#	@echo "Calculating new tags for all modules..."
+#	TAGS_TO_CREATE=""
+#	$(for mod in $(MODULES); do \
+#		tag_prefix=""; \
+#		if [ "$$mod" != "." ]; then \
+#			tag_prefix="$${mod#./}/" \
+#		fi; \
+#
+#		LATEST_TAG=$(git tag -l "$${tag_prefix}v*" | sort -V | tail -n 1); \
+#
+#		if [ -z "$$LATEST_TAG" ]; then \
+#			NEW_VERSION="v0.0.1"; \
+#		else \
+#			LATEST_TAG_VERSION=$${LATEST_TAG%$${tag_prefix}}v; \
+#			LATEST_TAG_VERSION=$${LATEST_TAG_VERSION#v}; \
+#			MAJOR=$$(echo "$$LATEST_TAG_VERSION" | cut -d. -f1); \
+#			MINOR=$$(echo "$$LATEST_TAG_VERSION" | cut -d. -f2); \
+#			PATCH=$$(echo "$$LATEST_TAG_VERSION" | cut -d. -f3); \
+#			if ! [[ "$$PATCH" =~ ^[0-9]+$$ ]]; then \
+#				echo "Error: Could not parse patch version from '$$LATEST_TAG' for module '$${mod}'." >&2; \
+#				exit 1; \
+#			fi; \
+#			NEW_PATCH=$(PATCH + 1); \
+#			NEW_VERSION="v$${MAJOR}.$${MINOR}.$${NEW_PATCH}"; \
+#		fi;  \
+#		NEW_TAG="$${tag_prefix}$${NEW_VERSION}"; \
+#		echo "  - Proposing tag for $${mod}: $$NEW_TAG"; \
+#		TAGS_TO_CREATE="$$TAGS_TO_CREATE $${NEW_TAG}"; \
+#	done; \
+#	if [ -z "$$TAGS_TO_CREATE" ]; then \
+#		echo "No tags to create."; \
+#		exit 0; \
+#	fi; \
+#	echo "\nThe following tags will be created:"; \
+#	for tag in $$TAGS_TO_CREATE; do \
+#		echo "  - $$tag" \
+#	done; \
+#	echo ""; \
+#		if [ "$$AUTO_APPROVE" != "true" ]; then \
+#			read -p "Apply these tags? (y/n) " -n 1 -r; \
+#			echo ""; \
+#			if [[ ! "$$REPLY" =~ ^[Yy]$$ ]]; then \
+#				echo "Aborted by user."; \
+#				exit 1; \
+#			fi; \
+#		fi; \
+#			echo "Applying tags..."; \
+#		for tag in $$TAGS_TO_CREATE; do \
+#			#git tag "$$tag" \
+#			echo "git tag \"$$tag\""; \
+#			echo "Created tag: $$tag"; \
+#		done; \
+#		echo "---"; \
+#		echo "Run 'git push --tags' to push them to the remote."; \
+#	)
 
-# TODO: doc generation
-# TODO: copywrite
+clean: ## Clean up workspace files.
+	@echo "Cleaning workspace..."
+	@-rm -f go.work go.work.sum
+	@echo "Done."
