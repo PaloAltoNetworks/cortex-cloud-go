@@ -104,7 +104,6 @@ func TestClient_ListRoles(t *testing.T) {
 		defer server.Close()
 
 		roles, err := client.ListRoles(context.Background(), []string{"Admin", "User"})
-		t.Logf("%+v", roles)
 		assert.NoError(t, err)
 		require.Len(t, roles, 2)
 		assert.Equal(t, "Admin", roles[0].PrettyName)
