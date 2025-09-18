@@ -11,9 +11,9 @@ import (
 	"net/url"
 )
 
-// ---------------------------
-// Shared structs
-// ---------------------------
+// ----------------------------------------------------------------------------
+// Core structs
+// ----------------------------------------------------------------------------
 
 type IntegrationInstance struct {
 	Id                      string                  `json:"id" tfsdk:"id"`
@@ -111,11 +111,9 @@ type Manual struct {
 	TF_ARM string `json:"TF/ARM" tfsdk:"manual_deployment_link"`
 }
 
-// ---------------------------
-// Request/Response structs
-// ---------------------------
-
+// ----------------------------------------------------------------------------
 // Create Integration Template
+// ----------------------------------------------------------------------------
 
 type CreateIntegrationTemplateRequest struct {
 	Data CreateIntegrationTemplateRequestData `json:"request_data"`
@@ -162,7 +160,19 @@ func (r CreateTemplateOrEditIntegrationInstanceResponse) GetTemplateUrl() (strin
 	return templateUrl, nil
 }
 
+// CreateTemplate creates a new Cloud Onboarding Integration Template.
+//
+// TODO: details
+func (c *Client) CreateTemplate(ctx context.Context, input CreateIntegrationTemplateRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
+	var ans CreateTemplateOrEditIntegrationInstanceResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateInstanceTemplateEndpoint, nil, nil, input, &ans)
+
+	return ans, err
+}
+
+// ----------------------------------------------------------------------------
 // Get Integration Instance Details
+// ----------------------------------------------------------------------------
 
 type GetIntegrationInstanceRequest struct {
 	RequestData GetIntegrationInstanceRequestData `json:"request_data"`
@@ -220,7 +230,17 @@ func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 	return marshalledResponse, nil
 }
 
+// GetDetails returns the configuration details of the specified integration instance.
+func (c *Client) GetInstanceDetails(ctx context.Context, input GetIntegrationInstanceRequest) (GetIntegrationInstanceResponse, error) {
+	var ans GetIntegrationInstanceResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, GetIntegrationInstanceDetailsEndpoint, nil, nil, input, &ans)
+
+	return ans, err
+}
+
+// ----------------------------------------------------------------------------
 // List Integration Instances
+// ----------------------------------------------------------------------------
 
 type ListIntegrationInstancesRequest struct {
 	RequestData ListIntegrationInstancesRequestData `json:"request_data"`
@@ -312,7 +332,16 @@ func (r ListIntegrationInstancesResponse) Marshal() ([]IntegrationInstance, erro
 	return marshalledResponse, nil
 }
 
+func (c *Client) ListInstances(ctx context.Context, input ListIntegrationInstancesRequest) (ListIntegrationInstancesResponse, error) {
+	var ans ListIntegrationInstancesResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIntegrationInstancesEndpoint, nil, nil, input, &ans)
+
+	return ans, err
+}
+
+// ----------------------------------------------------------------------------
 // Edit Integration Instance
+// ----------------------------------------------------------------------------
 
 type EditIntegrationInstanceRequest struct {
 	RequestData EditIntegrationInstanceRequestData `json:"request_data"`
@@ -329,7 +358,17 @@ type EditIntegrationInstanceRequestData struct {
 	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
 }
 
-// Enable Or Disable Instances
+
+func (c *Client) EditInstance(ctx context.Context, input EditIntegrationInstanceRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
+	var ans CreateTemplateOrEditIntegrationInstanceResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, EditIntegrationInstanceEndpoint, nil, nil, input, &ans)
+
+	return ans, err
+}
+
+// ----------------------------------------------------------------------------
+// Enable or Disable Instances
+// ----------------------------------------------------------------------------
 
 type EnableOrDisableInstancesRequest struct {
 	Data EnableOrDisableInstancesRequestData `json:"request_data"`
@@ -338,52 +377,6 @@ type EnableOrDisableInstancesRequest struct {
 type EnableOrDisableInstancesRequestData struct {
 	Ids    []string `json:"ids"`
 	Enable bool     `json:"enable"`
-}
-
-// Delete Instances
-
-type DeleteInstanceRequest struct {
-	Data DeleteInstanceRequestData `json:"request_data"`
-}
-
-type DeleteInstanceRequestData struct {
-	Ids []string `json:"ids"`
-}
-
-// ---------------------------
-// Request functions
-// ---------------------------
-
-// CreateTemplate creates a new Cloud Onboarding Integration Template.
-//
-// TODO: details
-func (c *Client) CreateTemplate(ctx context.Context, input CreateIntegrationTemplateRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
-	var ans CreateTemplateOrEditIntegrationInstanceResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateInstanceTemplateEndpoint, nil, nil, input, &ans)
-
-	return ans, err
-}
-
-// GetDetails returns the configuration details of the specified integration instance.
-func (c *Client) GetInstanceDetails(ctx context.Context, input GetIntegrationInstanceRequest) (GetIntegrationInstanceResponse, error) {
-	var ans GetIntegrationInstanceResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, GetIntegrationInstanceDetailsEndpoint, nil, nil, input, &ans)
-
-	return ans, err
-}
-
-func (c *Client) ListInstances(ctx context.Context, input ListIntegrationInstancesRequest) (ListIntegrationInstancesResponse, error) {
-	var ans ListIntegrationInstancesResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIntegrationInstancesEndpoint, nil, nil, input, &ans)
-
-	return ans, err
-}
-
-func (c *Client) EditInstance(ctx context.Context, input EditIntegrationInstanceRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
-	var ans CreateTemplateOrEditIntegrationInstanceResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, EditIntegrationInstanceEndpoint, nil, nil, input, &ans)
-
-	return ans, err
 }
 
 func (c *Client) EnableInstances(ctx context.Context, instanceIds []string) error {
@@ -410,6 +403,18 @@ func (c *Client) DisableInstances(ctx context.Context, instanceIds []string) err
 	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableOrDisableIntegrationInstancesEndpoint, nil, nil, body, nil)
 
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Delete Integration Instances
+// ----------------------------------------------------------------------------
+
+type DeleteInstanceRequest struct {
+	Data DeleteInstanceRequestData `json:"request_data"`
+}
+
+type DeleteInstanceRequestData struct {
+	Ids []string `json:"ids"`
 }
 
 func (c *Client) DeleteInstances(ctx context.Context, instanceIds []string) error {
