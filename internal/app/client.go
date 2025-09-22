@@ -314,7 +314,7 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 // This is the core method for making authenticated calls to the Cortex Cloud API.
 // It returns the raw response body and a structured SDK error if any error
 // occurs (network, HTTP status, or unmarshaling).
-func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any) ([]byte, error) {
+func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any, opts *DoOptions) ([]byte, error) {
 	if c.httpClient == nil {
 		return nil, errors.NewInternalSDKError(
 			errors.CodeSDKInitializationFailure,
@@ -332,7 +332,13 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 
 	// Marshal input into JSON if present
 	if input != nil {
-		data, err = json.Marshal(input)
+		var payload any = input
+		if opts != nil && opts.RequestWrapperKey != "" {
+			payload = map[string]any{
+				opts.RequestWrapperKey: input,
+			}
+		}
+		data, err = json.Marshal(payload)
 		if err != nil {
 			return nil, errors.NewInternalSDKError(
 				errors.CodeRequestSerializationFailure,
@@ -467,7 +473,27 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 
 	// Unmarshal the response data into output if output is provided and response data exists
 	if output != nil && len(body) > 0 {
-		if err = json.Unmarshal(body, output); err != nil {
+		var dataToUnmarshal []byte = body
+		if opts != nil && opts.ResponseWrapperKey != "" {
+			var wrapper map[string]json.RawMessage
+			if err := json.Unmarshal(body, &wrapper); err != nil {
+				return body, errors.NewInternalSDKError(
+					errors.CodeResponseDeserializationFailure,
+					fmt.Sprintf("failed to unmarshal response wrapper: %v", err),
+					err,
+				)
+			}
+			var ok bool
+			dataToUnmarshal, ok = wrapper[opts.ResponseWrapperKey]
+			if !ok {
+				return body, errors.NewInternalSDKError(
+					errors.CodeResponseDeserializationFailure,
+					fmt.Sprintf("response wrapper key '%s' not found", opts.ResponseWrapperKey),
+					nil,
+				)
+			}
+		}
+		if err = json.Unmarshal(dataToUnmarshal, output); err != nil {
 			// If unmarshaling fails, return the raw body and a structured unmarshaling error
 			return body, errors.NewInternalSDKError(
 				errors.CodeResponseDeserializationFailure,

@@ -4,6 +4,7 @@
 package cloudonboarding
 
 import (
+	"os"
 	"runtime"
 	"testing"
 
@@ -12,6 +13,9 @@ import (
 )
 
 func TestBuildInfo(t *testing.T) {
+	if os.Getenv("CI") == "" {
+		t.Skip("Skipping build info test on local machine.")
+	}
 	expectedGitCommit := "test123"
 	expectedGoVersion := runtime.Version()
 	expectedBuildDate := "0000-00-00T00:00:00+0000"

@@ -154,7 +154,7 @@ func TestDo(t *testing.T) {
 		client.testData = []*http.Response{mockResponse}
 
 		var output map[string]string
-		_, err := client.Do(context.Background(), "POST", "test", nil, nil, nil, &output)
+		_, err := client.Do(context.Background(), "POST", "test", nil, nil, nil, &output, nil)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "success", output["status"])
@@ -174,7 +174,7 @@ func TestDo(t *testing.T) {
 		client.testData = []*http.Response{retryResponse, successResponse}
 
 		var output map[string]string
-		_, err := client.Do(context.Background(), "GET", "test", nil, nil, nil, &output)
+		_, err := client.Do(context.Background(), "GET", "test", nil, nil, nil, &output, nil)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "ok", output["status"])
@@ -189,7 +189,7 @@ func TestDo(t *testing.T) {
 		}
 		client.testData = []*http.Response{errorResponse}
 
-		_, err := client.Do(context.Background(), "GET", "test", nil, nil, nil, nil)
+		_, err := client.Do(context.Background(), "GET", "test", nil, nil, nil, nil, nil)
 
 		assert.Error(t, err)
 		assert.Equal(t, 1, client.testIndex)
@@ -204,7 +204,7 @@ func TestDo(t *testing.T) {
 		// Provide more error responses than max retries
 		client.testData = []*http.Response{retryResponse, retryResponse, retryResponse}
 
-		_, err := client.Do(context.Background(), "GET", "test", nil, nil, nil, nil)
+		_, err := client.Do(context.Background(), "GET", "test", nil, nil, nil, nil, nil)
 
 		assert.Error(t, err)
 		assert.Equal(t, 2, client.testIndex) // 1 initial + 1 retry
@@ -215,7 +215,7 @@ func TestDo(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel() // Cancel context immediately
 
-		_, err := client.Do(ctx, "GET", "test", nil, nil, nil, nil)
+		_, err := client.Do(ctx, "GET", "test", nil, nil, nil, nil, nil)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "request cancelled by context")
