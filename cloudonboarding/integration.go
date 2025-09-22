@@ -16,7 +16,7 @@ import (
 // ----------------------------------------------------------------------------
 
 type IntegrationInstance struct {
-	Id                      string                  `json:"id" tfsdk:"id"`
+	ID                      string                  `json:"id" tfsdk:"id"`
 	Collector               string                  `json:"collector" tfsdk:"collector"`
 	InstanceName            string                  `json:"instance_name" tfsdk:"instance_name"`
 	Scope                   string                  `json:"scope" tfsdk:"scope"`
@@ -45,7 +45,7 @@ type SecurityCapability struct {
 }
 
 type AccountDetails struct {
-	OrganizationId *string `json:"organization_id,omitempty"`
+	OrganizationID *string `json:"organization_id,omitempty"`
 }
 
 type CollectionConfiguration struct {
@@ -65,16 +65,16 @@ type ScopeModifications struct {
 
 type ScopeModificationsOptionsGeneric struct {
 	Enabled         bool      `json:"enabled" tfsdk:"enabled"`
-	Type            string    `json:"type" tfsdk:"type"`
-	AccountIds      *[]string `json:"account_ids,omitempty" tfsdk:"account_ids"`
-	ProjectIds      *[]string `json:"project_ids,omitempty" tfsdk:"project_ids"`
-	SubscriptionIds *[]string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
+	Type            string    `json:"type,omitempty" tfsdk:"type"`
+	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
+	ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
+	SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
 
 type ScopeModificationsOptionsRegions struct {
 	Enabled bool      `json:"enabled" tfsdk:"enabled"`
-	Type    *string   `json:"type,omitempty" tfsdk:"type"`
-	Regions *[]string `json:"regions,omitempty" tfsdk:"regions"`
+	Type    string   `json:"type,omitempty" tfsdk:"type"`
+	Regions []string `json:"regions,omitempty" tfsdk:"regions"`
 }
 
 type DefaultScanningScope struct {
@@ -108,7 +108,7 @@ type Automated struct {
 }
 
 type Manual struct {
-	TF_ARM string `json:"TF/ARM" tfsdk:"manual_deployment_link"`
+	CF string `json:"CF" tfsdk:"manual_deployment_link"`
 }
 
 // ----------------------------------------------------------------------------
@@ -163,9 +163,9 @@ func (r CreateTemplateOrEditIntegrationInstanceResponse) GetTemplateUrl() (strin
 // CreateTemplate creates a new Cloud Onboarding Integration Template.
 //
 // TODO: details
-func (c *Client) CreateTemplate(ctx context.Context, input CreateIntegrationTemplateRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
+func (c *Client) CreateIntegrationTemplate(ctx context.Context, input CreateIntegrationTemplateRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
 	var ans CreateTemplateOrEditIntegrationInstanceResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateInstanceTemplateEndpoint, nil, nil, input, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateIntegrationTemplateEndpoint, nil, nil, input, &ans)
 
 	return ans, err
 }
@@ -179,7 +179,7 @@ type GetIntegrationInstanceRequest struct {
 }
 
 type GetIntegrationInstanceRequestData struct {
-	InstanceId string `json:"id"`
+	InstanceID string `json:"id"`
 }
 
 type GetIntegrationInstanceResponse struct {
@@ -187,7 +187,7 @@ type GetIntegrationInstanceResponse struct {
 }
 
 type GetIntegrationInstanceResponseReply struct {
-	Id                      string               `json:"id"`
+	ID                      string               `json:"id"`
 	Collector               string               `json:"collector"`
 	InstanceName            string               `json:"instance_name"`
 	Scope                   string               `json:"scope"`
@@ -214,7 +214,7 @@ func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 	}
 
 	marshalledResponse := IntegrationInstance{
-		Id:                      r.Reply.Id,
+		ID:                      r.Reply.ID,
 		Collector:               r.Reply.Collector,
 		InstanceName:            r.Reply.InstanceName,
 		Scope:                   r.Reply.Scope,
@@ -231,7 +231,7 @@ func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 }
 
 // GetDetails returns the configuration details of the specified integration instance.
-func (c *Client) GetInstanceDetails(ctx context.Context, input GetIntegrationInstanceRequest) (GetIntegrationInstanceResponse, error) {
+func (c *Client) GetIntegrationInstanceDetails(ctx context.Context, input GetIntegrationInstanceRequest) (GetIntegrationInstanceResponse, error) {
 	var ans GetIntegrationInstanceResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, GetIntegrationInstanceDetailsEndpoint, nil, nil, input, &ans)
 
@@ -255,10 +255,10 @@ type ListIntegrationInstancesResponse struct {
 }
 
 type ListIntegrationInstancesResponseReply struct {
-	Data []ListIntegrationInstanceResponseData `json:"DATA"`
+	Data []ListIntegrationInstancesResponseData `json:"DATA"`
 }
 
-type ListIntegrationInstanceResponseData struct {
+type ListIntegrationInstancesResponseData struct {
 	InstanceName            string               `json:"instance_name"`
 	CloudProvider           string               `json:"cloud_provider"`
 	Scope                   string               `json:"scope"`
@@ -269,17 +269,23 @@ type ListIntegrationInstanceResponseData struct {
 	ScopeModifications      ScopeModifications   `json:"scope_modifications"`
 	CollectionConfiguration string               `json:"collection_configuration"`
 	AdditionalCapabilities  string               `json:"additional_capabilities"`
-	InstanceId              string               `json:"instance_id"`
+	InstanceID              string               `json:"instance_id"`
 	Status                  string               `json:"status"`
 	CloudPartition          string               `json:"cloud_partition"`
 	CreatedAt               int                  `json:"created_at"`
 	ModifiedAt              int                  `json:"modified_at"`
 	DeletedAt               int                  `json:"deleted_at"`
 	DefaultScanningScope    DefaultScanningScope `json:"default_scanning_scope"`
-	OutpostId               string               `json:"outpost_id"`
+	OutpostID               string               `json:"outpost_id"`
 }
 
 func (r ListIntegrationInstancesResponse) Marshal() ([]IntegrationInstance, error) {
+	// TODO: make sure Paging.To is set to 1000 (the max accepted value)
+	// if not configured.
+
+	// TODO: Where is outpost_id populated? is there a static list of 
+	// outpost IDs for managed integrations?
+
 	marshalledResponse := []IntegrationInstance{}
 
 	for _, data := range r.Reply.Data {
@@ -315,7 +321,7 @@ func (r ListIntegrationInstancesResponse) Marshal() ([]IntegrationInstance, erro
 		}
 
 		marshalledData := IntegrationInstance{
-			Id:                      data.InstanceId,
+			ID:                      data.InstanceID,
 			InstanceName:            data.InstanceName,
 			Scope:                   data.Scope,
 			CustomResourcesTags:     customResourcesTags,
@@ -332,7 +338,7 @@ func (r ListIntegrationInstancesResponse) Marshal() ([]IntegrationInstance, erro
 	return marshalledResponse, nil
 }
 
-func (c *Client) ListInstances(ctx context.Context, input ListIntegrationInstancesRequest) (ListIntegrationInstancesResponse, error) {
+func (c *Client) ListIntegrationInstances(ctx context.Context, input ListIntegrationInstancesRequest) (ListIntegrationInstancesResponse, error) {
 	var ans ListIntegrationInstancesResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIntegrationInstancesEndpoint, nil, nil, input, &ans)
 
@@ -348,8 +354,8 @@ type EditIntegrationInstanceRequest struct {
 }
 
 type EditIntegrationInstanceRequestData struct {
-	InstanceId              string                  `json:"id"`
-	ScanEnvId               string                  `json:"scan_env_id"`
+	InstanceID              string                  `json:"id"`
+	ScanEnvID               string                  `json:"scan_env_id"`
 	InstanceName            string                  `json:"instance_name"`
 	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
 	CloudProvider           string                  `json:"cloud_provider"`
@@ -359,7 +365,7 @@ type EditIntegrationInstanceRequestData struct {
 }
 
 
-func (c *Client) EditInstance(ctx context.Context, input EditIntegrationInstanceRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
+func (c *Client) EditIntegrationInstance(ctx context.Context, input EditIntegrationInstanceRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
 	var ans CreateTemplateOrEditIntegrationInstanceResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, EditIntegrationInstanceEndpoint, nil, nil, input, &ans)
 
@@ -370,19 +376,19 @@ func (c *Client) EditInstance(ctx context.Context, input EditIntegrationInstance
 // Enable or Disable Instances
 // ----------------------------------------------------------------------------
 
-type EnableOrDisableInstancesRequest struct {
-	Data EnableOrDisableInstancesRequestData `json:"request_data"`
+type EnableOrDisableIntegrationInstancesRequest struct {
+	Data EnableOrDisableIntegrationInstancesRequestData `json:"request_data"`
 }
 
-type EnableOrDisableInstancesRequestData struct {
-	Ids    []string `json:"ids"`
+type EnableOrDisableIntegrationInstancesRequestData struct {
+	IDs    []string `json:"ids"`
 	Enable bool     `json:"enable"`
 }
 
-func (c *Client) EnableInstances(ctx context.Context, instanceIds []string) error {
-	body := EnableOrDisableInstancesRequest{
-		Data: EnableOrDisableInstancesRequestData{
-			Ids:    instanceIds,
+func (c *Client) EnableIntegrationInstances(ctx context.Context, instanceIDs []string) error {
+	body := EnableOrDisableIntegrationInstancesRequest{
+		Data: EnableOrDisableIntegrationInstancesRequestData{
+			IDs:    instanceIDs,
 			Enable: true,
 		},
 	}
@@ -392,10 +398,10 @@ func (c *Client) EnableInstances(ctx context.Context, instanceIds []string) erro
 	return err
 }
 
-func (c *Client) DisableInstances(ctx context.Context, instanceIds []string) error {
-	body := EnableOrDisableInstancesRequest{
-		Data: EnableOrDisableInstancesRequestData{
-			Ids:    instanceIds,
+func (c *Client) DisableIntegrationInstances(ctx context.Context, instanceIDs []string) error {
+	body := EnableOrDisableIntegrationInstancesRequest{
+		Data: EnableOrDisableIntegrationInstancesRequestData{
+			IDs:    instanceIDs,
 			Enable: false,
 		},
 	}
@@ -409,18 +415,18 @@ func (c *Client) DisableInstances(ctx context.Context, instanceIds []string) err
 // Delete Integration Instances
 // ----------------------------------------------------------------------------
 
-type DeleteInstanceRequest struct {
-	Data DeleteInstanceRequestData `json:"request_data"`
+type DeleteIntegrationInstanceRequest struct {
+	Data DeleteIntegrationInstanceRequestData `json:"request_data"`
 }
 
-type DeleteInstanceRequestData struct {
-	Ids []string `json:"ids"`
+type DeleteIntegrationInstanceRequestData struct {
+	IDs []string `json:"ids"`
 }
 
-func (c *Client) DeleteInstances(ctx context.Context, instanceIds []string) error {
-	body := DeleteInstanceRequest{
-		Data: DeleteInstanceRequestData{
-			Ids: instanceIds,
+func (c *Client) DeleteIntegrationInstances(ctx context.Context, instanceIDs []string) error {
+	body := DeleteIntegrationInstanceRequest{
+		Data: DeleteIntegrationInstanceRequestData{
+			IDs: instanceIDs,
 		},
 	}
 
