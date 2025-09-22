@@ -11,7 +11,7 @@ import (
 // API endpoint path specification.
 const (
 	// Cloud Integration Instance Management
-	CreateIntegrationTemplateEndpoint              = "public_api/v1/cloud_onboarding/create_instance_template"
+	CreateIntegrationTemplateEndpoint           = "public_api/v1/cloud_onboarding/create_instance_template"
 	GetIntegrationInstanceDetailsEndpoint       = "public_api/v1/cloud_onboarding/get_instance_details"
 	ListIntegrationInstancesEndpoint            = "public_api/v1/cloud_onboarding/get_instances"
 	EditIntegrationInstanceEndpoint             = "public_api/v1/cloud_onboarding/edit_instance"
@@ -19,8 +19,8 @@ const (
 	DeleteIntegrationInstancesEndpoint          = "public_api/v1/cloud_onboarding/delete_instance"
 
 	// Cloud Account Management
-	ListAccountsByInstanceEndpoint              = "public_api/v1/cloud_onboarding/get_accounts"
-	EnableDisableAccountsInInstancesEndpoint    = "public_api/v1/cloud_onboarding/enable_disable_account"
+	ListAccountsByInstanceEndpoint           = "public_api/v1/cloud_onboarding/get_accounts"
+	EnableDisableAccountsInInstancesEndpoint = "public_api/v1/cloud_onboarding/enable_disable_account"
 )
 
 // Client is the client for the namespace.

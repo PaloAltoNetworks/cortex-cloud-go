@@ -53,7 +53,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 
 	// Test values
-	instanceName := fmt.Sprintf("tf-acctest-aws-account-%s", timestamp) 
+	instanceName := fmt.Sprintf("tf-acctest-aws-account-%s", timestamp)
 	cloudProvider := enums.CloudProviderAWS.String()
 	//scope := enums.ScopeOrganization.String()
 	scope := enums.ScopeAccount.String()
@@ -61,7 +61,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 
 	additionalCapabilities := AdditionalCapabilities{
 		DataSecurityPostureManagement: true,
-		RegistryScanning: true,
+		RegistryScanning:              true,
 		RegistryScanningOptions: RegistryScanningOptions{
 			Type: enums.RegistryScanningTypeAll.String(),
 		},
@@ -74,11 +74,11 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	}
 	customResourcesTags := []Tag{
 		{
-			Key: "managed_by",
+			Key:   "managed_by",
 			Value: "paloaltonetworks",
 		},
 		{
-			Key: "test_tag",
+			Key:   "test_tag",
 			Value: timestamp,
 		},
 	}
@@ -92,23 +92,22 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 		Regions: &ScopeModificationsOptionsRegions{
 			//Enabled: false,
 			Enabled: true,
-			Type: enums.ScopeModificationTypeInclude.String(),
+			Type:    enums.ScopeModificationTypeInclude.String(),
 			Regions: []string{"us-east-1"},
 		},
 	}
 
-
 	// Execute create request
 	createReq := CreateIntegrationTemplateRequest{
 		Data: CreateIntegrationTemplateRequestData{
-			InstanceName: instanceName,
-			CloudProvider: cloudProvider,
-			Scope: scope,
-			ScanMode: scanMode,
-			AdditionalCapabilities: additionalCapabilities,
+			InstanceName:            instanceName,
+			CloudProvider:           cloudProvider,
+			Scope:                   scope,
+			ScanMode:                scanMode,
+			AdditionalCapabilities:  additionalCapabilities,
 			CollectionConfiguration: collectionConfiguration,
-			CustomResourcesTags: customResourcesTags,
-			ScopeModifications: scopeModifications,
+			CustomResourcesTags:     customResourcesTags,
+			ScopeModifications:      scopeModifications,
 		},
 	}
 	createResp, err := client.CreateIntegrationTemplate(ctx, createReq)
@@ -123,7 +122,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	assert.NotNil(t, createRespData.Automated)
 	assert.Regexp(t, acctest.AWSIntegrationTemplateAutomatedLinkRegexp, createRespData.Automated.Link)
 	assert.Regexp(t, test.TrackingGUIDRegexp, createRespData.Automated.TrackingGuid)
-	// TODO: fix this	
+	// TODO: fix this
 	//assert.NotNil(t, response.Manual)
 	//assert.Regexp(t, test.AWSIntegrationTemplateManualLinkRegexp, response.Manual.CF)
 
@@ -134,13 +133,13 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 			FilterData: FilterData{
 				Paging: PagingFilter{
 					From: 0,
-					To: 1000,
+					To:   1000,
 				},
 				Filter: CriteriaFilter{
 					And: []Criteria{
 						{
 							SearchField: "ID",
-							SearchType: "WILDCARD",
+							SearchType:  "WILDCARD",
 							SearchValue: instanceID,
 						},
 					},
@@ -166,7 +165,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	assert.Equal(t, scope, getRespData.Scope)
 	assert.Equal(t, scanMode, getRespData.ScanMode)
 	assert.Equal(t, "PENDING", getRespData.Status)
-	
+
 	marshalledGetResp, err := getResp.Marshal()
 	assert.NoError(t, err)
 	assert.NotNil(t, marshalledGetResp)
@@ -252,7 +251,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	//assert.NotNil(t, updateRespData.Automated)
 	//assert.Regexp(t, acctest.AWSIntegrationTemplateAutomatedLinkRegexp, updateRespData.Automated.Link)
 	//assert.Regexp(t, test.TrackingGUIDRegexp, updateRespData.Automated.TrackingGuid)
-	// TODO: fix this	
+	// TODO: fix this
 	//assert.NotNil(t, response.Manual)
 	//assert.Regexp(t, acctest.AWSIntegrationTemplateManualLinkRegexp, response.Manual.CF)
 
@@ -283,7 +282,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 //	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 //
 //	// Create a new AWS account integration template
-//	instanceName := fmt.Sprintf("tf-acctest-aws-account-%s", timestamp) 
+//	instanceName := fmt.Sprintf("tf-acctest-aws-account-%s", timestamp)
 //	//regionScopeType := enums.ScopeModificationTypeInclude.String()
 //	//regions := []string{ "us-east-1", "us-east-2" }
 //
@@ -333,7 +332,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 //			},
 //		},
 //	}
-//	
+//
 //	response, err := client.CreateIntegrationTemplate(ctx, createReq)
 //	assert.NoError(t, err)
 //	assert.NotNil(t, response)
@@ -348,7 +347,7 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 //	//getReq := GetIntegrationInstanceRequest{
 //
 //	//}
-//	//createdTemplate, err := client.GetInstanceDetails(ctx, 
+//	//createdTemplate, err := client.GetInstanceDetails(ctx,
 //	//assert.NoError(t, err)
 //	//assert.NotNil(t, gotRule)
 //	//assert.Equal(t, ruleID, gotRule.Id)
@@ -372,7 +371,6 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 //	//_, err = client.Get(ctx, ruleID)
 //	//assert.Error(t, err) // Expect an error when getting a deleted rule
 //}
-
 
 //func TestAppsecRuleLifecycle(t *testing.T) {
 //	client := setupAcceptanceTest(t)

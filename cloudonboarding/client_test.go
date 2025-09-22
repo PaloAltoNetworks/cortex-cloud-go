@@ -4,8 +4,8 @@
 package cloudonboarding
 
 import (
-	"testing"
 	"runtime"
+	"testing"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/stretchr/testify/assert"

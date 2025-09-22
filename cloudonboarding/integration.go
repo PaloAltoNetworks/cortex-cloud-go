@@ -64,15 +64,15 @@ type ScopeModifications struct {
 }
 
 type ScopeModificationsOptionsGeneric struct {
-	Enabled         bool      `json:"enabled" tfsdk:"enabled"`
-	Type            string    `json:"type,omitempty" tfsdk:"type"`
+	Enabled         bool     `json:"enabled" tfsdk:"enabled"`
+	Type            string   `json:"type,omitempty" tfsdk:"type"`
 	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
 	ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
 	SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
 
 type ScopeModificationsOptionsRegions struct {
-	Enabled bool      `json:"enabled" tfsdk:"enabled"`
+	Enabled bool     `json:"enabled" tfsdk:"enabled"`
 	Type    string   `json:"type,omitempty" tfsdk:"type"`
 	Regions []string `json:"regions,omitempty" tfsdk:"regions"`
 }
@@ -283,7 +283,7 @@ func (r ListIntegrationInstancesResponse) Marshal() ([]IntegrationInstance, erro
 	// TODO: make sure Paging.To is set to 1000 (the max accepted value)
 	// if not configured.
 
-	// TODO: Where is outpost_id populated? is there a static list of 
+	// TODO: Where is outpost_id populated? is there a static list of
 	// outpost IDs for managed integrations?
 
 	marshalledResponse := []IntegrationInstance{}
@@ -363,7 +363,6 @@ type EditIntegrationInstanceRequestData struct {
 	CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
 	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
 }
-
 
 func (c *Client) EditIntegrationInstance(ctx context.Context, input EditIntegrationInstanceRequest) (CreateTemplateOrEditIntegrationInstanceResponse, error) {
 	var ans CreateTemplateOrEditIntegrationInstanceResponse
