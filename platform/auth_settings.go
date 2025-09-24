@@ -6,6 +6,8 @@ package platform
 import (
 	"context"
 	"net/http"
+
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
 )
 
 type AuthSettings struct {
@@ -42,15 +44,11 @@ type AdvancedSettings struct {
 	ServiceProviderPublicCert string `json:"service_provider_public_cert"`
 }
 
-// ---------------------------
+// --------------------------- 
 // Request/Response structs
 // ---------------------------
 
 // ListIDPMetadata
-
-type ListIDPMetadataRequest struct {
-	Data ListIDPMetadataRequestData `json:"request_data"`
-}
 
 type ListIDPMetadataRequestData struct{}
 
@@ -63,21 +61,9 @@ type ListIDPMetadataResponse struct {
 
 // ListAuthSettings
 
-type ListAuthSettingsRequest struct {
-	Data ListAuthSettingsRequestData `json:"request_data"`
-}
-
 type ListAuthSettingsRequestData struct{}
 
-type ListAuthSettingsResponse struct {
-	Reply []AuthSettings `json:"reply"`
-}
-
 // CreateAuthSettings
-
-type CreateAuthSettingsRequest struct {
-	Data CreateAuthSettingsRequestData `json:"request_data"`
-}
 
 type CreateAuthSettingsRequestData struct {
 	Name               string           `json:"name"`
@@ -92,15 +78,7 @@ type CreateAuthSettingsRequestData struct {
 	MetadataURL        string           `json:"metadata_url"`
 }
 
-type CreateAuthSettingsResponse struct {
-	Reply bool `json:"reply"`
-}
-
 // UpdateAuthSettings
-
-type UpdateAuthSettingsRequest struct {
-	Data UpdateAuthSettingsRequestData `json:"request_data"`
-}
 
 type UpdateAuthSettingsRequestData struct {
 	Name               string           `json:"name"`
@@ -116,22 +94,10 @@ type UpdateAuthSettingsRequestData struct {
 	MetadataURL        string           `json:"metadata_url"`
 }
 
-type UpdateAuthSettingsResponse struct {
-	Reply bool `json:"reply"`
-}
-
 // DeleteAuthSettings
-
-type DeleteAuthSettingsRequest struct {
-	Data DeleteAuthSettingsRequestData `json:"request_data"`
-}
 
 type DeleteAuthSettingsRequestData struct {
 	Domain string `json:"domain"`
-}
-
-type DeleteAuthSettingsResponse struct {
-	Reply bool `json:"reply"`
 }
 
 // ---------------------------
@@ -144,7 +110,9 @@ type DeleteAuthSettingsResponse struct {
 func (c *Client) ListIDPMetadata(ctx context.Context) (ListIDPMetadataResponse, error) {
 
 	var ans ListIDPMetadataResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIDPMetadataEndpoint, nil, nil, ListIDPMetadataRequest{}, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIDPMetadataEndpoint, nil, nil, ListIDPMetadataRequestData{}, &ans, &app.DoOptions{
+		RequestWrapperKey: "request_data",
+	})
 
 	return ans, err
 }
@@ -153,10 +121,13 @@ func (c *Client) ListIDPMetadata(ctx context.Context) (ListIDPMetadataResponse, 
 // domains in the tenant.
 //
 // This endpoint requires Instance Administrator permissions.
-func (c *Client) ListAuthSettings(ctx context.Context) (ListAuthSettingsResponse, error) {
+func (c *Client) ListAuthSettings(ctx context.Context) ([]AuthSettings, error) {
 
-	var ans ListAuthSettingsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAuthSettingsEndpoint, nil, nil, ListAuthSettingsRequest{}, &ans)
+	var ans []AuthSettings
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAuthSettingsEndpoint, nil, nil, ListAuthSettingsRequestData{}, &ans, &app.DoOptions{
+		RequestWrapperKey:  "request_data",
+		ResponseWrapperKey: "reply",
+	})
 
 	return ans, err
 }
@@ -169,10 +140,13 @@ func (c *Client) ListAuthSettings(ctx context.Context) (ListAuthSettingsResponse
 // the only required field.
 //
 // This endpoint requires Instance Administrator permissions.
-func (c *Client) CreateAuthSettings(ctx context.Context, req CreateAuthSettingsRequest) (CreateAuthSettingsResponse, error) {
+func (c *Client) CreateAuthSettings(ctx context.Context, req CreateAuthSettingsRequestData) (bool, error) {
 
-	var resp CreateAuthSettingsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateAuthSettingsEndpoint, nil, nil, req, &resp)
+	var resp bool
+	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateAuthSettingsEndpoint, nil, nil, req, &resp, &app.DoOptions{
+		RequestWrapperKey:  "request_data",
+		ResponseWrapperKey: "reply",
+	})
 
 	return resp, err
 }
@@ -184,10 +158,13 @@ func (c *Client) CreateAuthSettings(ctx context.Context, req CreateAuthSettingsR
 // `current_domain_value` and `new_domain_value` fields.
 //
 // This endpoint requires Instance Administrator permissions.
-func (c *Client) UpdateAuthSettings(ctx context.Context, req UpdateAuthSettingsRequest) (UpdateAuthSettingsResponse, error) {
+func (c *Client) UpdateAuthSettings(ctx context.Context, req UpdateAuthSettingsRequestData) (bool, error) {
 
-	var resp UpdateAuthSettingsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateAuthSettingsEndpoint, nil, nil, req, &resp)
+	var resp bool
+	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateAuthSettingsEndpoint, nil, nil, req, &resp, &app.DoOptions{
+		RequestWrapperKey:  "request_data",
+		ResponseWrapperKey: "reply",
+	})
 
 	return resp, err
 }
@@ -196,15 +173,16 @@ func (c *Client) UpdateAuthSettings(ctx context.Context, req UpdateAuthSettingsR
 // domain.
 //
 // This endpoint requires Instance Administrator permissions.
-func (c *Client) DeleteAuthSettings(ctx context.Context, domain string) (DeleteAuthSettingsResponse, error) {
-	req := DeleteAuthSettingsRequest{
-		Data: DeleteAuthSettingsRequestData{
-			Domain: domain,
-		},
+func (c *Client) DeleteAuthSettings(ctx context.Context, domain string) (bool, error) {
+	req := DeleteAuthSettingsRequestData{
+		Domain: domain,
 	}
 
-	var resp DeleteAuthSettingsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteAuthSettingsEndpoint, nil, nil, req, &resp)
+	var resp bool
+	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteAuthSettingsEndpoint, nil, nil, req, &resp, &app.DoOptions{
+		RequestWrapperKey:  "request_data",
+		ResponseWrapperKey: "reply",
+	})
 
 	return resp, err
 }

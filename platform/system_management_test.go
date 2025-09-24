@@ -36,8 +36,8 @@ func TestClient_ListUsers(t *testing.T) {
 
 		resp, err := client.ListUsers(context.Background())
 		assert.NoError(t, err)
-		assert.Len(t, resp.Users, 1)
-		assert.Equal(t, "test@example.com", resp.Users[0].UserEmail)
+		assert.Len(t, resp, 1)
+		assert.Equal(t, "test@example.com", resp[0].UserEmail)
 	})
 }
 
@@ -47,10 +47,10 @@ func TestClient_ListRoles(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+ListRolesEndpoint, r.URL.Path)
 
-			var req ListRolesRequest
+			var req map[string]ListRolesRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
-			assert.Equal(t, []string{"Admin", "User"}, req.RequestData.RoleNames)
+			assert.Equal(t, []string{"Admin", "User"}, req["request_data"].RoleNames)
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{
@@ -97,24 +97,22 @@ func TestClient_ListRoles(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		listReq := ListRolesRequest{
-			RequestData: ListRolesRequestData{
-				RoleNames: []string{"Admin", "User"},
-			},
+		listReq := ListRolesRequestData{
+			RoleNames: []string{"Admin", "User"},
 		}
 		resp, err := client.ListRoles(context.Background(), listReq)
 		assert.NoError(t, err)
-		assert.Len(t, resp.Reply, 2)
-		assert.Len(t, resp.Reply[0], 1)
-		assert.Len(t, resp.Reply[1], 1)
-		assert.Equal(t, resp.Reply[0][0].PrettyName, "Admin")
-		assert.Equal(t, resp.Reply[0][0].CreatedBy, "admin@example.com")
-		assert.Len(t, resp.Reply[0][0].Users, 1)
-		assert.Equal(t, resp.Reply[0][0].Users[0], "admin@example.com")
-		assert.Equal(t, resp.Reply[1][0].PrettyName, "User")
-		assert.Equal(t, resp.Reply[1][0].CreatedBy, "admin@example.com")
-		assert.Len(t, resp.Reply[1][0].Users, 1)
-		assert.Equal(t, resp.Reply[1][0].Users[0], "user@example.com")
+		assert.Len(t, resp, 2)
+		assert.Len(t, resp[0], 1)
+		assert.Len(t, resp[1], 1)
+		assert.Equal(t, "Admin", resp[0][0].PrettyName)
+		assert.Equal(t, "admin@example.com", resp[0][0].CreatedBy)
+		assert.Len(t, resp[0][0].Users, 1)
+		assert.Equal(t, "admin@example.com", resp[0][0].Users[0])
+		assert.Equal(t, "User", resp[1][0].PrettyName)
+		assert.Equal(t, "admin@example.com", resp[1][0].CreatedBy)
+		assert.Len(t, resp[1][0].Users, 1)
+		assert.Equal(t, "user@example.com", resp[1][0].Users[0])
 	})
 }
 
@@ -124,11 +122,11 @@ func TestClient_SetRole(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+SetUserRoleEndpoint, r.URL.Path)
 
-			var req SetRoleRequest
+			var req map[string]SetRoleRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
-			assert.Equal(t, "new-role", req.RequestData.RoleName)
-			assert.Equal(t, []string{"user@example.com"}, req.RequestData.UserEmails)
+			assert.Equal(t, "new-role", req["request_data"].RoleName)
+			assert.Equal(t, []string{"user@example.com"}, req["request_data"].UserEmails)
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"reply": {"update_count": "1"}}`)
@@ -136,15 +134,13 @@ func TestClient_SetRole(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		setReq := SetRoleRequest{
-			RequestData: SetRoleRequestData{
-				RoleName:   "new-role",
-				UserEmails: []string{"user@example.com"},
-			},
+		setReq := SetRoleRequestData{
+			RoleName:   "new-role",
+			UserEmails: []string{"user@example.com"},
 		}
 		resp, err := client.SetRole(context.Background(), setReq)
 		assert.NoError(t, err)
-		assert.Equal(t, "1", resp.Reply.UpdateCount)
+		assert.Equal(t, "1", resp.UpdateCount)
 	})
 }
 
@@ -154,10 +150,10 @@ func TestClient_GetRiskScore(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+GetRiskScoreEndpoint, r.URL.Path)
 
-			var req GetRiskScoreRequest
+			var req map[string]GetRiskScoreRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
-			assert.Equal(t, "user123", req.RequestData.ID)
+			assert.Equal(t, "user123", req["request_data"].ID)
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{
@@ -171,15 +167,13 @@ func TestClient_GetRiskScore(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		getReq := GetRiskScoreRequest{
-			RequestData: GetRiskScoreRequestData{
-				ID: "user123",
-			},
+		getReq := GetRiskScoreRequestData{
+			ID: "user123",
 		}
 		resp, err := client.GetRiskScore(context.Background(), getReq)
 		assert.NoError(t, err)
-		assert.Equal(t, "user123", resp.Reply.ID)
-		assert.Equal(t, 95, resp.Reply.Score)
+		assert.Equal(t, "user123", resp.ID)
+		assert.Equal(t, 95, resp.Score)
 	})
 }
 
@@ -205,8 +199,8 @@ func TestClient_ListRiskyUsers(t *testing.T) {
 
 		resp, err := client.ListRiskyUsers(context.Background())
 		assert.NoError(t, err)
-		assert.Len(t, resp.Reply, 1)
-		assert.Equal(t, "risky@example.com", resp.Reply[0].Email)
+		assert.Len(t, resp, 1)
+		assert.Equal(t, "risky@example.com", resp[0].Email)
 	})
 }
 
@@ -231,7 +225,7 @@ func TestClient_ListRiskyHosts(t *testing.T) {
 
 		resp, err := client.ListRiskyHosts(context.Background())
 		assert.NoError(t, err)
-		assert.Len(t, resp.Reply, 1)
-		assert.Equal(t, "host789", resp.Reply[0].ID)
+		assert.Len(t, resp, 1)
+		assert.Equal(t, "host789", resp[0].ID)
 	})
 }

@@ -11,4 +11,5 @@ use (
 	./internal/test
 	./log
 	./platform
+	./types
 )

@@ -10,20 +10,25 @@ import (
 
 // API endpoint path specification.
 const (
-	// Users, Roles and Groups
-	ListUsersEndpoint      = "public_api/v1/rbac/get_users"
-	ListRolesEndpoint      = "public_api/v1/rbac/get_roles"
-	ListUserGroups         = "public_api/v1/rbac/get_user_group"
-	SetUserRoleEndpoint    = "public_api/v1/rbac/set_user_role"
-	GetRiskScoreEndpoint   = "public_api/v1/get_risk_score"
-	ListRiskyUsersEndpoint = "public_api/v1/get_risky_users"
-	ListRiskyHostsEndpoint = "public_api/v1/get_risky_hosts"
-	// Authentication Settings
-	ListIDPMetadataEndpoint    = "public_api/v1/authentication-settings/get/metadata"
-	ListAuthSettingsEndpoint   = "public_api/v1/authentication-settings/get/settings"
-	CreateAuthSettingsEndpoint = "public_api/v1/authentication-settings/create"
-	UpdateAuthSettingsEndpoint = "public_api/v1/authentication-settings/update"
-	DeleteAuthSettingsEndpoint = "public_api/v1/authentication-settings/delete"
+	ListUsersEndpoint      = "public_api/v1/users/get_users/"
+	ListRolesEndpoint      = "public_api/v1/roles/get_roles/"
+	SetUserRoleEndpoint    = "public_api/v1/users/set_user_role/"
+	GetRiskScoreEndpoint   = "public_api/v1/risk/get_risk_score/"
+	ListRiskyUsersEndpoint = "public_api/v1/risk/get_risky_users/"
+	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
+
+	// Asset Group Endpoints
+	CreateAssetGroupEndpoint = "public_api/v1/asset-groups/create/"
+	UpdateAssetGroupEndpoint = "public_api/v1/asset-groups/update/"
+	DeleteAssetGroupEndpoint = "public_api/v1/asset-groups/delete/"
+	ListAssetGroupsEndpoint  = "public_api/v1/asset-groups"
+
+	// Auth Settings Endpoints
+	ListIDPMetadataEndpoint  = "public_api/v1/sso/get_idp_metadata/"
+	ListAuthSettingsEndpoint = "public_api/v1/sso/get_sso_config/"
+	CreateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
+	UpdateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
+	DeleteAuthSettingsEndpoint = "public_api/v1/sso/delete_config/"
 )
 
 // Client is the client for the namespace.

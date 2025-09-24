@@ -359,7 +359,7 @@ type UpdateResponse struct {
 // to easily generate the request payload.
 func (c *Client) Validate(ctx context.Context, input []ValidateRequest) (ValidateResponse, error) {
 	var ans ValidateResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesValidationEndpoint, nil, nil, input, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesValidationEndpoint, nil, nil, input, &ans, nil)
 
 	return ans, err
 }
@@ -373,7 +373,7 @@ func (c *Client) Validate(ctx context.Context, input []ValidateRequest) (Validat
 // Otherwise, a new rule will be created with the provided input values.
 func (c *Client) CreateOrClone(ctx context.Context, input CreateOrCloneRequest) (Rule, error) {
 	var ans Rule
-	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesEndpoint, nil, nil, input, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesEndpoint, nil, nil, input, &ans, nil)
 
 	return ans, err
 }
@@ -382,7 +382,7 @@ func (c *Client) CreateOrClone(ctx context.Context, input CreateOrCloneRequest) 
 // ID value.
 func (c *Client) Get(ctx context.Context, id string) (Rule, error) {
 	var ans Rule
-	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, &[]string{id}, nil, nil, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, &[]string{id}, nil, nil, &ans, nil)
 
 	return ans, err
 }
@@ -395,7 +395,7 @@ func (c *Client) List(ctx context.Context, input ListRequest) (ListResponse, err
 	queryValues := input.toQueryValues()
 
 	var ans ListResponse
-	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, nil, &queryValues, nil, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, nil, &queryValues, nil, &ans, nil)
 
 	return ans, err
 }
@@ -421,14 +421,14 @@ func (c *Client) Update(ctx context.Context, ruleId string, input UpdateRequest)
 		return ans, err
 	}
 
-	_, err = c.internalClient.Do(ctx, http.MethodPatch, RulesEndpoint, &[]string{ruleId}, nil, input, &ans)
+	_, err = c.internalClient.Do(ctx, http.MethodPatch, RulesEndpoint, &[]string{ruleId}, nil, input, &ans, nil)
 
 	return ans, err
 }
 
 // Delete deletes the specified Application Security rule.
 func (c *Client) Delete(ctx context.Context, id string) error {
-	_, err := c.internalClient.Do(ctx, http.MethodDelete, RulesEndpoint, &[]string{id}, nil, nil, nil)
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, RulesEndpoint, &[]string{id}, nil, nil, nil, nil)
 
 	return err
 }

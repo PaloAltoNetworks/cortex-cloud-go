@@ -78,3 +78,8 @@ func GetSliceLengthFromInterface(value any) (int, error) {
 		return -1, fmt.Errorf("attempted to convert non-slice value to slice -- actual type: %T", value)
 	}
 }
+
+type DoOptions struct {
+	RequestWrapperKey  string
+	ResponseWrapperKey string
+}

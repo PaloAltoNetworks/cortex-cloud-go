@@ -1,3 +1,4 @@
+github.com/PaloAltoNetworks/cortex-cloud-go v0.0.5 h1:xWj0h3Ykte7JDFt36qGZzmbOaUr4fADnHMgpSWlMVbY=
 github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.6 h1:kfXsQUV73T4WKfyuaEtgfw9lAHJ87KJpTD7ExnWU+eY=
 github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.6/go.mod h1:bEqzVuDZbB1H0Rq4HpwXOsKBPJsDxdYQjttyivA5jAg=
 github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.6 h1:TXOG8sOF18Pxg+Y2vVQd5UoqXtlyrD+bqYFdsTnRvvQ=
