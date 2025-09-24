@@ -26,14 +26,16 @@ import (
 )
 
 const (
-	// NonceLength defines the length of the cryptographic nonce used in authentication headers.
+	// NonceLength defines the length of the cryptographic nonce used in 
+	// authentication headers.
 	NonceLength = 64
 	// AuthCharset is the character set used for generating the nonce.
 	AuthCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 // Client is the core HTTP client for interacting with the Cortex Cloud API.
-// It is intended for internal use by higher-level SDK modules (e.g., xsiam).
+//
+// This client is intended for internal use by higher-level SDK modules.
 // All configuration is passed during its creation via an api.Config object.
 type Client struct {
 	config     *api.Config
@@ -46,8 +48,8 @@ type Client struct {
 }
 
 // NewClient creates and initializes a new core HTTP client.
-// It takes a pointer to an api.Config, which should be fully configured
-// by the user-facing API module.
+// It takes a pointer to an api.Config, which should be fully configured by 
+// the user-facing API module.
 func NewClient(cfg *api.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("received nil api.Config")
@@ -295,10 +297,11 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 	}
 }
 
-// Do performs the given API request with iterative retry logic.
-// This is the core method for making authenticated calls to the Cortex Cloud API.
-// It returns the raw response body and a structured SDK error if any error
-// occurs (network, HTTP status, or unmarshaling).
+// Do performs the given API request.
+//
+// This is the core method for making authenticated calls to the Cortex Cloud 
+// API. It returns the raw response body and a structured SDK error if any 
+// error occurs (network, HTTP status, or unmarshaling).
 func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any, opts *DoOptions) ([]byte, error) {
 	if c.httpClient == nil {
 		return nil, errors.NewInternalSDKError(
@@ -344,7 +347,6 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 	}
 
 	for attempt := 0; attempt <= c.config.MaxRetries; attempt++ {
-		// Check for context cancellation before each attempt
 		select {
 		case <-ctx.Done():
 			return nil, errors.NewInternalSDKError(
