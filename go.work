@@ -8,6 +8,7 @@ use (
 	./enums
 	./errors
 	./internal/app
+	./internal/test
 	./log
 	./platform
 )
