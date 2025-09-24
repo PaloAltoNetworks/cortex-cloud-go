@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
 )
 
 func TestClient_ListUsers(t *testing.T) {
@@ -47,7 +48,7 @@ func TestClient_ListRoles(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+ListRolesEndpoint, r.URL.Path)
 
-			var req map[string]ListRolesRequestData
+			var req map[string]types.ListRolesRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, []string{"Admin", "User"}, req["request_data"].RoleNames)
@@ -97,7 +98,7 @@ func TestClient_ListRoles(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		listReq := ListRolesRequestData{
+		listReq := types.ListRolesRequestData{
 			RoleNames: []string{"Admin", "User"},
 		}
 		resp, err := client.ListRoles(context.Background(), listReq)
@@ -122,7 +123,7 @@ func TestClient_SetRole(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+SetUserRoleEndpoint, r.URL.Path)
 
-			var req map[string]SetRoleRequestData
+			var req map[string]types.SetRoleRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "new-role", req["request_data"].RoleName)
@@ -134,7 +135,7 @@ func TestClient_SetRole(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		setReq := SetRoleRequestData{
+		setReq := types.SetRoleRequestData{
 			RoleName:   "new-role",
 			UserEmails: []string{"user@example.com"},
 		}
@@ -150,7 +151,7 @@ func TestClient_GetRiskScore(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+GetRiskScoreEndpoint, r.URL.Path)
 
-			var req map[string]GetRiskScoreRequestData
+			var req map[string]types.GetRiskScoreRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "user123", req["request_data"].ID)
@@ -167,7 +168,7 @@ func TestClient_GetRiskScore(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		getReq := GetRiskScoreRequestData{
+		getReq := types.GetRiskScoreRequestData{
 			ID: "user123",
 		}
 		resp, err := client.GetRiskScore(context.Background(), getReq)

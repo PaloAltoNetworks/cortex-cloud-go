@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,7 +37,7 @@ func TestClient_ListIDPMetadata(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+ListIDPMetadataEndpoint, r.URL.Path)
 
-			var req map[string]ListIDPMetadataRequestData
+			var req map[string]types.ListIDPMetadataRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 
@@ -64,7 +65,7 @@ func TestClient_ListAuthSettings(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+ListAuthSettingsEndpoint, r.URL.Path)
 
-			var req map[string]ListAuthSettingsRequestData
+			var req map[string]types.ListAuthSettingsRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 
@@ -96,7 +97,7 @@ func TestClient_CreateAuthSettings(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+CreateAuthSettingsEndpoint, r.URL.Path)
 
-			var req map[string]CreateAuthSettingsRequestData
+			var req map[string]types.CreateAuthSettingsRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "New Setting", req["request_data"].Name)
@@ -108,7 +109,7 @@ func TestClient_CreateAuthSettings(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		createReq := CreateAuthSettingsRequestData{
+		createReq := types.CreateAuthSettingsRequestData{
 			Name:   "New Setting",
 			Domain: "new.example.com",
 		}
@@ -124,7 +125,7 @@ func TestClient_UpdateAuthSettings(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+UpdateAuthSettingsEndpoint, r.URL.Path)
 
-			var req map[string]UpdateAuthSettingsRequestData
+			var req map[string]types.UpdateAuthSettingsRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "Updated Setting", req["request_data"].Name)
@@ -137,7 +138,7 @@ func TestClient_UpdateAuthSettings(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		updateReq := UpdateAuthSettingsRequestData{
+		updateReq := types.UpdateAuthSettingsRequestData{
 			Name:          "Updated Setting",
 			CurrentDomain: "old.example.com",
 			NewDomain:     "new.example.com",
@@ -154,7 +155,7 @@ func TestClient_DeleteAuthSettings(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+DeleteAuthSettingsEndpoint, r.URL.Path)
 
-			var req map[string]DeleteAuthSettingsRequestData
+			var req map[string]types.DeleteAuthSettingsRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "delete.example.com", req["request_data"].Domain)
