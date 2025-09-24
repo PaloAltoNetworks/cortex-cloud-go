@@ -126,7 +126,7 @@ type SetRoleRequestData struct {
 }
 
 type SetRoleResponseReply struct {
-	UpdateCount string `json:"update_count"`
+	UpdateCount int `json:"update_count"`
 }
 
 type SetRoleResponse struct {
