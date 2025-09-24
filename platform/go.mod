@@ -8,6 +8,8 @@ require (
 	github.com/stretchr/testify v1.10.0
 )
 
+replace github.com/PaloAltoNetworks/cortex-cloud-go/api => ../api
+
 require (
 	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.6 // indirect
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.6 // indirect
