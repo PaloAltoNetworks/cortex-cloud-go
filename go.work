@@ -9,6 +9,7 @@ use (
 	./errors
 	./internal/app
 	./internal/test
+	./internal/util
 	./log
 	./platform
 	./types

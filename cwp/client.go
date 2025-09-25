@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	ListCloudWorkloadPoliciesEndpoint     = "public_api/v1/cwp/get_policies"
-	CreateCloudWorkloadPolicyEndpoint     = "public_api/v1/cwp/create_policy"
-	GetCloudWorkloadPolicyDetailsEndpoint = "public_api/v1/cwp/get_policy_details"
-	EditCloudWorkloadPolicyEndpoint       = "public_api/v1/cwp/edit_policy"
-	DeleteCloudWorkloadPolicyEndpoint     = "public_api/v1/cwp/delete_policy"
+	ListPoliciesEndpoint     = "public_api/v1/cwp/get_policies"
+	//CreatePolicyEndpoint     = "public_api/v1/cwp/create_policy"
+	CreatePolicyEndpoint     = "public_api/v1/cwp/policies"
+	GetPolicyByIDEndpoint = "public_api/v1/cwp/get_policy_details"
+	EditPolicyEndpoint       = "public_api/v1/cwp/edit_policy"
+	DeletePolicyEndpoint     = "public_api/v1/cwp/delete_policy"
 )
 
 // Client is the client for the namespace.
