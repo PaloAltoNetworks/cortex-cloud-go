@@ -1,10 +1,12 @@
 name: Bulk Create Module Releases
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - main
+      - v0.0.0-dev
+      #- '*v*.*.*'
+      #- main
+  # workflow_dispatch:
 
 permissions:
   contents: write
