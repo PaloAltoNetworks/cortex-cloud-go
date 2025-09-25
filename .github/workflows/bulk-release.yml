@@ -6,10 +6,13 @@ on:
       - v0.0.0-dev
       #- '*v*.*.*'
       #- main
-  # workflow_dispatch:
-  push:
-    branches:
-      - main
+  #workflow_dispatch:
+  #  inputs:
+  #    pre_release:
+  #      description: 'Create as pre-release?'
+  #      required: true
+  #      type: boolean
+  #      default: true
 
 permissions:
   contents: write
