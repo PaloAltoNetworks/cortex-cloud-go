@@ -37,8 +37,8 @@ func (c *Client) ListUsers(ctx context.Context) ([]types.User, error) {
 	return ans, err
 }
 
-func (c *Client) ListRoles(ctx context.Context, input types.ListRolesRequestData) ([][]types.ListRolesResponseReply, error) {
-	var ans [][]types.ListRolesResponseReply
+func (c *Client) ListRoles(ctx context.Context, input types.ListRolesRequest) ([][]types.ListRolesResponse, error) {
+	var ans [][]types.ListRolesResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, input, &ans, &app.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
@@ -49,8 +49,8 @@ func (c *Client) ListRoles(ctx context.Context, input types.ListRolesRequestData
 // SetRole adds or removes one or more users from a role.
 //
 // If no RoleName is provided in the SetRoleRequest, the user is removed from a role.
-func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequestData) (types.SetRoleResponseReply, error) {
-	var ans types.SetRoleResponseReply
+func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types.SetRoleResponse, error) {
+	var ans types.SetRoleResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &app.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
@@ -60,8 +60,8 @@ func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequestData) (t
 
 // GetRiskScore retrieves the risk score of a specific user or endpoint in your environment,
 // along with the reason for the score.
-func (c *Client) GetRiskScore(ctx context.Context, input types.GetRiskScoreRequestData) (types.GetRiskScoreResponseReply, error) {
-	var ans types.GetRiskScoreResponseReply
+func (c *Client) GetRiskScore(ctx context.Context, input types.GetRiskScoreRequest) (types.GetRiskScoreResponse, error) {
+	var ans types.GetRiskScoreResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, GetRiskScoreEndpoint, nil, nil, input, &ans, &app.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
@@ -72,8 +72,8 @@ func (c *Client) GetRiskScore(ctx context.Context, input types.GetRiskScoreReque
 
 // ListRiskyUsers retrieves a list of users with the highest risk score in your environment
 // along with the reason affecting each score.
-func (c *Client) ListRiskyUsers(ctx context.Context) ([]types.ListRiskyUsersResponseReply, error) {
-	var ans []types.ListRiskyUsersResponseReply
+func (c *Client) ListRiskyUsers(ctx context.Context) ([]types.ListRiskyUsersResponse, error) {
+	var ans []types.ListRiskyUsersResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyUsersEndpoint, nil, nil, nil, &ans, &app.DoOptions{
 		ResponseWrapperKey: "reply",
 	})
@@ -82,8 +82,8 @@ func (c *Client) ListRiskyUsers(ctx context.Context) ([]types.ListRiskyUsersResp
 
 // ListRiskyHosts retrieves a list of endpoints with the highest risk score in your environment
 // along with the reason affecting each score.
-func (c *Client) ListRiskyHosts(ctx context.Context) ([]types.ListRiskyHostsResponseReply, error) {
-	var ans []types.ListRiskyHostsResponseReply
+func (c *Client) ListRiskyHosts(ctx context.Context) ([]types.ListRiskyHostsResponse, error) {
+	var ans []types.ListRiskyHostsResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyHostsEndpoint, nil, nil, nil, &ans, &app.DoOptions{
 		ResponseWrapperKey: "reply",
 	})
