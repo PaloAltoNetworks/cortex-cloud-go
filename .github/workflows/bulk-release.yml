@@ -72,7 +72,7 @@ jobs:
               --title "$MODULE_NAME $MODULE_VERSION" \
               --notes "Release for module at path **$MODULE_PATH**." \
               --generate-notes \
-              "./${MODULE_NAME}-${MODULE_VERSION}"
+              "./${MODULE_NAME}"
             
             echo "Successfully created release for $LATEST_TAG."
           done
