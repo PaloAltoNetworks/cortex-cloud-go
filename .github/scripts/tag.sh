@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Copyright (c) Palo Alto Networks, Inc.
-# SPDX-License-Identifier: MPL-2.0
-
 
 set -eo pipefail
 
@@ -54,6 +51,9 @@ for module in "${TARGET_MODULES[@]}"; do
     # If a specific version is provided, use it.
     # Otherwise, calculate the next patch version.
     if [ -n "$TAG_VERSION" ]; then
+        if [[ ! "$TAG_VERSION" =~ ^v ]]; then
+            TAG_VERSION="v$TAG_VERSION"
+        fi
         NEW_VERSION=$TAG_VERSION
     else
         # Find the latest git tag for the module
@@ -65,13 +65,13 @@ for module in "${TARGET_MODULES[@]}"; do
         else
             echo "Latest tag found: $LATEST_TAG"
             # Extract version
-            LATEST_TAG_VERSION=$(echo "$LATEST_TAG" | sed -E "s|${module}/v||")
-            
+            LATEST_TAG_VERSION=${LATEST_TAG#${module}/v}
+
             # Increment the patch version
             MAJOR=$(echo "$LATEST_TAG_VERSION" | cut -d. -f1)
             MINOR=$(echo "$LATEST_TAG_VERSION" | cut -d. -f2)
             PATCH=$(echo "$LATEST_TAG_VERSION" | cut -d. -f3)
-            
+
             if ! [[ "$PATCH" =~ ^[0-9]+$ ]]; then
                 echo "Error: Could not parse patch version from '$LATEST_TAG'. Expected a number."
                 exit 1
