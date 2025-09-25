@@ -4,6 +4,7 @@ use (
 	./api
 	./appsec
 	./cloudonboarding
+	./cwp
 	./enums
 	./errors
 	./internal/app
