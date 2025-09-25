@@ -102,19 +102,20 @@ jobs:
           echo "All modules processed successfully."
 
     # 🚨 NEW JOB: This job only runs if the release job fails
-    - name: Rollback Releases on Failure
-      if: failure() && needs.bulk-release-modules.outputs.created_tags != ''
-      runs-on: ubuntu-latest
-      needs: bulk-release-modules
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      steps:
-        - name: Delete created releases
-          run: |
-            echo "🚨 A failure occurred. Rolling back successful releases from this run."
-            TAGS_TO_DELETE="${{ needs.bulk-release-modules.outputs.created_tags }}"
-            for tag in $TAGS_TO_DELETE; do
-              echo "Deleting release for tag: $tag"
-              gh release delete "$tag" --yes
-            done
-            echo "Rollback complete."
+  rollback_on_failure:
+    name: Rollback Releases on Failure
+    if: failure() && needs.release.outputs.created_tags != ''
+    runs-on: ubuntu-latest
+    needs: release
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete created releases
+        run: |
+          echo "🚨 A failure occurred. Rolling back successful releases from this run."
+          TAGS_TO_DELETE="${{ needs.release.outputs.created_tags }}"
+          for tag in $TAGS_TO_DELETE; do
+            echo "Deleting release for tag: $tag"
+            gh release delete "$tag" --yes
+          done
+          echo "Rollback complete."
