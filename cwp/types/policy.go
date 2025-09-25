@@ -8,7 +8,7 @@ import (
 	//"strconv"
 
 	//"dario.cat/mergo"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
+	//"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 )
 
 // ----------------------------
@@ -20,12 +20,12 @@ type Policy struct {
 	Revision            int                    `json:"revision" tfsdk:"revision"`
 	CreatedAt           string                 `json:"created_at" tfsdk:"created_at"`
 	ModifiedAt          string                 `json:"modified_at" tfsdk:"modified_at"`
-	Type                enums.PolicyType       `json:"type" tfsdk:"type"`
+	Type                string `json:"type" tfsdk:"type"`
 	CreatedBy           string                 `json:"created_by" tfsdk:"created_by"`
 	Disabled            bool                   `json:"disabled" tfsdk:"disabled"`
 	Name                string                 `json:"name" tfsdk:"name"`
 	Description         string                 `json:"description" tfsdk:"description"`
-	EvaluationModes     []enums.EvaluationMode `json:"evaluation_modes" tfsdk:"evaluation_modes"`
+	EvaluationModes     []string `json:"evaluation_modes" tfsdk:"evaluation_modes"`
 	EvaluationStage     string                 `json:"evaluation_stage" tfsdk:"evaluation_stage"`
 	RulesIDs            []string               `json:"rules_ids" tfsdk:"rules_ids"`
 	Condition           string                 `json:"condition" tfsdk:"condition"`
@@ -33,8 +33,8 @@ type Policy struct {
 	AssetScope          string                 `json:"asset_scope" tfsdk:"asset_scope"`
 	AssetGroupIDs       []int                  `json:"asset_group_ids" tfsdk:"asset_group_ids"`
 	AssetGroups         []string               `json:"asset_groups" tfsdk:"asset_groups"`
-	PolicyAction        enums.PolicyAction     `json:"policy_action" tfsdk:"policy_action"`
-	PolicySeverity      enums.PolicySeverity   `json:"policy_severity" tfsdk:"policy_severity"`
+	PolicyAction        string `json:"policy_action" tfsdk:"policy_action"`
+	PolicySeverity      string `json:"policy_severity" tfsdk:"policy_severity"`
 	RemediationGuidance string                 `json:"remediation_guidance" tfsdk:"remediation_guidance"`
 }
 // ---------------------------
@@ -50,7 +50,8 @@ type CreatePolicyRequest struct {
 	//Revision            int                    `json:"revision" tfsdk:"revision"`
 	//CreatedAt           string                 `json:"created_at" tfsdk:"created_at"`
 	//ModifiedAt          string                 `json:"modified_at" tfsdk:"modified_at"`
-	Type                enums.PolicyType       `json:"type" tfsdk:"type"`
+	//Type                enums.PolicyType       `json:"type" tfsdk:"type"`
+	Type                string `json:"type" tfsdk:"type"`
 	//CreatedBy           string                 `json:"created_by" tfsdk:"created_by"`
 	//Disabled            bool                   `json:"disabled" tfsdk:"disabled"`
 	Name                string                 `json:"name" tfsdk:"name"`

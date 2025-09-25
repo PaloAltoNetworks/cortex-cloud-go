@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.6
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/app v0.0.6
+	github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.3
 	github.com/stretchr/testify v1.10.0
 )
 

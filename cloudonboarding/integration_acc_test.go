@@ -15,11 +15,24 @@ package cloudonboarding
 //
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
-//	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/test"
 //	acctest "github.com/PaloAltoNetworks/cortex-cloud-go/internal/test/acceptance"
+//	//"github.com/aws/aws-sdk-go-v2/aws"
+//	//"github.com/aws/aws-sdk-go-v2/config"
+//	//"github.com/aws/aws-sdk-go-v2/service/cloudformation"
+//	//"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 //	"github.com/stretchr/testify/assert"
 //)
 //
+//
+//const (
+//	AWSIntegrationTemplateAutomatedLinkRegexp = `^https:\/\/([a-z0-9-]+\.)?console\.aws\.amazon\.com\/cloudformation\/home#\/stacks\/quickcreate\?templateURL=https%3A%2F%2F.+$`
+//	AWSIntegrationTemplateManualLinkRegexp = `^\/.*\.ya?ml(\?.*)?$`
+//)
+//
+//const (
+//	GUIDRegexp = `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`
+//	TrackingGUIDRegexp = `^[0-9a-fA-F]{32}$`
+//)
 //func setupAcceptanceTest(t *testing.T) *Client {
 //	//apiUrl := os.Getenv("CORTEX_CLOUD_TEST_API_URL")
 //	//apiKey := os.Getenv("CORTEX_CLOUD_TEST_API_KEY")
@@ -434,4 +447,71 @@ package cloudonboarding
 //	resp, err := client.List(context.Background(), listReq)
 //	assert.NoError(t, err)
 //	assert.NotNil(t, resp)
+//}
+
+
+//func DeployCloudFormationStack(t *testing.T, ctx context.Context, region string, timestamp string, templateURL string) {
+//	// Load default AWS configuration from environment
+//	//cfnConfig, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+//	cfnConfig, err := config.LoadDefaultConfig(ctx)
+//	if err != nil {
+//		t.Fatalf("unable to load AWS SDK config: %s", err.Error())
+//	}
+//
+//	// Create CloudFormation client
+//	cfnClient := cloudformation.NewFromConfig(cfnConfig)
+//
+//	// Deploy CloudFormation stack	
+//	stackName := fmt.Sprintf("go-sdk-acctest-%s", timestamp)
+//	createStackInput := &cloudformation.CreateStackInput{
+//		StackName: aws.String(stackName),
+//		TemplateURL: aws.String(templateURL),
+//		// Specify OrganizationalUnitId for Organization deployment
+//		//Parameters: 
+//		Capabilities: []types.Capability{
+//			types.CapabilityCapabilityIam,
+//			types.CapabilityCapabilityNamedIam,
+//		},
+//	}
+//
+//	startTime := time.Now()
+//	t.Logf("Creating CloudFormation stack: %s", stackName)	
+//	_, err = cfnClient.CreateStack(ctx, createStackInput)	
+//	if err != nil {
+//		t.Fatalf("failed to create CloudFormation stack: %v", err)
+//	}
+//	
+//	// Register cleanup func
+//	t.Cleanup(func() {
+//		t.Logf("Tearing down CloudFormation stack: %s", stackName)
+//		deleteInput := &cloudformation.DeleteStackInput{
+//			StackName: aws.String(stackName),
+//		}
+//		_, err := cfnClient.DeleteStack(ctx, deleteInput)
+//		if err != nil {
+//			t.Logf("failed to initiate CloudFormation stack deletion, you may need to delete it manually: %v", err)
+//		}
+//
+//		// Optional: Wait for deletion to complete
+//		deleteWaiter := cloudformation.NewStackDeleteCompleteWaiter(cfnClient)
+//		err = deleteWaiter.Wait(ctx, &cloudformation.DescribeStacksInput{StackName: aws.String(stackName)}, 5*time.Minute)
+//		if err != nil {
+//			t.Logf("error waiting for CloudFormation stack deletion: %v", err)
+//		}
+//		t.Logf("Stack %s deleted successfully", stackName)
+//	})
+//
+//	// Wait for the stack to be created successfully
+//	waiter := cloudformation.NewStackCreateCompleteWaiter(cfnClient)
+//	describeInput := &cloudformation.DescribeStacksInput{StackName: aws.String(stackName)}
+//
+//	// Wait for up to 10 minutes for create operation to finish
+//	err = waiter.Wait(ctx, describeInput, 10*time.Minute) 
+//	if err != nil {
+//		t.Fatalf("timed out or failed waiting for stack creation: %v", err)
+//	}
+//	endTime := time.Now()
+//	deployTime := endTime.Sub(startTime)
+//
+//	t.Logf("Stack %s successfully created in %s", deployTime.String())
 //}

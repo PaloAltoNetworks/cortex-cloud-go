@@ -4,12 +4,12 @@
 package appsec
 
 import (
-	"context"
-	"net/http"
+	//"context"
+	//"net/http"
 	"net/url"
 	"strconv"
 
-	"dario.cat/mergo"
+	//"dario.cat/mergo"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 )
 
@@ -341,94 +341,94 @@ type UpdateResponse struct {
 //	return validateRequest, nil
 //}
 
-// Validate validates the Application Security rule definition and relevant
-// properties to ensure that they align with what is expected by the Cortex
-// Cloud API.
+//// Validate validates the Application Security rule definition and relevant
+//// properties to ensure that they align with what is expected by the Cortex
+//// Cloud API.
+////
+//// This operation occurs within the Cortex Cloud platform as a prerequisite
+//// step during the rule creation/cloning operation. The purpose of this function
+//// is to allow for validation of the rule logic prior to executing the
+//// create/clone request, if users would like to handle any rule logic errors
+//// separately from any errors that may be raised for the other input values.
+////
+//// The private version of this endpoint is called from the UI by clicking the
+//// "Validate Code" button in the rule definition creation screen.
+////
+//// The `CreateOrCloneRequest` and `UpdateRequest` classes contain member
+//// functions (`FromCreateOrCloneRequest` and `FromUpdateRequest`, respectively)
+//// to easily generate the request payload.
+//func (c *Client) Validate(ctx context.Context, input []ValidateRequest) (ValidateResponse, error) {
+//	var ans ValidateResponse
+//	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesValidationEndpoint, nil, nil, input, &ans, nil)
 //
-// This operation occurs within the Cortex Cloud platform as a prerequisite
-// step during the rule creation/cloning operation. The purpose of this function
-// is to allow for validation of the rule logic prior to executing the
-// create/clone request, if users would like to handle any rule logic errors
-// separately from any errors that may be raised for the other input values.
+//	return ans, err
+//}
 //
-// The private version of this endpoint is called from the UI by clicking the
-// "Validate Code" button in the rule definition creation screen.
+//// CreateOrClone creates a new or clones an existing Application Security rule.
+////
+//// (TODO: verify description)
+//// If an rule with the specified name already exists, that rule will be cloned
+//// and altered according to the remaining input values.
+////
+//// Otherwise, a new rule will be created with the provided input values.
+//func (c *Client) CreateOrClone(ctx context.Context, input CreateOrCloneRequest) (Rule, error) {
+//	var ans Rule
+//	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesEndpoint, nil, nil, input, &ans, nil)
 //
-// The `CreateOrCloneRequest` and `UpdateRequest` classes contain member
-// functions (`FromCreateOrCloneRequest` and `FromUpdateRequest`, respectively)
-// to easily generate the request payload.
-func (c *Client) Validate(ctx context.Context, input []ValidateRequest) (ValidateResponse, error) {
-	var ans ValidateResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesValidationEndpoint, nil, nil, input, &ans, nil)
-
-	return ans, err
-}
-
-// CreateOrClone creates a new or clones an existing Application Security rule.
+//	return ans, err
+//}
 //
-// (TODO: verify description)
-// If an rule with the specified name already exists, that rule will be cloned
-// and altered according to the remaining input values.
+//// Get returns the details of the Application Security rule with the provided
+//// ID value.
+//func (c *Client) Get(ctx context.Context, id string) (Rule, error) {
+//	var ans Rule
+//	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, &[]string{id}, nil, nil, &ans, nil)
 //
-// Otherwise, a new rule will be created with the provided input values.
-func (c *Client) CreateOrClone(ctx context.Context, input CreateOrCloneRequest) (Rule, error) {
-	var ans Rule
-	_, err := c.internalClient.Do(ctx, http.MethodPost, RulesEndpoint, nil, nil, input, &ans, nil)
-
-	return ans, err
-}
-
-// Get returns the details of the Application Security rule with the provided
-// ID value.
-func (c *Client) Get(ctx context.Context, id string) (Rule, error) {
-	var ans Rule
-	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, &[]string{id}, nil, nil, &ans, nil)
-
-	return ans, err
-}
-
-// List retrieves a list of all Application Security rules that match the
-// provided filter values.
+//	return ans, err
+//}
 //
-// If no filter values are provided, all rules will be returned.
-func (c *Client) List(ctx context.Context, input ListRequest) (ListResponse, error) {
-	queryValues := input.toQueryValues()
-
-	var ans ListResponse
-	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, nil, &queryValues, nil, &ans, nil)
-
-	return ans, err
-}
-
-// Update modifies an existing Application Security rule.
+//// List retrieves a list of all Application Security rules that match the
+//// provided filter values.
+////
+//// If no filter values are provided, all rules will be returned.
+//func (c *Client) List(ctx context.Context, input ListRequest) (ListResponse, error) {
+//	queryValues := input.toQueryValues()
 //
-// If the target rule is an out-of-the-box rule, only the labels can be
-// modified. For custom rules, all fields can be modified.
+//	var ans ListResponse
+//	_, err := c.internalClient.Do(ctx, http.MethodGet, RulesEndpoint, nil, &queryValues, nil, &ans, nil)
 //
-// To customize an out-of-the-box rule, first clone it using `CreateOrClone`,
-// then use `Update` to set the desired configuration.
-func (c *Client) Update(ctx context.Context, ruleId string, input UpdateRequest) (UpdateResponse, error) {
-	var ans UpdateResponse
-
-	rule, err := c.Get(ctx, ruleId)
-	if err != nil {
-		return ans, err
-	}
-
-	src := rule.ToUpdateRequest()
-
-	if err := mergo.Merge(&input, src); err != nil {
-		return ans, err
-	}
-
-	_, err = c.internalClient.Do(ctx, http.MethodPatch, RulesEndpoint, &[]string{ruleId}, nil, input, &ans, nil)
-
-	return ans, err
-}
-
-// Delete deletes the specified Application Security rule.
-func (c *Client) Delete(ctx context.Context, id string) error {
-	_, err := c.internalClient.Do(ctx, http.MethodDelete, RulesEndpoint, &[]string{id}, nil, nil, nil, nil)
-
-	return err
-}
+//	return ans, err
+//}
+//
+//// Update modifies an existing Application Security rule.
+////
+//// If the target rule is an out-of-the-box rule, only the labels can be
+//// modified. For custom rules, all fields can be modified.
+////
+//// To customize an out-of-the-box rule, first clone it using `CreateOrClone`,
+//// then use `Update` to set the desired configuration.
+//func (c *Client) Update(ctx context.Context, ruleId string, input UpdateRequest) (UpdateResponse, error) {
+//	var ans UpdateResponse
+//
+//	rule, err := c.Get(ctx, ruleId)
+//	if err != nil {
+//		return ans, err
+//	}
+//
+//	src := rule.ToUpdateRequest()
+//
+//	if err := mergo.Merge(&input, src); err != nil {
+//		return ans, err
+//	}
+//
+//	_, err = c.internalClient.Do(ctx, http.MethodPatch, RulesEndpoint, &[]string{ruleId}, nil, input, &ans, nil)
+//
+//	return ans, err
+//}
+//
+//// Delete deletes the specified Application Security rule.
+//func (c *Client) Delete(ctx context.Context, id string) error {
+//	_, err := c.internalClient.Do(ctx, http.MethodDelete, RulesEndpoint, &[]string{id}, nil, nil, nil, nil)
+//
+//	return err
+//}

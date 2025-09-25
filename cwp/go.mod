@@ -5,8 +5,8 @@ go 1.25.0
 require (
 	dario.cat/mergo v1.0.2
 	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.6
-	github.com/PaloAltoNetworks/cortex-cloud-go/enums v0.0.6
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/app v0.0.6
+	github.com/PaloAltoNetworks/cortex-cloud-go/internal/util v0.0.3
 	github.com/stretchr/testify v1.11.1
 )
 

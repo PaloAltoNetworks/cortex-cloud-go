@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
 // ----------------------------------------------------------------------------
@@ -16,7 +17,7 @@ import (
 
 type GetCloudAccountsRequestData struct {
 	InstanceId string     `json:"instance_id"`
-	FilterData FilterData `json:"filter_data"`
+	FilterData types.FilterData `json:"filter_data"`
 }
 
 type ListAccountsByInstanceResponseReply struct {
