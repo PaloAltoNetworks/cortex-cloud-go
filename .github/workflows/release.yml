@@ -23,18 +23,35 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Parse module name and version from tag
+      - name: Parse and Validate Module Path
         id: parse_tag
         run: |
           TAG=${{ github.ref_name }}
-          echo "TAG_NAME=$TAG" >> $GITHUB_ENV
-          echo "MODULE_NAME=$(echo $TAG | cut -d'/' -f1)" >> $GITHUB_ENV
-          echo "MODULE_VERSION=$(echo $TAG | cut -d'/' -f2)" >> $GITHUB_ENV
+          # Use parameter expansion to get the path before the last '/' (the version)
+          MODULE_PATH=${TAG%/*}
+          MODULE_VERSION=${TAG#*/}
+          
+          # ❗️ Key Step: Validate that a go.mod file exists at the parsed path
+          if [ ! -f "${MODULE_PATH}/go.mod" ]; then
+            echo "Error: A go.mod file was not found in the path '${MODULE_PATH}' derived from the tag '${TAG}'."
+            exit 1
+          fi
+
+          echo "Validation successful: Found go.mod in '${MODULE_PATH}'."
+
+          # Get the module's simple name (e.g., 'api' from 'services/api') for the binary artifact
+          MODULE_NAME=$(basename "${MODULE_PATH}")
+
+          # Set environment variables for subsequent steps
+          echo "TAG_NAME=${TAG}" >> $GITHUB_ENV
+          echo "MODULE_PATH=${MODULE_PATH}" >> $GITHUB_ENV
+          echo "MODULE_VERSION=${MODULE_VERSION}" >> $GITHUB_ENV
+          echo "MODULE_NAME=${MODULE_NAME}" >> $GITHUB_ENV
 
       - name: Build the module binary
         run: |
-          echo "Building module: ${{ env.MODULE_NAME }} at version ${{ env.MODULE_VERSION }}"
-          cd ./${{ env.MODULE_NAME }}
+          echo "Building module at path: ${{ env.MODULE_PATH }}"
+          cd ./${{ env.MODULE_PATH }}
           go build -o ../${{ env.MODULE_NAME }}-${{ env.MODULE_VERSION }}
 
       - name: Create GitHub Release
@@ -43,5 +60,6 @@ jobs:
         run: |
           gh release create ${{ env.TAG_NAME }} \
             --title "${{ env.MODULE_NAME }} ${{ env.MODULE_VERSION }}" \
-            --notes "Release for ${{ env.MODULE_NAME }} version ${{ env.MODULE_VERSION }}." \
+            --notes "Release for module at path **${{ env.MODULE_PATH }}**." \
+            --generate-notes \
             ../${{ env.MODULE_NAME }}-${{ env.MODULE_VERSION }}
