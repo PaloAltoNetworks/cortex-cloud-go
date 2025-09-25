@@ -10,10 +10,10 @@ import (
 
 // API endpoint path specification.
 const (
-	ListUsersEndpoint      = "public_api/v1/users/get_users/"
-	ListRolesEndpoint      = "public_api/v1/roles/get_roles/"
-	SetUserRoleEndpoint    = "public_api/v1/users/set_user_role/"
-	GetRiskScoreEndpoint   = "public_api/v1/risk/get_risk_score/"
+	ListUsersEndpoint      = "public_api/v1/rbac/get_users/"
+	ListRolesEndpoint      = "public_api/v1/rbac/get_roles/"
+	SetUserRoleEndpoint    = "public_api/v1/rbac/set_user_role/"
+	GetRiskScoreEndpoint   = "public_api/v1/get_risk_score/"
 	ListRiskyUsersEndpoint = "public_api/v1/risk/get_risky_users/"
 	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
 
