@@ -1,11 +1,6 @@
 name: Bulk Create Module Releases
 
 on:
-  push:
-    branches:
-      - v0.0.0-dev
-      #- '*v*.*.*'
-      #- main
   workflow_dispatch:
     inputs:
       pre_release:
@@ -13,6 +8,9 @@ on:
         required: true
         type: boolean
         default: true
+  push:
+    branches:
+      - v0.0.0-dev #- '*v*.*.*'
 
 permissions:
   contents: write
@@ -22,7 +20,6 @@ jobs:
     name: Find and Release All Modules
     runs-on: ubuntu-latest
     outputs:
-      # We need to output this to the job level for the rollback step to access it
       created_tags: ${{ steps.release_step.outputs.created_tags }}
     steps:
       - name: Checkout repository with full history
