@@ -10,13 +10,13 @@ on:
         default: true
   push:
     branches:
-      - v0.0.0-dev #- '*v*.*.*'
+      - 'v0.0.0-dev'
 
 permissions:
   contents: write
 
 jobs:
-  test:
+  release:
     name: Find and Release All Modules
     runs-on: ubuntu-latest
     outputs:
