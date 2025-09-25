@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 jobs:
-  bulk-release-modules:
+  test:
     name: Find and Release All Modules
     runs-on: ubuntu-latest
     outputs:
