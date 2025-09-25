@@ -7,6 +7,9 @@ on:
       #- '*v*.*.*'
       #- main
   # workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -15,6 +18,9 @@ jobs:
   bulk-release-modules:
     name: Find and Release All Modules
     runs-on: ubuntu-latest
+    outputs:
+      # We need to output this to the job level for the rollback step to access it
+      created_tags: ${{ steps.release_step.outputs.created_tags }}
     steps:
       - name: Checkout repository with full history
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
@@ -27,10 +33,14 @@ jobs:
           go-version: '1.25'
 
       - name: Find Modules, Check Tags, and Create Releases
+        id: release_step # Give the step an ID to access its outputs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e # Exit immediately if a command fails
+          
+          # This variable will store a space-separated list of tags we successfully create
+          CREATED_TAGS=""
 
           echo "Searching for Go modules..."
           for modfile in $(find . -name go.mod); do
@@ -46,87 +56,65 @@ jobs:
               echo "No version tags found for module '$MODULE_PATH'. Skipping."
               continue
             fi
-
             echo "Found latest tag: $LATEST_TAG"
 
             if gh release view "$LATEST_TAG" >/dev/null 2>&1; then
-              echo "Release for tag '$LATEST_TAG' already exists. Skipping."
+              echo "✅ Release for tag '$LATEST_TAG' already exists. Skipping."
               continue
             fi
-
             echo "❗️ Release for '$LATEST_TAG' does not exist. Creating one now..."
 
             MODULE_VERSION=${LATEST_TAG#$MODULE_PATH/}
             MODULE_NAME=$(basename "$MODULE_PATH")
             ARTIFACT_NAME="${MODULE_NAME}-${MODULE_VERSION}"
+            # ✅ FIX: Use the absolute path provided by $GITHUB_WORKSPACE for reliability
+            ARTIFACT_PATH="$GITHUB_WORKSPACE/${ARTIFACT_NAME}"
             
-            # ✅ CORRECTED BUILD COMMAND
             echo "Building binary for $MODULE_NAME..."
-            go build -C "./$MODULE_PATH" -o "../${ARTIFACT_NAME}"
+            # Use the absolute ARTIFACT_PATH for the output
+            go build -C "./$MODULE_PATH" -o "$ARTIFACT_PATH"
 
-            # 🚀 CREATE GITHUB RELEASE
+            # 🛠️ NEW: Determine if this is a pre-release
+            PRE_RELEASE_FLAG=""
+            # The input is a string 'true' or 'false'. On a 'main' push, github.event_name is 'push'.
+            if [[ "${{ github.event.inputs.pre_release }}" == "true" || "${{ github.event_name }}" == "push" ]]; then
+              PRE_RELEASE_FLAG="--prerelease"
+              echo "Marking release as a pre-release."
+            fi
+
             echo "Creating GitHub release for $LATEST_TAG..."
             gh release create "$LATEST_TAG" \
               --title "$MODULE_NAME $MODULE_VERSION" \
-              --notes "Release for module at path **$MODULE_PATH**." \
+              --notes "Automated release for module **$MODULE_PATH**." \
               --generate-notes \
-              "./${ARTIFACT_NAME}"
+              $PRE_RELEASE_FLAG \
+              "$ARTIFACT_PATH"
             
             echo "Successfully created release for $LATEST_TAG."
-            # Clean up the artifact to prevent conflicts in the next loop iteration
-            rm "./${ARTIFACT_NAME}"
+            rm "$ARTIFACT_PATH"
+            
+            # 🛡️ Add the successfully created tag to our list for potential rollback
+            CREATED_TAGS="$CREATED_TAGS $LATEST_TAG"
           done
           echo "---"
-          echo "All modules processed."
-      #- name: Find Modules, Check Tags, and Create Releases
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #  run: |
-      #    set -e
+          # Set the final list of created tags as an output for the next step
+          echo "created_tags=$CREATED_TAGS" >> $GITHUB_OUTPUT
+          echo "All modules processed successfully."
 
-      #    echo "Searching for Go modules..."
-      #    for modfile in $(find . -name go.mod); do
-      #      MODULE_PATH=$(dirname "$modfile")
-      #      MODULE_PATH=${MODULE_PATH#./}
-
-      #      echo "---"
-      #      echo "Processing module at path: $MODULE_PATH"
-
-      #      # Find the latest version tag for this specific module path
-      #      LATEST_TAG=$(git tag -l "$MODULE_PATH/v*" | sort -V | tail -n 1)
-
-      #      if [ -z "$LATEST_TAG" ]; then
-      #        echo "No version tags found for module '$MODULE_PATH'. Skipping."
-      #        continue
-      #      fi
-
-      #      echo "Found latest tag: $LATEST_TAG"
-
-      #      # Check if a release for this tag already exists
-      #      if gh release view "$LATEST_TAG" >/dev/null 2>&1; then
-      #        echo "Release for tag '$LATEST_TAG' already exists. Skipping."
-      #        continue
-      #      fi
-
-      #      #echo "Release for '$LATEST_TAG' does not exist. Creating one now..."
-
-      #      # Extract the version and module name
-      #      MODULE_VERSION=${LATEST_TAG#$MODULE_PATH/}
-      #      MODULE_NAME=$(basename "$MODULE_PATH")
-      #      
-      #      # Build the module binary
-      #      echo "Building $MODULE_NAME..."
-      #      (cd "./$MODULE_PATH" && go build -o "../../${MODULE_NAME}-${MODULE_VERSION}")
-
-      #      # Create release
-      #      echo "Creating GitHub release for $LATEST_TAG..."
-      #      gh release create "$LATEST_TAG" \
-      #        --title "$MODULE_NAME $MODULE_VERSION" \
-      #        --notes "Release for module at path **$MODULE_PATH**." \
-      #        --generate-notes \
-      #        "./${MODULE_NAME}"
-      #      
-      #      echo "Successfully created release for $LATEST_TAG."
-      #    done
-      #    echo "---"
-      #    echo "All modules processed."
+    # 🚨 NEW JOB: This job only runs if the release job fails
+    - name: Rollback Releases on Failure
+      if: failure() && needs.bulk-release-modules.outputs.created_tags != ''
+      runs-on: ubuntu-latest
+      needs: bulk-release-modules
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      steps:
+        - name: Delete created releases
+          run: |
+            echo "🚨 A failure occurred. Rolling back successful releases from this run."
+            TAGS_TO_DELETE="${{ needs.bulk-release-modules.outputs.created_tags }}"
+            for tag in $TAGS_TO_DELETE; do
+              echo "Deleting release for tag: $tag"
+              gh release delete "$tag" --yes
+            done
+            echo "Rollback complete."
