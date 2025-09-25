@@ -1,0 +1,38 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  # Uncomment for testing 
+  #push:
+  #  branches:
+  #    - my-branch-name
+
+jobs:
+  run-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Run internal/app unit tests
+        run: |
+          set -e
+          (cd internal/app && go test -v ./...)
+      
+      - name: Run appsec unit tests
+        run: |
+          set -e
+          (cd appsec && go test -v ./...)
+      
+      - name: Run platform unit tests
+        run: |
+          set -e
+          (cd platform && go test -v ./...)
