@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	cortexTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/cloudonboarding/types"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/test"
 	acctest "github.com/PaloAltoNetworks/cortex-cloud-go/internal/test/acceptance"
@@ -59,20 +61,20 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	scope := enums.ScopeAccount.String()
 	scanMode := enums.ScanModeManaged.String()
 
-	additionalCapabilities := AdditionalCapabilities{
+	additionalCapabilities := types.AdditionalCapabilities{
 		DataSecurityPostureManagement: true,
 		RegistryScanning:              true,
-		RegistryScanningOptions: RegistryScanningOptions{
+		RegistryScanningOptions: types.RegistryScanningOptions{
 			Type: enums.RegistryScanningTypeAll.String(),
 		},
 		XsiamAnalytics: true,
 	}
-	collectionConfiguration := CollectionConfiguration{
-		AuditLogs: AuditLogsConfiguration{
+	collectionConfiguration := types.CollectionConfiguration{
+		AuditLogs: types.AuditLogsConfiguration{
 			Enabled: true,
 		},
 	}
-	customResourcesTags := []Tag{
+	customResourcesTags := []types.Tag{
 		{
 			Key:   "managed_by",
 			Value: "paloaltonetworks",
@@ -82,14 +84,14 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 			Value: timestamp,
 		},
 	}
-	scopeModifications := ScopeModifications{
+	scopeModifications := types.ScopeModifications{
 		//Accounts: &ScopeModificationsOptionsGeneric{
 		//	Enabled: false,
 		//	//Enabled: true,
 		//	//Type: "INCLUDE",
 		//	//AccountIDs: []string{"123456789012"},
 		//},
-		Regions: &ScopeModificationsOptionsRegions{
+		Regions: &types.ScopeModificationsOptionsRegions{
 			//Enabled: false,
 			Enabled: true,
 			Type:    enums.ScopeModificationTypeInclude.String(),
@@ -98,50 +100,44 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 	}
 
 	// Execute create request
-	createReq := CreateIntegrationTemplateRequest{
-		Data: CreateIntegrationTemplateRequestData{
-			InstanceName:            instanceName,
-			CloudProvider:           cloudProvider,
-			Scope:                   scope,
-			ScanMode:                scanMode,
-			AdditionalCapabilities:  additionalCapabilities,
-			CollectionConfiguration: collectionConfiguration,
-			CustomResourcesTags:     customResourcesTags,
-			ScopeModifications:      scopeModifications,
-		},
+	createReq := types.CreateIntegrationTemplateRequest{
+		InstanceName:            instanceName,
+		CloudProvider:           cloudProvider,
+		Scope:                   scope,
+		ScanMode:                scanMode,
+		AdditionalCapabilities:  additionalCapabilities,
+		CollectionConfiguration: collectionConfiguration,
+		CustomResourcesTags:     customResourcesTags,
+		ScopeModifications:      scopeModifications,
 	}
 	createResp, err := client.CreateIntegrationTemplate(ctx, createReq)
 	if err != nil {
 		t.Fatalf("failed to create integration template: %s", err.Error())
 	}
-	createRespData := createResp.Reply
 
 	// Check response
 	assert.NotNil(t, createResp)
-	assert.NotNil(t, createRespData)
-	assert.NotNil(t, createRespData.Automated)
-	assert.Regexp(t, acctest.AWSIntegrationTemplateAutomatedLinkRegexp, createRespData.Automated.Link)
-	assert.Regexp(t, test.TrackingGUIDRegexp, createRespData.Automated.TrackingGuid)
+	assert.NotNil(t, createResp.Automated)
+	assert.Regexp(t, acctest.AWSIntegrationTemplateAutomatedLinkRegexp, createResp.Automated.Link)
+	assert.Regexp(t, test.TrackingGUIDRegexp, createResp.Automated.TrackingGuid)
 	// TODO: fix this
 	//assert.NotNil(t, response.Manual)
 	//assert.Regexp(t, test.AWSIntegrationTemplateManualLinkRegexp, response.Manual.CF)
 
 	// Execute get request
-	instanceID := createRespData.Automated.TrackingGuid
-	getReq := ListIntegrationInstancesRequest{
-		RequestData: ListIntegrationInstancesRequestData{
-			FilterData: FilterData{
-				Paging: PagingFilter{
-					From: 0,
-					To:   1000,
-				},
-				Filter: CriteriaFilter{
-					And: []Criteria{
-						{
-							SearchField: "ID",
-							SearchType:  "WILDCARD",
-							SearchValue: instanceID,
-						},
+	instanceID := createResp.Automated.TrackingGuid
+	getReq := types.ListIntegrationInstancesRequest{
+		FilterData: cortexTypes.FilterData{
+			Paging: cortexTypes.PagingFilter{
+				From: 0,
+				To:   1000,
+			},
+			Filter: cortexTypes.CriteriaFilter{
+				And: []cortexTypes.Criteria{
+					{
+						SearchField: "ID",
+						SearchType:  "WILDCARD",
+						SearchValue: instanceID,
 					},
 				},
 			},
@@ -152,10 +148,9 @@ func TestAccAwsOrganizationIntegrationTemplateLifecycle(t *testing.T) {
 		t.Fatalf("failed to retrieve integration template: %s", err.Error())
 	}
 	assert.NotNil(t, getResp)
-	assert.NotNil(t, getResp.Reply)
-	assert.NotNil(t, getResp.Reply.Data)
-	assert.Len(t, getResp.Reply.Data, 1)
-	getRespData := getResp.Reply.Data[0]
+	assert.NotNil(t, getResp.Data)
+	assert.Len(t, getResp.Data, 1)
+	getRespData := getResp.Data[0]
 
 	// Check response
 	assert.NotNil(t, getRespData)

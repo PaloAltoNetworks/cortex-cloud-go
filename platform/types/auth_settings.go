@@ -40,7 +40,7 @@ type AdvancedSettings struct {
 
 // ListIDPMetadata
 
-type ListIDPMetadataRequestData struct{}
+type ListIDPMetadataRequest struct{}
 
 type ListIDPMetadataResponse struct {
 	TenantID    string `json:"tenant_id"`
@@ -54,11 +54,11 @@ type ListIDPMetadataResponse struct {
 // TODO: This endpoint currently doesn't have any parameters defined. Populate
 // or remove this before release, depending on whether or not the endpoint 
 // has been updated before then.
-type ListAuthSettingsRequestData struct{}
+type ListAuthSettingsRequest struct{}
 
 // CreateAuthSettings
 
-type CreateAuthSettingsRequestData struct {
+type CreateAuthSettingsRequest struct {
 	Name               string           `json:"name"`
 	DefaultRole        string           `json:"default_role"`
 	IsAccountRole      bool             `json:"is_account_role"`
@@ -73,7 +73,7 @@ type CreateAuthSettingsRequestData struct {
 
 // UpdateAuthSettings
 
-type UpdateAuthSettingsRequestData struct {
+type UpdateAuthSettingsRequest struct {
 	Name               string           `json:"name"`
 	DefaultRole        string           `json:"default_role"`
 	IsAccountRole      bool             `json:"is_account_role"`
@@ -89,6 +89,6 @@ type UpdateAuthSettingsRequestData struct {
 
 // DeleteAuthSettings
 
-type DeleteAuthSettingsRequestData struct {
+type DeleteAuthSettingsRequest struct {
 	Domain string `json:"domain"`
 }

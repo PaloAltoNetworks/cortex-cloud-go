@@ -108,7 +108,7 @@ type Manual struct {
 // Create Integration Template
 // ----------------------------------------------------------------------------
 
-type CreateIntegrationTemplateRequestData struct {
+type CreateIntegrationTemplateRequest struct {
 	AccountDetails          *AccountDetails         `json:"account_details,omitempty"`
 	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
 	CloudProvider           string                  `json:"cloud_provider"`
@@ -120,12 +120,12 @@ type CreateIntegrationTemplateRequestData struct {
 	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
 }
 
-type CreateTemplateOrEditIntegrationInstanceResponseReply struct {
+type CreateTemplateOrEditIntegrationInstanceResponse struct {
 	Automated Automated `json:"automated"`
 	Manual    Manual    `json:"manual"`
 }
 
-func (r CreateTemplateOrEditIntegrationInstanceResponseReply) GetTemplateUrl() (string, error) {
+func (r CreateTemplateOrEditIntegrationInstanceResponse) GetTemplateUrl() (string, error) {
 	if r.Automated.Link == "" {
 		return "", fmt.Errorf("Failed to retrieve template URL: reply.automated.link is empty string")
 	}
@@ -149,11 +149,11 @@ func (r CreateTemplateOrEditIntegrationInstanceResponseReply) GetTemplateUrl() (
 // Get Integration Instance Details
 // ----------------------------------------------------------------------------
 
-type GetIntegrationInstanceRequestData struct {
+type GetIntegrationInstanceRequest struct {
 	InstanceID string `json:"id"`
 }
 
-type GetIntegrationInstanceResponseReply struct {
+type GetIntegrationInstanceResponse struct {
 	ID                      string               `json:"id"`
 	Collector               string               `json:"collector"`
 	InstanceName            string               `json:"instance_name"`
@@ -167,7 +167,7 @@ type GetIntegrationInstanceResponseReply struct {
 	AdditionalCapabilities  string               `json:"additional_capabilities"`
 }
 
-func (r GetIntegrationInstanceResponseReply) Marshal() (IntegrationInstance, error) {
+func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 	var collectionConfiguration CollectionConfiguration
 	err := json.Unmarshal([]byte(r.CollectionConfiguration), &collectionConfiguration)
 	if err != nil {
@@ -201,15 +201,15 @@ func (r GetIntegrationInstanceResponseReply) Marshal() (IntegrationInstance, err
 // List Integration Instances
 // ----------------------------------------------------------------------------
 
-type ListIntegrationInstancesRequestData struct {
+type ListIntegrationInstancesRequest struct {
 	FilterData types.FilterData `json:"filter_data"`
 }
 
-type ListIntegrationInstancesResponseReply struct {
-	Data []ListIntegrationInstancesResponseData `json:"DATA"`
+type ListIntegrationInstancesResponseWrapper struct {
+	Data []ListIntegrationInstancesResponse `json:"DATA"`
 }
 
-type ListIntegrationInstancesResponseData struct {
+type ListIntegrationInstancesResponse struct {
 	InstanceName            string               `json:"instance_name"`
 	CloudProvider           string               `json:"cloud_provider"`
 	Scope                   string               `json:"scope"`
@@ -230,7 +230,7 @@ type ListIntegrationInstancesResponseData struct {
 	OutpostID               string               `json:"outpost_id"`
 }
 
-func (r ListIntegrationInstancesResponseReply) Marshal() ([]IntegrationInstance, error) {
+func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstance, error) {
 	// TODO: make sure Paging.To is set to 1000 (the max accepted value)
 	// if not configured.
 
@@ -293,7 +293,7 @@ func (r ListIntegrationInstancesResponseReply) Marshal() ([]IntegrationInstance,
 // Edit Integration Instance
 // ----------------------------------------------------------------------------
 
-type EditIntegrationInstanceRequestData struct {
+type EditIntegrationInstanceRequest struct {
 	InstanceID              string                  `json:"id"`
 	ScanEnvID               string                  `json:"scan_env_id"`
 	InstanceName            string                  `json:"instance_name"`
@@ -317,7 +317,7 @@ type EnableOrDisableIntegrationInstancesRequest struct {
 // Delete Integration Instances
 // ----------------------------------------------------------------------------
 
-type DeleteIntegrationInstanceRequestData struct {
+type DeleteIntegrationInstanceRequest struct {
 	IDs []string `json:"ids"`
 }
 

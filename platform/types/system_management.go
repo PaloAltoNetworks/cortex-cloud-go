@@ -58,12 +58,12 @@ type GetUserRequest struct {
 
 // List Roles
 
-type ListRolesRequestData struct {
+type ListRolesRequest struct {
 	// TODO: add validation tag/function for role names?
 	RoleNames []string `json:"role_names" validate:"required,min=1"`
 }
 
-type ListRolesResponseReply struct {
+type ListRolesResponse struct {
 	PrettyName  string   `json:"pretty_name"`
 	Permissions []string `json:"permissions"`
 	InsertTime  int      `json:"insert_time"`
@@ -77,22 +77,22 @@ type ListRolesResponseReply struct {
 
 // Set Role
 
-type SetRoleRequestData struct {
+type SetRoleRequest struct {
 	UserEmails []string `json:"user_emails" validate:"required,min=1,dive,required,email"`
 	RoleName   string   `json:"role_name"`
 }
 
-type SetRoleResponseReply struct {
+type SetRoleResponse struct {
 	UpdateCount string `json:"update_count"`
 }
 
 // Get Risk Score
 
-type GetRiskScoreRequestData struct {
+type GetRiskScoreRequest struct {
 	ID string `json:"id" validate:"required,sysmgmtID"`
 }
 
-type GetRiskScoreResponseReply struct {
+type GetRiskScoreResponse struct {
 	Type          string   `json:"type"`
 	ID            string   `json:"id"`
 	Score         int      `json:"score"`
@@ -104,7 +104,7 @@ type GetRiskScoreResponseReply struct {
 
 // List Risky Users
 
-type ListRiskyUsersResponseReply struct {
+type ListRiskyUsersResponse struct {
 	Type          string   `json:"type"`
 	ID            string   `json:"id"`
 	Score         int      `json:"score"`
@@ -116,7 +116,7 @@ type ListRiskyUsersResponseReply struct {
 
 // List Risky Hosts
 
-type ListRiskyHostsResponseReply struct {
+type ListRiskyHostsResponse struct {
 	Type          string   `json:"type"`
 	ID            string   `json:"id"`
 	Score         int      `json:"score"`
