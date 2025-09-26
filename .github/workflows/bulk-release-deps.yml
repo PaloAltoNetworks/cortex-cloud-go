@@ -1,4 +1,4 @@
-name: Bulk Create No-Dependency Module Releases
+name: Bulk Create Dependent Module Releases
 
 on:
   workflow_dispatch:
@@ -8,16 +8,16 @@ on:
         required: true
         type: boolean
         default: true
-  #push:
-  #  branches:
-  #    - 'v0.0.0-dev'
+  push:
+    branches:
+      - 'v0.0.0-dev'
 
 permissions:
   contents: write
 
 jobs:
   release:
-    name: Find and Release No-Dependency Modules
+    name: Find and Release Dependent Modules
     runs-on: ubuntu-latest
     outputs:
       created_tags: ${{ steps.release_step.outputs.created_tags }}
@@ -32,21 +32,25 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Find Tags and Create Releases for No-Dep Modules
-        id: release_step # Give the step an ID to access its outputs
+      - name: Find Modules, Check Tags, and Create Releases
+        id: release_step
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e # Exit immediately if a command fails
-          
-          # This variable will store a space-separated list of tags we successfully create
+          set -e
           CREATED_TAGS=""
-
-          # List of modules with no internal dependencies
           NO_DEP_MODULES="enums errors log types"
 
-          echo "Processing modules with no internal dependencies..."
-          for MODULE_PATH in $NO_DEP_MODULES; do
+          echo "Searching for Go modules..."
+          for modfile in $(find . -name go.mod); do
+            MODULE_PATH=$(dirname "$modfile")
+            MODULE_PATH=${MODULE_PATH#./}
+
+            if [[ " $NO_DEP_MODULES " =~ " ${MODULE_PATH} " || -z "$MODULE_PATH" ]]; then
+              echo "Skipping module: $MODULE_PATH"
+              continue
+            fi
+
             echo "---"
             echo "Processing module at path: $MODULE_PATH"
 
@@ -66,8 +70,20 @@ jobs:
 
             MODULE_VERSION=${LATEST_TAG#$MODULE_PATH/}
             MODULE_NAME=$(basename "$MODULE_PATH")
+            ARTIFACT_NAME="${MODULE_NAME}-${MODULE_VERSION}"
+            ARTIFACT_PATH="$GITHUB_WORKSPACE/${ARTIFACT_NAME}"
+            
+            echo "Attempting to build binary for $MODULE_NAME..."
+            if go build -C "./$MODULE_PATH" -o "$ARTIFACT_PATH"; then
+                echo "Build successful. Attaching binary to release."
+                ARTIFACT_ARGS="$ARTIFACT_PATH"
+                RELEASE_NOTES="Automated release for module **$MODULE_PATH**."
+            else
+                echo "⚠️ Build failed. This might be a library module. Creating release without binary artifact."
+                ARTIFACT_ARGS=""
+                RELEASE_NOTES="Automated release for module **$MODULE_PATH**. Build failed, so no binary is attached."
+            fi
 
-            # Determine if this is a pre-release
             PRE_RELEASE_FLAG=""
             if [[ "${{ github.event.inputs.pre_release }}" == "true" ]]; then
               PRE_RELEASE_FLAG="--prerelease"
@@ -75,23 +91,32 @@ jobs:
             fi
 
             echo "Creating GitHub release for $LATEST_TAG..."
-            gh release create "$LATEST_TAG" \
-              --title "$MODULE_NAME $MODULE_VERSION" \
-              --notes "Automated release for module **$MODULE_PATH**." \
-              --generate-notes \
-              $PRE_RELEASE_FLAG
+            if [ -n "$ARTIFACT_ARGS" ]; then
+              gh release create "$LATEST_TAG" \
+                --title "$MODULE_NAME $MODULE_VERSION" \
+                --notes "$RELEASE_NOTES" \
+                --generate-notes \
+                $PRE_RELEASE_FLAG \
+                "$ARTIFACT_ARGS"
+            else
+              gh release create "$LATEST_TAG" \
+                --title "$MODULE_NAME $MODULE_VERSION" \
+                --notes "$RELEASE_NOTES" \
+                --generate-notes \
+                $PRE_RELEASE_FLAG
+            fi
+            
+            if [ -f "$ARTIFACT_PATH" ]; then
+              rm "$ARTIFACT_PATH"
+            fi
             
             echo "Successfully created release for $LATEST_TAG."
-            
-            # Add the successfully created tag to our list for potential rollback
             CREATED_TAGS="$CREATED_TAGS $LATEST_TAG"
           done
           echo "---"
-          # Set the final list of created tags as an output for the next step
           echo "created_tags=$CREATED_TAGS" >> $GITHUB_OUTPUT
           echo "All modules processed successfully."
 
-  # This job only runs if the release job fails
   rollback_on_failure:
     name: Rollback Releases on Failure
     if: failure() && needs.release.outputs.created_tags != ''

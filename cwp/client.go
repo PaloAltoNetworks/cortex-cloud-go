@@ -10,7 +10,6 @@ import (
 
 const (
 	ListPoliciesEndpoint     = "public_api/v1/cwp/get_policies"
-	//CreatePolicyEndpoint     = "public_api/v1/cwp/create_policy"
 	CreatePolicyEndpoint     = "public_api/v1/cwp/policies"
 	GetPolicyByIDEndpoint = "public_api/v1/cwp/get_policy_details"
 	EditPolicyEndpoint       = "public_api/v1/cwp/edit_policy"

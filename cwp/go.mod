@@ -4,15 +4,15 @@ go 1.25.0
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.4
-	github.com/PaloAltoNetworks/cortex-cloud-go/client v0.0.4
-	github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.4
+	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.8
+	github.com/PaloAltoNetworks/cortex-cloud-go/client v0.0.8
+	github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.8
 	github.com/stretchr/testify v1.11.1
 )
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.4 // indirect
-	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.4 // indirect
+	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8 // indirect
+	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
