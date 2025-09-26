@@ -8,9 +8,9 @@ on:
         required: true
         type: boolean
         default: true
-  #push:
-  #  branches:
-  #    - 'v0.0.0-dev'
+  push:
+    branches:
+      - 'v0.0.0-dev'
 
 permissions:
   contents: write
