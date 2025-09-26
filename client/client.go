@@ -1,7 +1,7 @@
 // Copyright (c) Palo Alto Networks, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-package app
+package client
 
 import (
 	"context"
@@ -22,6 +22,7 @@ import (
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	internalLog "github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
@@ -291,10 +292,16 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 	} else {
 		c.config.Logger.Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
 		return &errors.CortexCloudAPIError{
-			Code:    Pointer(errors.CodeAPIResponseParsingFailure),
-			Message: Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
+			Code:    types.Pointer(errors.CodeAPIResponseParsingFailure),
+			Message: types.Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
 		}
 	}
+}
+
+
+type DoOptions struct {
+	RequestWrapperKey  string
+	ResponseWrapperKey string
 }
 
 // Do performs the given API request.

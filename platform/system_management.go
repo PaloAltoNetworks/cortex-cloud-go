@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
 // GetUser retrieves the specified user in your environment.
@@ -31,7 +31,7 @@ func (c *Client) GetUser(ctx context.Context, input types.GetUserRequest) (types
 // ListUsers retrieves a list of the current users in your environment.
 func (c *Client) ListUsers(ctx context.Context) ([]types.User, error) {
 	var ans []types.User
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListUsersEndpoint, nil, nil, nil, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListUsersEndpoint, nil, nil, nil, &ans, &client.DoOptions{
 		ResponseWrapperKey: "reply",
 	})
 	return ans, err
@@ -39,7 +39,7 @@ func (c *Client) ListUsers(ctx context.Context) ([]types.User, error) {
 
 func (c *Client) ListRoles(ctx context.Context, input types.ListRolesRequest) ([][]types.ListRolesResponse, error) {
 	var ans [][]types.ListRolesResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, input, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -51,7 +51,7 @@ func (c *Client) ListRoles(ctx context.Context, input types.ListRolesRequest) ([
 // If no RoleName is provided in the SetRoleRequest, the user is removed from a role.
 func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types.SetRoleResponse, error) {
 	var ans types.SetRoleResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -62,7 +62,7 @@ func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types
 // along with the reason for the score.
 func (c *Client) GetRiskScore(ctx context.Context, input types.GetRiskScoreRequest) (types.GetRiskScoreResponse, error) {
 	var ans types.GetRiskScoreResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, GetRiskScoreEndpoint, nil, nil, input, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, GetRiskScoreEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -74,7 +74,7 @@ func (c *Client) GetRiskScore(ctx context.Context, input types.GetRiskScoreReque
 // along with the reason affecting each score.
 func (c *Client) ListRiskyUsers(ctx context.Context) ([]types.ListRiskyUsersResponse, error) {
 	var ans []types.ListRiskyUsersResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyUsersEndpoint, nil, nil, nil, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyUsersEndpoint, nil, nil, nil, &ans, &client.DoOptions{
 		ResponseWrapperKey: "reply",
 	})
 	return ans, err
@@ -84,7 +84,7 @@ func (c *Client) ListRiskyUsers(ctx context.Context) ([]types.ListRiskyUsersResp
 // along with the reason affecting each score.
 func (c *Client) ListRiskyHosts(ctx context.Context) ([]types.ListRiskyHostsResponse, error) {
 	var ans []types.ListRiskyHostsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyHostsEndpoint, nil, nil, nil, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyHostsEndpoint, nil, nil, nil, &ans, &client.DoOptions{
 		ResponseWrapperKey: "reply",
 	})
 	return ans, err

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/cwp/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 	//"github.com/stretchr/testify/require"
 )

@@ -8,12 +8,36 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
+
+
+// ---------------------------
+// Regex Patterns
+// ---------------------------
+
+const (
+	// TODO: update this to also work with whatever endpoint ID is
+	RegexpPatternSystemManagementUserOrEndpointID = `^[^/]+/[^/]+$`
+)
+
+var (
+	RegexpSystemManagementUserOrEndpointID *regexp.Regexp
+)
+
+func CompileRegex() error {
+	var err error
+
+	RegexpSystemManagementUserOrEndpointID, err = regexp.Compile(RegexpPatternSystemManagementUserOrEndpointID)
+
+	return err
+}
+
 
 func TestClient_ListUsers(t *testing.T) {
 	t.Run("should list users successfully", func(t *testing.T) {
@@ -48,7 +72,7 @@ func TestClient_ListRoles(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+ListRolesEndpoint, r.URL.Path)
 
-			var req map[string]types.ListRolesRequestData
+			var req map[string]types.ListRolesRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, []string{"Admin", "User"}, req["request_data"].RoleNames)
@@ -98,7 +122,7 @@ func TestClient_ListRoles(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		listReq := types.ListRolesRequestData{
+		listReq := types.ListRolesRequest{
 			RoleNames: []string{"Admin", "User"},
 		}
 		resp, err := client.ListRoles(context.Background(), listReq)
@@ -123,7 +147,7 @@ func TestClient_SetRole(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+SetUserRoleEndpoint, r.URL.Path)
 
-			var req map[string]types.SetRoleRequestData
+			var req map[string]types.SetRoleRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "new-role", req["request_data"].RoleName)
@@ -135,7 +159,7 @@ func TestClient_SetRole(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		setReq := types.SetRoleRequestData{
+		setReq := types.SetRoleRequest{
 			RoleName:   "new-role",
 			UserEmails: []string{"user@example.com"},
 		}
@@ -151,7 +175,7 @@ func TestClient_GetRiskScore(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+GetRiskScoreEndpoint, r.URL.Path)
 
-			var req map[string]types.GetRiskScoreRequestData
+			var req map[string]types.GetRiskScoreRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "user123", req["request_data"].ID)
@@ -168,7 +192,7 @@ func TestClient_GetRiskScore(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		getReq := types.GetRiskScoreRequestData{
+		getReq := types.GetRiskScoreRequest{
 			ID: "user123",
 		}
 		resp, err := client.GetRiskScore(context.Background(), getReq)

@@ -1,12 +1,14 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
-	"encoding/json"
-
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
+
+// ----------------------------------------------------------------------------
+// Cloud Onboarding - Integration
+// ----------------------------------------------------------------------------
 
 type IntegrationInstance struct {
 	ID                      string                  `json:"id" tfsdk:"id"`
@@ -73,7 +75,6 @@ type ScopeModificationsOptionsRegions struct {
 type DefaultScanningScope struct {
 	RegistryScanningScope      RegistryScanningScope      `json:"registry_scanning_scope"`
 	AgentlessDiskScanningScope AgentlessDiskScanningScope `json:"agentless_disk_scanning_scope"`
-	// TODO: DataAssetsClassificationOptions
 }
 
 type RegistryScanningScope struct {
@@ -104,10 +105,7 @@ type Manual struct {
 	CF string `json:"CF" tfsdk:"manual_deployment_link"`
 }
 
-// ----------------------------------------------------------------------------
-// Create Integration Template
-// ----------------------------------------------------------------------------
-
+// CreateIntegrationTemplateRequest is the request for creating an integration template.
 type CreateIntegrationTemplateRequest struct {
 	AccountDetails          *AccountDetails         `json:"account_details,omitempty"`
 	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
@@ -120,6 +118,7 @@ type CreateIntegrationTemplateRequest struct {
 	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
 }
 
+// CreateTemplateOrEditIntegrationInstanceResponse is the response for creating or editing an integration instance.
 type CreateTemplateOrEditIntegrationInstanceResponse struct {
 	Automated Automated `json:"automated"`
 	Manual    Manual    `json:"manual"`
@@ -145,14 +144,12 @@ func (r CreateTemplateOrEditIntegrationInstanceResponse) GetTemplateUrl() (strin
 	return templateUrl, nil
 }
 
-// ----------------------------------------------------------------------------
-// Get Integration Instance Details
-// ----------------------------------------------------------------------------
-
+// GetIntegrationInstanceRequest is the request for getting integration instance details.
 type GetIntegrationInstanceRequest struct {
 	InstanceID string `json:"id"`
 }
 
+// GetIntegrationInstanceResponse is the response for getting integration instance details.
 type GetIntegrationInstanceResponse struct {
 	ID                      string               `json:"id"`
 	Collector               string               `json:"collector"`
@@ -197,18 +194,17 @@ func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 	return marshalledResponse, nil
 }
 
-// ----------------------------------------------------------------------------
-// List Integration Instances
-// ----------------------------------------------------------------------------
-
+// ListIntegrationInstancesRequest is the request for listing integration instances.
 type ListIntegrationInstancesRequest struct {
-	FilterData types.FilterData `json:"filter_data"`
+	FilterData FilterData `json:"filter_data"`
 }
 
+// ListIntegrationInstancesResponseWrapper is the response wrapper for listing integration instances.
 type ListIntegrationInstancesResponseWrapper struct {
 	Data []ListIntegrationInstancesResponse `json:"DATA"`
 }
 
+// ListIntegrationInstancesResponse is the response for listing integration instances.
 type ListIntegrationInstancesResponse struct {
 	InstanceName            string               `json:"instance_name"`
 	CloudProvider           string               `json:"cloud_provider"`
@@ -231,12 +227,6 @@ type ListIntegrationInstancesResponse struct {
 }
 
 func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstance, error) {
-	// TODO: make sure Paging.To is set to 1000 (the max accepted value)
-	// if not configured.
-
-	// TODO: Where is outpost_id populated? is there a static list of
-	// outpost IDs for managed integrations?
-
 	marshalledResponse := []IntegrationInstance{}
 
 	for _, data := range r.Data {
@@ -250,7 +240,6 @@ func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstanc
 			customResourcesTags = []Tag{}
 		}
 
-		// TODO: verify this behavior
 		var collectionConfiguration CollectionConfiguration
 		if data.CollectionConfiguration != "" {
 			err := json.Unmarshal([]byte(data.CollectionConfiguration), &collectionConfiguration)
@@ -289,10 +278,7 @@ func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstanc
 	return marshalledResponse, nil
 }
 
-// ----------------------------------------------------------------------------
-// Edit Integration Instance
-// ----------------------------------------------------------------------------
-
+// EditIntegrationInstanceRequest is the request for editing an integration instance.
 type EditIntegrationInstanceRequest struct {
 	InstanceID              string                  `json:"id"`
 	ScanEnvID               string                  `json:"scan_env_id"`
@@ -304,21 +290,13 @@ type EditIntegrationInstanceRequest struct {
 	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
 }
 
-// ----------------------------------------------------------------------------
-// Enable or Disable Instances
-// ----------------------------------------------------------------------------
-
+// EnableOrDisableIntegrationInstancesRequest is the request for enabling or disabling integration instances.
 type EnableOrDisableIntegrationInstancesRequest struct {
 	IDs    []string `json:"ids"`
 	Enable bool     `json:"enable"`
 }
 
-// ----------------------------------------------------------------------------
-// Delete Integration Instances
-// ----------------------------------------------------------------------------
-
+// DeleteIntegrationInstanceRequest is the request for deleting integration instances.
 type DeleteIntegrationInstanceRequest struct {
 	IDs []string `json:"ids"`
 }
-
-

@@ -8,8 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
-	search "github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -37,8 +36,8 @@ func TestClient_CreateAssetGroup(t *testing.T) {
 			GroupName: "New Group",
 			GroupType: "Dynamic",
 			GroupDescription: "Description for New Group",
-			MembershipPredicate: search.CriteriaFilter{
-				And: []search.Criteria{
+			MembershipPredicate: types.CriteriaFilter{
+				And: []types.Criteria{
 					{
 						SearchField: "xdm.asset.name",
 						SearchType: "NCONTAINS",

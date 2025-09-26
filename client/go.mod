@@ -1,18 +1,16 @@
-module github.com/PaloAltoNetworks/cortex-cloud-go/cwp
+module github.com/PaloAltoNetworks/cortex-cloud-go/client
 
 go 1.25.0
 
 require (
-	dario.cat/mergo v1.0.2
 	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.4
-	github.com/PaloAltoNetworks/cortex-cloud-go/client v0.0.4
+	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.4
+	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.4
 	github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.4
 	github.com/stretchr/testify v1.11.1
 )
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.4 // indirect
-	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
@@ -28,9 +26,9 @@ replace github.com/PaloAltoNetworks/cortex-cloud-go/api => ../api
 
 replace github.com/PaloAltoNetworks/cortex-cloud-go/appsec => ../appsec
 
-replace github.com/PaloAltoNetworks/cortex-cloud-go/client => ../client
-
 replace github.com/PaloAltoNetworks/cortex-cloud-go/cloudonboarding => ../cloudonboarding
+
+replace github.com/PaloAltoNetworks/cortex-cloud-go/cwp => ../cwp
 
 replace github.com/PaloAltoNetworks/cortex-cloud-go/enums => ../enums
 

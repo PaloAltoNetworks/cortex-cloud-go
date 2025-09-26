@@ -14,8 +14,7 @@ package cloudonboarding
 //	"time"
 //
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
-//	cortexTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types"
-//	"github.com/PaloAltoNetworks/cortex-cloud-go/cloudonboarding/types"
+//	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 //	"github.com/stretchr/testify/assert"
 //)
@@ -125,13 +124,13 @@ package cloudonboarding
 //	// Execute get request
 //	instanceID := createResp.Automated.TrackingGuid
 //	getReq := types.ListIntegrationInstancesRequest{
-//		FilterData: cortexTypes.FilterData{
-//			Paging: cortexTypes.PagingFilter{
+//		FilterData: types.FilterData{
+//			Paging: types.PagingFilter{
 //				From: 0,
 //				To:   1000,
 //			},
-//			Filter: cortexTypes.CriteriaFilter{
-//				And: []cortexTypes.Criteria{
+//			Filter: types.CriteriaFilter{
+//				And: []types.Criteria{
 //					{
 //						SearchField: "ID",
 //						SearchType:  "WILDCARD",

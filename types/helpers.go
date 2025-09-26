@@ -1,12 +1,9 @@
-// Copyright (c) Palo Alto Networks, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
-package app
+package types
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
+	"net/url"
 )
 
 // Pointer takes any type and returns a pointer for that type.
@@ -69,17 +66,16 @@ func ConvertInterfaceToString(value any) (string, error) {
 	}
 }
 
-func GetSliceLengthFromInterface(value any) (int, error) {
-	v := reflect.ValueOf(value)
-
-	if v.Kind() == reflect.Slice {
-		return v.Len(), nil
-	} else {
-		return -1, fmt.Errorf("attempted to convert non-slice value to slice -- actual type: %T", value)
-	}
+func StringToQuery(key string, value string) url.Values {
+	result := url.Values{}
+	result.Add(key, value)
+	return result
 }
 
-type DoOptions struct {
-	RequestWrapperKey  string
-	ResponseWrapperKey string
+func StringSliceToQuery(key string, values []string) url.Values {
+	result := url.Values{}
+	for _, value := range values {
+		result.Add(key, value)
+	}
+	return result
 }

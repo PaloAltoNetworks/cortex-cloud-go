@@ -13,7 +13,6 @@ import (
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	//"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
-	//"github.com/PaloAltoNetworks/cortex-cloud-go/cwp/types"
 	"github.com/stretchr/testify/assert"
 )
 

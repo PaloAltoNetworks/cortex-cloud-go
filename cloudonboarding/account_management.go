@@ -7,7 +7,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
@@ -37,7 +37,7 @@ type ListAccountsByInstanceResponseData struct {
 
 func (c *Client) ListAccountsByInstance(ctx context.Context, input GetCloudAccountsRequestData) (ListAccountsByInstanceResponseReply, error) {
 	var ans ListAccountsByInstanceResponseReply
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAccountsByInstanceEndpoint, nil, nil, input, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAccountsByInstanceEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -71,7 +71,7 @@ func (c *Client) enableDisableAccountsInInstance(ctx context.Context, instanceId
 	}
 
 	var ans EnableDisableAccountsInInstancesResponseReply
-	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableDisableAccountsInInstancesEndpoint, nil, nil, req, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableDisableAccountsInInstancesEndpoint, nil, nil, req, &ans, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})

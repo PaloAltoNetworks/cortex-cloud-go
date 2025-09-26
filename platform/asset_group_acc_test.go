@@ -14,8 +14,7 @@ import (
 	"time"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
-	search "github.com/PaloAltoNetworks/cortex-cloud-go/types"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 	//"github.com/stretchr/testify/require"
 )
@@ -56,8 +55,8 @@ func setupAcceptanceTest(t *testing.T) *Client {
 //	andCriteria1Field := "xdm.asset.name"
 //	andCriteria1Type := "NCONTAINS"
 //	andCriteria1Value := "test"
-//	membershipPredicate := search.CriteriaFilter{
-//		And: []search.Criteria{
+//	membershipPredicate := types.CriteriaFilter{
+//		And: []types.Criteria{
 //			{
 //				SearchField: andCriteria1Field,
 //				SearchType: andCriteria1Type,
@@ -100,8 +99,8 @@ func setupAcceptanceTest(t *testing.T) *Client {
 //
 //	// Read
 //	listReq := types.ListAssetGroupsRequest{
-//		Filters: search.CriteriaFilter{
-//			And: []search.Criteria{
+//		Filters: types.CriteriaFilter{
+//			And: []types.Criteria{
 //				{
 //					SearchField: "XDM.ASSET_GROUP.NAME",
 //					SearchType: "CONTAINS",
@@ -148,7 +147,7 @@ func setupAcceptanceTest(t *testing.T) *Client {
 //	andCriteria2Field := "xdm.asset.name"
 //	andCriteria2Type := "NCONTAINS"
 //	andCriteria2Value := "test"
-//	membershipPredicate.And = append(membershipPredicate.And, search.Criteria{
+//	membershipPredicate.And = append(membershipPredicate.And, types.Criteria{
 //		SearchField: andCriteria2Field,
 //		SearchType: andCriteria2Type,
 //		SearchValue: andCriteria2Value,
@@ -208,8 +207,8 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria1Field := "xdm.asset.name"
 	andCriteria1Type := "NCONTAINS"
 	andCriteria1Value := "test"
-	membershipPredicate := search.CriteriaFilter{
-		And: []search.Criteria{
+	membershipPredicate := types.CriteriaFilter{
+		And: []types.Criteria{
 			{
 				SearchField: andCriteria1Field,
 				SearchType: andCriteria1Type,
@@ -252,8 +251,8 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 
 	// Read
 	listReq := types.ListAssetGroupsRequest{
-		Filters: search.CriteriaFilter{
-			And: []search.Criteria{
+		Filters: types.CriteriaFilter{
+			And: []types.Criteria{
 				{
 					SearchField: "XDM.ASSET_GROUP.NAME",
 					SearchType: "CONTAINS",
@@ -300,7 +299,7 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria2Field := "xdm.asset.name"
 	andCriteria2Type := "NCONTAINS"
 	andCriteria2Value := "test"
-	membershipPredicate.And = append(membershipPredicate.And, search.Criteria{
+	membershipPredicate.And = append(membershipPredicate.And, types.Criteria{
 		SearchField: andCriteria2Field,
 		SearchType: andCriteria2Type,
 		SearchValue: andCriteria2Value,

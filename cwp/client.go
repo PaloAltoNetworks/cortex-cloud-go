@@ -5,7 +5,7 @@ package cwp
 
 import (
 	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 )
 
 const (
@@ -19,11 +19,11 @@ const (
 
 // Client is the client for the namespace.
 type Client struct {
-	internalClient *app.Client
+	internalClient *client.Client
 }
 
 // NewClient returns a new client for this namespace.
 func NewClient(config *api.Config) (*Client, error) {
-	internalClient, err := app.NewClient(config)
+	internalClient, err := client.NewClient(config)
 	return &Client{internalClient: internalClient}, err
 }

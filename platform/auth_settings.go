@@ -7,8 +7,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
 // ListIDPMetadata returns the metadata for all IDPs.
@@ -16,7 +16,7 @@ import (
 // This endpoint requires Instance Administrator permissions.
 func (c *Client) ListIDPMetadata(ctx context.Context) (types.ListIDPMetadataResponse, error) {
 	var ans types.ListIDPMetadataResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIDPMetadataEndpoint, nil, nil, types.ListIDPMetadataRequest{}, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIDPMetadataEndpoint, nil, nil, types.ListIDPMetadataRequest{}, &ans, &client.DoOptions{
 		RequestWrapperKey: "request_data",
 	})
 	return ans, err
@@ -28,7 +28,7 @@ func (c *Client) ListIDPMetadata(ctx context.Context) (types.ListIDPMetadataResp
 // This endpoint requires Instance Administrator permissions.
 func (c *Client) ListAuthSettings(ctx context.Context) ([]types.AuthSettings, error) {
 	var ans []types.AuthSettings
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAuthSettingsEndpoint, nil, nil, types.ListAuthSettingsRequest{}, &ans, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAuthSettingsEndpoint, nil, nil, types.ListAuthSettingsRequest{}, &ans, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -45,7 +45,7 @@ func (c *Client) ListAuthSettings(ctx context.Context) ([]types.AuthSettings, er
 // This endpoint requires Instance Administrator permissions.
 func (c *Client) CreateAuthSettings(ctx context.Context, req types.CreateAuthSettingsRequest) (bool, error) {
 	var resp bool
-	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateAuthSettingsEndpoint, nil, nil, req, &resp, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateAuthSettingsEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -61,7 +61,7 @@ func (c *Client) CreateAuthSettings(ctx context.Context, req types.CreateAuthSet
 // This endpoint requires Instance Administrator permissions.
 func (c *Client) UpdateAuthSettings(ctx context.Context, req types.UpdateAuthSettingsRequest) (bool, error) {
 	var resp bool
-	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateAuthSettingsEndpoint, nil, nil, req, &resp, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateAuthSettingsEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
@@ -74,7 +74,7 @@ func (c *Client) UpdateAuthSettings(ctx context.Context, req types.UpdateAuthSet
 // This endpoint requires Instance Administrator permissions.
 func (c *Client) DeleteAuthSettings(ctx context.Context, domain string) (bool, error) {
 	var resp bool
-	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteAuthSettingsEndpoint, nil, nil, types.DeleteAuthSettingsRequest{ Domain: domain, }, &resp, &app.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteAuthSettingsEndpoint, nil, nil, types.DeleteAuthSettingsRequest{ Domain: domain, }, &resp, &client.DoOptions{
 		RequestWrapperKey:  "request_data",
 		ResponseWrapperKey: "reply",
 	})
