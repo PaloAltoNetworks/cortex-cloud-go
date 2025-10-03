@@ -8,7 +8,9 @@ import (
 )
 
 var (
-	GitCommit = "NOCOMMIT"
-	GoVersion = runtime.Version()
-	BuildDate = ""
+	GitCommit           = "NOCOMMIT"
+	CortexServerVersion = ""
+	CortexPAPIVersion   = ""
+	GoVersion           = runtime.Version()
+	BuildDate           = ""
 )

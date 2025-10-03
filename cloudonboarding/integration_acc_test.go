@@ -13,7 +13,6 @@ package cloudonboarding
 //	"testing"
 //	"time"
 //
-//	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 //	acctest "github.com/PaloAltoNetworks/cortex-cloud-go/internal/test/acceptance"
 //	//"github.com/aws/aws-sdk-go-v2/aws"
@@ -449,7 +448,6 @@ package cloudonboarding
 //	assert.NotNil(t, resp)
 //}
 
-
 //func DeployCloudFormationStack(t *testing.T, ctx context.Context, region string, timestamp string, templateURL string) {
 //	// Load default AWS configuration from environment
 //	//cfnConfig, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
@@ -461,13 +459,13 @@ package cloudonboarding
 //	// Create CloudFormation client
 //	cfnClient := cloudformation.NewFromConfig(cfnConfig)
 //
-//	// Deploy CloudFormation stack	
+//	// Deploy CloudFormation stack
 //	stackName := fmt.Sprintf("go-sdk-acctest-%s", timestamp)
 //	createStackInput := &cloudformation.CreateStackInput{
 //		StackName: aws.String(stackName),
 //		TemplateURL: aws.String(templateURL),
 //		// Specify OrganizationalUnitId for Organization deployment
-//		//Parameters: 
+//		//Parameters:
 //		Capabilities: []types.Capability{
 //			types.CapabilityCapabilityIam,
 //			types.CapabilityCapabilityNamedIam,
@@ -475,12 +473,12 @@ package cloudonboarding
 //	}
 //
 //	startTime := time.Now()
-//	t.Logf("Creating CloudFormation stack: %s", stackName)	
-//	_, err = cfnClient.CreateStack(ctx, createStackInput)	
+//	t.Logf("Creating CloudFormation stack: %s", stackName)
+//	_, err = cfnClient.CreateStack(ctx, createStackInput)
 //	if err != nil {
 //		t.Fatalf("failed to create CloudFormation stack: %v", err)
 //	}
-//	
+//
 //	// Register cleanup func
 //	t.Cleanup(func() {
 //		t.Logf("Tearing down CloudFormation stack: %s", stackName)
@@ -506,7 +504,7 @@ package cloudonboarding
 //	describeInput := &cloudformation.DescribeStacksInput{StackName: aws.String(stackName)}
 //
 //	// Wait for up to 10 minutes for create operation to finish
-//	err = waiter.Wait(ctx, describeInput, 10*time.Minute) 
+//	err = waiter.Wait(ctx, describeInput, 10*time.Minute)
 //	if err != nil {
 //		t.Fatalf("timed out or failed waiting for stack creation: %v", err)
 //	}

@@ -11,7 +11,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +19,7 @@ import (
 // setupTest is a helper from appsec/client_test.go
 func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
 	server := httptest.NewServer(handler)
-	config := &api.Config{
+	config := &client.Config{
 		ApiUrl:    server.URL,
 		ApiKey:    "test-key",
 		ApiKeyId:  123,

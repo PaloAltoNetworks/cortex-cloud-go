@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	"strconv"
 	"net/url"
+	"strconv"
 )
 
 // Pointer takes any type and returns a pointer for that type.

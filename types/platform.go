@@ -17,7 +17,7 @@ type AssetGroup struct {
 	LastUpdateTime      int64              `json:"XDM.ASSET_GROUP.LAST_UPDATE_TIME"`
 	ModifiedBy          string             `json:"XDM.ASSET_GROUP.MODIFIED_BY"`
 	ModifiedByPretty    string             `json:"XDM.ASSET_GROUP.MODIFIED_BY_PRETTY"`
-	MembershipPredicate CriteriaFilter     `json:"XDM.ASSET_GROUP.MEMBERSHIP_PREDICATE"`
+	MembershipPredicate Filter             `json:"XDM.ASSET_GROUP.MEMBERSHIP_PREDICATE"`
 	IsUsedBySBAC        bool               `json:"IS_USED_BY_SBAC"`
 }
 
@@ -30,49 +30,21 @@ type AssetGroupFilter struct {
 	DMLType    any    `json:"dml_type"`
 }
 
-type CreateOrUpdateAssetGroupRequestWrapper struct {
-	AssetGroup CreateOrUpdateAssetGroupRequest `json:"asset_group"`
-}
-
 // CreateOrUpdateAssetGroupRequest is the request for creating or updating an
 // asset group.
 type CreateOrUpdateAssetGroupRequest struct {
-	GroupName           string         `json:"group_name"`
-	GroupType           string         `json:"group_type"`
-	GroupDescription    string         `json:"group_description,omitempty"`
-	MembershipPredicate CriteriaFilter `json:"membership_predicate"`
-}
-
-// CreateAssetGroupResponseData is the response for creating an asset group.
-type CreateAssetGroupResponseData struct {
-	Success      bool `json:"success"`
-	AssetGroupID int  `json:"asset_group_id"`
-}
-
-type CreateAssetGroupResponseWrapper struct {
-	Data CreateAssetGroupResponseData `json:"data"`
-}
-
-// GenericAssetGroupsResponseData is a generic response for asset group operations.
-type GenericAssetGroupsResponseData struct {
-	Success bool `json:"success"`
-}
-
-type GenericAssetGroupsResponseWrapper struct {
-	Data GenericAssetGroupsResponseData `json:"data"`
+	GroupName           string `json:"group_name"`
+	GroupType           string `json:"group_type"`
+	GroupDescription    string `json:"group_description,omitempty"`
+	MembershipPredicate Filter `json:"membership_predicate"`
 }
 
 // ListAssetGroupsRequest is the request for listing asset groups.
 type ListAssetGroupsRequest struct {
-	Filters    CriteriaFilter `json:"filters"`
-	Sort       []SortFilter   `json:"sort,omitempty"`
-	SearchFrom int            `json:"search_from,omitempty"`
-	SearchTo   int            `json:"search_to,omitempty"`
-}
-
-// ListAssetGroupsResponse is the response for listing asset groups.
-type ListAssetGroupsResponse struct {
-	Data []AssetGroup `json:"data"`
+	Filters    Filter       `json:"filters"`
+	Sort       []SortFilter `json:"sort,omitempty"`
+	SearchFrom int          `json:"search_from,omitempty"`
+	SearchTo   int          `json:"search_to,omitempty"`
 }
 
 // ----------------------------------------------------------------------------
@@ -105,7 +77,7 @@ type Mappings struct {
 }
 
 type AdvancedSettings struct {
-	AuthnContextEnabled       bool `json:"authn_context_enabled"`
+	AuthnContextEnabled       bool   `json:"authn_context_enabled"`
 	IDPSingleLogoutURL        string `json:"idp_single_logout_url"`
 	RelayState                string `json:"relay_state"`
 	ServiceProviderPrivateKey string `json:"service_provider_private_key"`
@@ -165,14 +137,14 @@ type DeleteAuthSettingsRequest struct {
 // ----------------------------------------------------------------------------
 
 type User struct {
-	UserEmail     string   `json:"user_email"`
-	UserFirstName string   `json:"user_first_name"`
-	UserLastName  string   `json:"user_last_name"`
-	RoleName      string   `json:"role_name"`
-	LastLoggedIn  int      `json:"last_logged_in"`
-	UserType      string   `json:"user_type"`
-	Groups        []string `json:"groups"`
-	Scope         Scope    `json:"scope"`
+	Email        string   `json:"user_email"`
+	FirstName    string   `json:"user_first_name"`
+	LastName     string   `json:"user_last_name"`
+	RoleName     string   `json:"role_name"`
+	LastLoggedIn int      `json:"last_logged_in"`
+	UserType     string   `json:"user_type"`
+	Groups       []string `json:"groups"`
+	Scope        Scope    `json:"scope"`
 }
 
 type Scope struct {
@@ -209,27 +181,21 @@ type Reason struct {
 	Points      int    `json:"points"`
 }
 
+type Role struct {
+	PrettyName  string   `json:"pretty_name" tfsdk:"pretty_name"`
+	Permissions []string `json:"permissions" tfsdk:"permissions"`
+	InsertTime  int      `json:"insert_time" tfsdk:"insert_time"`
+	UpdateTime  int      `json:"update_time" tfsdk:"update_time"`
+	CreatedBy   string   `json:"created_by" tfsdk:"created_by"`
+	Description string   `json:"description" tfsdk:"description"`
+	Tags        string   `json:"tags" tfsdk:"tags"`
+	Groups      []string `json:"groups" tfsdk:"groups"`
+	Users       []string `json:"users" tfsdk:"users"`
+}
+
 // GetUserRequest is the request for getting a user.
 type GetUserRequest struct {
 	Email string `json:"email"`
-}
-
-// ListRolesRequest is the request for listing roles.
-type ListRolesRequest struct {
-	RoleNames []string `json:"role_names" validate:"required,min=1"`
-}
-
-// ListRolesResponse is the response for listing roles.
-type ListRolesResponse struct {
-	PrettyName  string   `json:"pretty_name"`
-	Permissions []string `json:"permissions"`
-	InsertTime  int      `json:"insert_time"`
-	UpdateTime  int      `json:"update_time"`
-	CreatedBy   string   `json:"created_by"`
-	Description string   `json:"description"`
-	Tags        string   `json:"tags"`
-	Groups      []string `json:"groups"`
-	Users       []string `json:"users"`
 }
 
 // SetRoleRequest is the request for setting a role.
@@ -278,4 +244,51 @@ type ListRiskyHostsResponse struct {
 	NormRiskScore int      `json:"norm_risk_score"`
 	RiskLevel     string   `json:"risk_level"`
 	Reasons       []Reason `json:"reasons"`
+}
+
+// HealthCheckResponse defines the response for the health check endpoint.
+type HealthCheckResponse struct {
+	Service   string `json:"service"`
+	Status    string `json:"status"`
+	Reason    string `json:"reason"`
+	Timestamp int64  `json:"timestamp"`
+}
+
+// GetTenantInfoRequest defines the request for the get_tenant_info endpoint.
+type GetTenantInfoRequest struct {
+	Tenants []string `json:"tenants,omitempty"`
+}
+
+// TenantInfoLicense defines a license associated with a tenant.
+type TenantInfoLicense struct {
+	LicenseID      string `json:"license_id"`
+	LicenseType    string `json:"license_type"`
+	LicenseName    string `json:"license_name"`
+	ExpirationDate int64  `json:"expiration_date"`
+	IsExpired      bool   `json:"is_expired"`
+}
+
+// TenantInfo defines information about a tenant.
+type TenantInfo struct {
+	TenantID       string              `json:"tenant_id"`
+	TenantName     string              `json:"tenant_name"`
+	DisplayName    string              `json:"display_name"`
+	CustomerName   string              `json:"customer_name"`
+	ParentTenantID string              `json:"parent_tenant_id"`
+	TenantType     string              `json:"tenant_type"`
+	IsActive       bool                `json:"is_active"`
+	Licenses       []TenantInfoLicense `json:"licenses"`
+}
+
+// GetUserGroupRequest defines the request for the get_user_group endpoint.
+type GetUserGroupRequest struct {
+	GroupNames []string `json:"group_names"`
+}
+
+// UserGroup defines a user group.
+type UserGroup struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Users       []string `json:"users"`
+	Role        string   `json:"role"`
 }

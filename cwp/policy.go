@@ -4,19 +4,22 @@
 package cwp
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"dario.cat/mergo"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
 // Add Policy
 func (c *Client) CreatePolicy(ctx context.Context, input types.CreatePolicyRequest) (types.CreatePolicyResponse, error) {
 	var res types.CreatePolicyResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, CreatePolicyEndpoint, nil, nil, input, &res, nil)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, CreatePolicyEndpoint, nil, nil, input, &res, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+	})
 	return res, err
 }
 
@@ -29,7 +32,7 @@ func (c *Client) GetPolicyByID(ctx context.Context, policyId string) (types.Poli
 }
 
 // List Policies
-//func (c *Client) ListPolicies(ctx context.Context, input types.ListPoliciesRequest) (types.ListPoliciesResponse, error) {
+// func (c *Client) ListPolicies(ctx context.Context, input types.ListPoliciesRequest) (types.ListPoliciesResponse, error) {
 func (c *Client) ListPolicies(ctx context.Context, policyTypes []string) ([]types.Policy, error) {
 	//var res types.ListPoliciesResponse
 	queryParams := types.StringSliceToQuery("policy_types", policyTypes)
@@ -39,7 +42,7 @@ func (c *Client) ListPolicies(ctx context.Context, policyTypes []string) ([]type
 }
 
 // Delete Policy
-//func (c *Client) DeletePolicy(ctx context.Context, input types.DeletePolicyRequest) error {
+// func (c *Client) DeletePolicy(ctx context.Context, input types.DeletePolicyRequest) error {
 func (c *Client) DeletePolicy(ctx context.Context, policyID int, closeIssues bool) error {
 	//id := strconv.Itoa(policyID)
 	//req := types.DeletePolicyRequest{
@@ -48,7 +51,7 @@ func (c *Client) DeletePolicy(ctx context.Context, policyID int, closeIssues boo
 	//}
 	//deleteQueryValues := req.ToQueryValues()
 	deleteQueryValues := types.StringToQuery("close_issues", strconv.FormatBool(closeIssues))
-	_, err := c.internalClient.Do(ctx, http.MethodDelete, DeletePolicyEndpoint, &[]string{ strconv.Itoa(policyID) }, &deleteQueryValues, nil, nil, nil)
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, DeletePolicyEndpoint, &[]string{strconv.Itoa(policyID)}, &deleteQueryValues, nil, nil, nil)
 	return err
 }
 
@@ -69,7 +72,9 @@ func (c *Client) UpdatePolicy(ctx context.Context, input types.UpdatePolicyReque
 	}
 
 	//_, err = c.internalClient.Do(ctx, http.MethodPut, EditPolicyEndpoint, &[]string{input.Id}, nil, updatedPolicy, nil)
-	_, err = c.internalClient.Do(ctx, http.MethodPut, EditPolicyEndpoint, &[]string{input.Id}, nil, policy, nil, nil)
+	_, err = c.internalClient.Do(ctx, http.MethodPut, EditPolicyEndpoint, &[]string{input.Id}, nil, policy, nil, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+	})
 
 	return err
 }

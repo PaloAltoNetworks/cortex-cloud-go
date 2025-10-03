@@ -14,7 +14,6 @@ package appsec
 //	"runtime"
 //	"testing"
 //
-//	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 //	"github.com/stretchr/testify/assert"
 //)
 //

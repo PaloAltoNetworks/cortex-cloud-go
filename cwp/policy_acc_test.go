@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 	//"github.com/stretchr/testify/require"
@@ -28,8 +28,8 @@ func setupAcceptanceTest(t *testing.T) *Client {
 	if err != nil {
 		t.Fatalf("failed to convert API key ID \"%s\" to int: %s", apiKeyIDStr, err.Error())
 	}
-	
-	config := &api.Config{
+
+	config := &client.Config{
 		ApiUrl:   apiUrl,
 		ApiKey:   apiKey,
 		ApiKeyId: apiKeyID,
@@ -75,7 +75,7 @@ func TestAccMisconfigurationPolicyLifecycle(t *testing.T) {
 		PolicyAction: "ISSUE",
 		// Of the following two fields, which is required (or are both required)?
 		//AssetGroups: []string{ "agent_compliance" },
-		AssetGroupIDs: []int{ 19 },
+		AssetGroupIDs: []int{19},
 		//AssetScope: []byte{'e', 'y', 'J', 'B', 'T', 'k', 'Q', 'i', 'O', 'l', 't', '7', 'I', 'l', 'N', 'F', 'Q', 'V', 'J', 'D', 'S', 'F', '9', 'G', 'S', 'U', 'V', 'M', 'R', 'C', 'I', '6', 'I', 'n', 'h', 'k', 'b', 'S', '5', 'h', 'c', '3', 'N', 'l', 'd', 'C', '5', 'u', 'Y', 'W', '1', 'l', 'I', 'i', 'w', 'i', 'U', '0', 'V', 'B', 'U', 'k', 'N', 'I', 'X', '1', 'R', 'Z', 'U', 'E', 'U', 'i', 'O', 'i', 'J', 'D', 'T', '0', '5', 'U', 'Q', 'U', 'l', 'O', 'U', 'y', 'I', 's', 'I', 'l', 'N', 'F', 'Q', 'V', 'J', 'D', 'S', 'F', '9', 'W', 'Q', 'U', 'x', 'V', 'R', 'S', 'I', '6', 'I', 'm', 'N', 'v', 'b', 'X', 'B', 's', 'a', 'W', 'F', 'u', 'Y', '2', 'U', 't', 'Y', 'X', 'V', '0', 'b', '2', '1', 'h', 'd', 'G', 'l', 'v', 'b', 'i', '1', 'n', 'Y', '3', 'A', 'i', 'f', 'V', '1', '9', },
 		// Why are the following values byte arrays instead of just strings? Is it just to cut down on payload size?
 		//Condition: []byte{},
@@ -86,14 +86,14 @@ func TestAccMisconfigurationPolicyLifecycle(t *testing.T) {
 		//EvaluationModes: []string{},
 		EvaluationStage: "RUNTIME",
 		//ModifiedAt: currentTime.String(),
-		Name: name,
+		Name:                name,
 		RemediationGuidance: "Test guidance",
 		//Revision: 0,
 		RulesIDs: []string{
 			"00000000-0000-0000-0000-000000300419",
 		},
 		PolicySeverity: "CRITICAL",
-		Type: "COMPLIANCE",
+		Type:           "COMPLIANCE",
 	}
 
 	createResp, err := client.CreatePolicy(ctx, createReq)
@@ -103,9 +103,9 @@ func TestAccMisconfigurationPolicyLifecycle(t *testing.T) {
 
 	// Check
 	assert.NotNil(t, createResp)
-//	assert.Equal(t, true, createResp.Success)
-//	assert.Positive(t, createResp.AssetGroupID)
-//	groupID := createResp.AssetGroupID
+	//	assert.Equal(t, true, createResp.Success)
+	//	assert.Positive(t, createResp.AssetGroupID)
+	//	groupID := createResp.AssetGroupID
 
 	//// Defer Delete check
 	//testDeleteAssetGroup := func(t *testing.T, ctx context.Context, groupID int) {
@@ -133,7 +133,7 @@ func TestAccMisconfigurationPolicyLifecycle(t *testing.T) {
 	//		},
 	//	},
 	//}
-	//listResp, err := client.ListAssetGroups(ctx, listReq)	
+	//listResp, err := client.ListAssetGroups(ctx, listReq)
 	//if err != nil {
 	//	t.Fatalf("error fetching asset group: %s", err.Error())
 	//}
@@ -192,12 +192,12 @@ func TestAccMisconfigurationPolicyLifecycle(t *testing.T) {
 	//// Check
 	//assert.NotNil(t, updateResp)
 	//assert.Equal(t, true, updateResp.Success)
-	//listResp, err = client.ListAssetGroups(ctx, listReq)	
+	//listResp, err = client.ListAssetGroups(ctx, listReq)
 	//if err != nil {
 	//	t.Fatalf("error fetching updated asset group: %s", err.Error())
 	//}
 
-	//expectedUpdatedFilter := append(expectedFilter, 
+	//expectedUpdatedFilter := append(expectedFilter,
 	//	types.AssetGroupFilter{
 	//		PrettyName: "AND",
 	//		RenderType: "connector",

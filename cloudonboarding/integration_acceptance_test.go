@@ -13,7 +13,6 @@ package cloudonboarding
 //	"testing"
 //	"time"
 //
-//	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 //	"github.com/stretchr/testify/assert"

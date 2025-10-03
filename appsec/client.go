@@ -4,7 +4,6 @@
 package appsec
 
 import (
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 )
 
@@ -21,8 +20,8 @@ type Client struct {
 }
 
 // NewClient returns a new client for this namespace.
-func NewClient(config *api.Config) (*Client, error) {
-	internalClient, err := client.NewClient(config)
+func NewClient(config *client.Config) (*Client, error) {
+	internalClient, err := client.NewClientFromConfig(config)
 	return &Client{internalClient: internalClient}, err
 }
 
