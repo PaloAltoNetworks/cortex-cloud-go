@@ -34,7 +34,7 @@ type AdvancedSettings struct {
 	ServiceProviderPublicCert string `json:"service_provider_public_cert"`
 }
 
-// --------------------------- 
+// ---------------------------
 // Request/Response structs
 // ---------------------------
 
@@ -52,7 +52,7 @@ type ListIDPMetadataResponse struct {
 // ListAuthSettings
 
 // TODO: This endpoint currently doesn't have any parameters defined. Populate
-// or remove this before release, depending on whether or not the endpoint 
+// or remove this before release, depending on whether or not the endpoint
 // has been updated before then.
 type ListAuthSettingsRequest struct{}
 

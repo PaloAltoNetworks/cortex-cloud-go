@@ -1,9 +1,9 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
-	"encoding/json"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
@@ -320,5 +320,3 @@ type EnableOrDisableIntegrationInstancesRequest struct {
 type DeleteIntegrationInstanceRequest struct {
 	IDs []string `json:"ids"`
 }
-
-

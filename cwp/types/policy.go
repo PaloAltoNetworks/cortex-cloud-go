@@ -37,6 +37,7 @@ type Policy struct {
 	PolicySeverity      enums.PolicySeverity   `json:"policy_severity" tfsdk:"policy_severity"`
 	RemediationGuidance string                 `json:"remediation_guidance" tfsdk:"remediation_guidance"`
 }
+
 // ---------------------------
 // Request/Response structs
 // ---------------------------
@@ -50,28 +51,28 @@ type CreatePolicyRequest struct {
 	//Revision            int                    `json:"revision" tfsdk:"revision"`
 	//CreatedAt           string                 `json:"created_at" tfsdk:"created_at"`
 	//ModifiedAt          string                 `json:"modified_at" tfsdk:"modified_at"`
-	Type                enums.PolicyType       `json:"type" tfsdk:"type"`
+	Type enums.PolicyType `json:"type" tfsdk:"type"`
 	//CreatedBy           string                 `json:"created_by" tfsdk:"created_by"`
 	//Disabled            bool                   `json:"disabled" tfsdk:"disabled"`
-	Name                string                 `json:"name" tfsdk:"name"`
-	Description         string                 `json:"description" tfsdk:"description"`
+	Name        string `json:"name" tfsdk:"name"`
+	Description string `json:"description" tfsdk:"description"`
 	//EvaluationModes     []enums.EvaluationMode `json:"evaluation_modes" tfsdk:"evaluation_modes"`
 	//EvaluationModes     []string `json:"evaluation_modes" tfsdk:"evaluation_modes"`
-	EvaluationStage     string                 `json:"evaluationStage" tfsdk:"evaluation_stage"`
-	RulesIDs            []string               `json:"rulesIds" tfsdk:"rules_ids"`
+	EvaluationStage string   `json:"evaluationStage" tfsdk:"evaluation_stage"`
+	RulesIDs        []string `json:"rulesIds" tfsdk:"rules_ids"`
 	//Condition           string                 `json:"condition" tfsdk:"condition"`
 	//Condition           []byte `json:"condition" tfsdk:"condition"`
 	//Exception           string                 `json:"exception" tfsdk:"exception"`
 	//Exception           []byte `json:"exception" tfsdk:"exception"`
 	//AssetScope          string                 `json:"asset_scope" tfsdk:"asset_scope"`
 	//AssetScope          []byte `json:"asset_scope" tfsdk:"asset_scope"`
-	AssetGroupIDs       []int                  `json:"assetGroupsIDs" tfsdk:"asset_group_ids"`
+	AssetGroupIDs []int `json:"assetGroupsIDs" tfsdk:"asset_group_ids"`
 	//AssetGroups         []string               `json:"asset_groups" tfsdk:"asset_groups"`
 	//PolicyAction        enums.PolicyAction     `json:"policy_action" tfsdk:"policy_action"`
-	PolicyAction        string `json:"action" tfsdk:"policy_action"`
+	PolicyAction string `json:"action" tfsdk:"policy_action"`
 	//PolicySeverity      enums.PolicySeverity   `json:"policy_severity" tfsdk:"policy_severity"`
 	PolicySeverity      string `json:"severity" tfsdk:"policy_severity"`
-	RemediationGuidance string                 `json:"remediationGuidance" tfsdk:"remediation_guidance"`
+	RemediationGuidance string `json:"remediationGuidance" tfsdk:"remediation_guidance"`
 }
 
 type CreatePolicyResponse struct {

@@ -1,6 +1,5 @@
 package types
 
-
 type User struct {
 	UserEmail     string   `json:"user_email"`
 	UserFirstName string   `json:"user_first_name"`
