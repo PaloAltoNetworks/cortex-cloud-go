@@ -1,6 +1,7 @@
 # Misc
 .DS_Store
 test/
+.meta/
 
 # Binaries for programs and plugins
 *.exe
