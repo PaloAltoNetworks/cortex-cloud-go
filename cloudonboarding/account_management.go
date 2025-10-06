@@ -7,73 +7,62 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
-// ----------------------------------------------------------------------------
-// Get Accounts
-// ----------------------------------------------------------------------------
-
-type GetCloudAccountsRequestData struct {
-	InstanceId string     `json:"instance_id"`
-	FilterData FilterData `json:"filter_data"`
+type listCloudAccountsByInstanceRequest struct {
+	InstanceIDs string           `json:"instance_id"`
+	FilterData  types.FilterData `json:"filter_data"`
 }
 
-type ListAccountsByInstanceResponseReply struct {
-	Data        ListAccountsByInstanceResponseData `json:"DATA"`
-	FilterCount int                                `json:"FILTER_COUNT"`
-	TotalCount  int                                `json:"TOTAL_COUNT"`
+type listCloudAccountsByInstanceResponse struct {
+	Data        []types.CloudAccount `json:"DATA"`
+	FilterCount int                  `json:"FILTER_COUNT"`
+	TotalCount  int                  `json:"TOTAL_COUNT"`
 }
 
-type ListAccountsByInstanceResponseData struct {
-	Status      string `json:"status"`
-	AccountName string `json:"account_name"`
-	AccountId   string `json:"account_id"`
-	Environment string `json:"environment"`
-	Type        string `json:"type"`
-	CreatedAt   string `json:"created_at"`
-}
-
-func (c *Client) ListAccountsByInstance(ctx context.Context, input GetCloudAccountsRequestData) (ListAccountsByInstanceResponseReply, error) {
-	var ans ListAccountsByInstanceResponseReply
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAccountsByInstanceEndpoint, nil, nil, input, &ans, &app.DoOptions{
-		RequestWrapperKey:  "request_data",
-		ResponseWrapperKey: "reply",
+func (c *Client) ListCloudAccountsByInstance(ctx context.Context, instanceID string, filters types.FilterData) ([]types.CloudAccount, int, int, error) {
+	var (
+		req listCloudAccountsByInstanceRequest = listCloudAccountsByInstanceRequest{
+			InstanceIDs: instanceID,
+			FilterData:  filters,
+		}
+		resp listCloudAccountsByInstanceResponse
+	)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAccountsByInstanceEndpoint, nil, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
 	})
 
-	return ans, err
+	return resp.Data, resp.FilterCount, resp.TotalCount, err
 }
 
-// Enable or disable cloud accounts
-
-type EnableDisableAccountsInInstancesRequestData struct {
+type enableDisableAccountsInInstancesRequest struct {
 	Ids        []string `json:"ids"`
 	InstanceId string   `json:"instance_id"`
 	Enable     bool     `json:"enable"`
 }
 
-type EnableDisableAccountsInInstancesResponseReply struct{}
-
-func (c *Client) EnableAccountsInInstance(ctx context.Context, instanceId string, accountIds []string) (EnableDisableAccountsInInstancesResponseReply, error) {
-	return c.enableDisableAccountsInInstance(ctx, instanceId, accountIds, true)
+func (c *Client) EnableCloudAccounts(ctx context.Context, instanceID string, accountIDs []string) error {
+	return c.toggleCloudAccounts(ctx, instanceID, accountIDs, true)
 }
 
-func (c *Client) DisableAccountsInInstance(ctx context.Context, instanceId string, accountIds []string) (EnableDisableAccountsInInstancesResponseReply, error) {
-	return c.enableDisableAccountsInInstance(ctx, instanceId, accountIds, false)
+func (c *Client) DisableCloudAccounts(ctx context.Context, instanceID string, accountIDs []string) error {
+	return c.toggleCloudAccounts(ctx, instanceID, accountIDs, false)
 }
 
-func (c *Client) enableDisableAccountsInInstance(ctx context.Context, instanceId string, accountIds []string, enable bool) (EnableDisableAccountsInInstancesResponseReply, error) {
-	req := EnableDisableAccountsInInstancesRequestData{
-		InstanceId: instanceId,
-		Ids:        accountIds,
+func (c *Client) toggleCloudAccounts(ctx context.Context, instanceIDs string, accountIDs []string, enable bool) error {
+	req := enableDisableAccountsInInstancesRequest{
+		InstanceId: instanceIDs,
+		Ids:        accountIDs,
 		Enable:     enable,
 	}
 
-	var ans EnableDisableAccountsInInstancesResponseReply
-	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableDisableAccountsInInstancesEndpoint, nil, nil, req, &ans, &app.DoOptions{
-		RequestWrapperKey:  "request_data",
-		ResponseWrapperKey: "reply",
+	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableDisableAccountsInInstancesEndpoint, nil, nil, req, nil, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
 	})
 
-	return ans, err
+	return err
 }

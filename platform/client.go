@@ -4,16 +4,19 @@
 package platform
 
 import (
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 )
 
 // API endpoint path specification.
 const (
-	ListUsersEndpoint      = "public_api/v1/users/get_users/"
-	ListRolesEndpoint      = "public_api/v1/roles/get_roles/"
-	SetUserRoleEndpoint    = "public_api/v1/users/set_user_role/"
-	GetRiskScoreEndpoint   = "public_api/v1/risk/get_risk_score/"
+	// System Management Endpoints
+	HealthCheckEndpoint    = "public_api/v1/health_check/"
+	GetTenantInfoEndpoint  = "public_api/v1/get_tenant_info/"
+	ListUsersEndpoint      = "public_api/v1/rbac/get_users/"
+	GetUserGroupEndpoint   = "public_api/v1/rbac/get_user_group/"
+	ListRolesEndpoint      = "public_api/v1/rbac/get_roles/"
+	SetUserRoleEndpoint    = "public_api/v1/rbac/set_user_role/"
+	GetRiskScoreEndpoint   = "public_api/v1/get_risk_score/"
 	ListRiskyUsersEndpoint = "public_api/v1/risk/get_risky_users/"
 	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
 
@@ -24,8 +27,8 @@ const (
 	ListAssetGroupsEndpoint  = "public_api/v1/asset-groups"
 
 	// Auth Settings Endpoints
-	ListIDPMetadataEndpoint  = "public_api/v1/sso/get_idp_metadata/"
-	ListAuthSettingsEndpoint = "public_api/v1/sso/get_sso_config/"
+	ListIDPMetadataEndpoint    = "public_api/v1/sso/get_idp_metadata/"
+	ListAuthSettingsEndpoint   = "public_api/v1/sso/get_sso_config/"
 	CreateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
 	UpdateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
 	DeleteAuthSettingsEndpoint = "public_api/v1/sso/delete_config/"
@@ -33,11 +36,11 @@ const (
 
 // Client is the client for the namespace.
 type Client struct {
-	internalClient *app.Client
+	internalClient *client.Client
 }
 
 // NewClient returns a new client for this namespace.
-func NewClient(config *api.Config) (*Client, error) {
-	internalClient, err := app.NewClient(config)
+func NewClient(config *client.Config) (*Client, error) {
+	internalClient, err := client.NewClientFromConfig(config)
 	return &Client{internalClient: internalClient}, err
 }

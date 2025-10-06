@@ -1,9 +1,3 @@
-dario.cat/mergo v1.0.2 h1:85+piFYR1tMbRrLcDwR18y4UKJ3aH1Tbzi24VRW1TK8=
-dario.cat/mergo v1.0.2/go.mod h1:E/hbnu0NxMFBjpMIE34DRGLWqDy0g5FuKDhCb31ngxA=
-github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.4 h1:85yvHtaARWaNW86UTLg9hE3cdGyXy3G5ewJCiCf8Q4s=
-github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.4/go.mod h1:oGxU/58mP8tsX/6T9iXdB/N94W3BCtBItmhLqjWsuvs=
-github.com/PaloAltoNetworks/cortex-cloud-go/client v0.0.8 h1:IWotQpmrK6nwlB3n2LXYf1CbUlahJ1lDrsTFW7PaQxQ=
-github.com/PaloAltoNetworks/cortex-cloud-go/client v0.0.8/go.mod h1:wnxg36kY/VTaMlZHzrSE+sUMQinl8v4aXB+pfFiwFdQ=
 github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8 h1:ehrxS+kWaYzZablFnbhkZlrpIzpw7X1l/oON9vWActE=
 github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8/go.mod h1:75SBHNMHwxyrXUwhpI1dvpUU1guCfPYXrA36unQis60=
 github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8 h1:MupWF8K8mshpvcdHuLxPV6HOHnkiSvyObEirq0sVwMM=

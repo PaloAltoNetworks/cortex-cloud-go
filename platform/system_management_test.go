@@ -8,11 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
 	"testing"
 
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestClient_ListUsers(t *testing.T) {
@@ -35,10 +35,14 @@ func TestClient_ListUsers(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		resp, err := client.ListUsers(context.Background())
+		users, err := client.ListUsers(context.Background())
 		assert.NoError(t, err)
-		assert.Len(t, resp, 1)
-		assert.Equal(t, "test@example.com", resp[0].UserEmail)
+		require.Len(t, users, 1)
+		user := users[0]
+		assert.Equal(t, "test@example.com", user.Email)
+		assert.Equal(t, "Test", user.FirstName)
+		assert.Equal(t, "User", user.LastName)
+		assert.Equal(t, "Admin", user.RoleName)
 	})
 }
 
@@ -48,10 +52,11 @@ func TestClient_ListRoles(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+ListRolesEndpoint, r.URL.Path)
 
-			var req map[string]types.ListRolesRequestData
+			var req map[string]map[string][]string
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
-			assert.Equal(t, []string{"Admin", "User"}, req["request_data"].RoleNames)
+			require.NotNil(t, req["request_data"]["role_names"])
+			assert.Equal(t, []string{"Admin", "User"}, req["request_data"]["role_names"])
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{
@@ -98,22 +103,17 @@ func TestClient_ListRoles(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		listReq := types.ListRolesRequestData{
-			RoleNames: []string{"Admin", "User"},
-		}
-		resp, err := client.ListRoles(context.Background(), listReq)
+		roles, err := client.ListRoles(context.Background(), []string{"Admin", "User"})
 		assert.NoError(t, err)
-		assert.Len(t, resp, 2)
-		assert.Len(t, resp[0], 1)
-		assert.Len(t, resp[1], 1)
-		assert.Equal(t, "Admin", resp[0][0].PrettyName)
-		assert.Equal(t, "admin@example.com", resp[0][0].CreatedBy)
-		assert.Len(t, resp[0][0].Users, 1)
-		assert.Equal(t, "admin@example.com", resp[0][0].Users[0])
-		assert.Equal(t, "User", resp[1][0].PrettyName)
-		assert.Equal(t, "admin@example.com", resp[1][0].CreatedBy)
-		assert.Len(t, resp[1][0].Users, 1)
-		assert.Equal(t, "user@example.com", resp[1][0].Users[0])
+		require.Len(t, roles, 2)
+		assert.Equal(t, "Admin", roles[0].PrettyName)
+		assert.Equal(t, "admin@example.com", roles[0].CreatedBy)
+		assert.Len(t, roles[0].Users, 1)
+		assert.Equal(t, "admin@example.com", roles[0].Users[0])
+		assert.Equal(t, "User", roles[1].PrettyName)
+		assert.Equal(t, "admin@example.com", roles[1].CreatedBy)
+		assert.Len(t, roles[1].Users, 1)
+		assert.Equal(t, "user@example.com", roles[1].Users[0])
 	})
 }
 
@@ -123,7 +123,7 @@ func TestClient_SetRole(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+SetUserRoleEndpoint, r.URL.Path)
 
-			var req map[string]types.SetRoleRequestData
+			var req map[string]types.SetRoleRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "new-role", req["request_data"].RoleName)
@@ -135,7 +135,7 @@ func TestClient_SetRole(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		setReq := types.SetRoleRequestData{
+		setReq := types.SetRoleRequest{
 			RoleName:   "new-role",
 			UserEmails: []string{"user@example.com"},
 		}
@@ -151,7 +151,7 @@ func TestClient_GetRiskScore(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+GetRiskScoreEndpoint, r.URL.Path)
 
-			var req map[string]types.GetRiskScoreRequestData
+			var req map[string]types.GetRiskScoreRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "user123", req["request_data"].ID)
@@ -168,7 +168,7 @@ func TestClient_GetRiskScore(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		getReq := types.GetRiskScoreRequestData{
+		getReq := types.GetRiskScoreRequest{
 			ID: "user123",
 		}
 		resp, err := client.GetRiskScore(context.Background(), getReq)
@@ -228,5 +228,102 @@ func TestClient_ListRiskyHosts(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resp, 1)
 		assert.Equal(t, "host789", resp[0].ID)
+	})
+}
+
+func TestClient_HealthCheck(t *testing.T) {
+	t.Run("should return health check status successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/"+HealthCheckEndpoint, r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"reply": {
+					"service": "Cortex API",
+					"status": "OK",
+					"reason": "",
+					"timestamp": 1678886400000
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.HealthCheck(context.Background())
+		assert.NoError(t, err)
+		assert.Equal(t, "Cortex API", resp.Service)
+		assert.Equal(t, "OK", resp.Status)
+	})
+}
+
+func TestClient_GetTenantInfo(t *testing.T) {
+	t.Run("should get tenant info successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, "/"+GetTenantInfoEndpoint, r.URL.Path)
+
+			var req map[string]types.GetTenantInfoRequest
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"tenant1"}, req["request_data"].Tenants)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"reply": [
+					{
+						"tenant_id": "tenant1",
+						"tenant_name": "Tenant One"
+					}
+				]
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		getReq := types.GetTenantInfoRequest{
+			Tenants: []string{"tenant1"},
+		}
+		resp, err := client.GetTenantInfo(context.Background(), getReq)
+		assert.NoError(t, err)
+		assert.Len(t, resp, 1)
+		assert.Equal(t, "tenant1", resp[0].TenantID)
+		assert.Equal(t, "Tenant One", resp[0].TenantName)
+	})
+}
+
+func TestClient_GetUserGroup(t *testing.T) {
+	t.Run("should get user group successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, "/"+GetUserGroupEndpoint, r.URL.Path)
+
+			var req map[string]types.GetUserGroupRequest
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			assert.Equal(t, []string{"group1"}, req["request_data"].GroupNames)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"reply": [
+					{
+						"name": "group1",
+						"description": "Group One",
+						"users": ["user1@example.com"],
+						"role": "Role1"
+					}
+				]
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		getReq := types.GetUserGroupRequest{
+			GroupNames: []string{"group1"},
+		}
+		resp, err := client.GetUserGroup(context.Background(), getReq)
+		assert.NoError(t, err)
+		assert.Len(t, resp, 1)
+		assert.Equal(t, "group1", resp[0].Name)
+		assert.Equal(t, "Group One", resp[0].Description)
 	})
 }

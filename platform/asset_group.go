@@ -5,49 +5,53 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/app"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
+
+// GenericAssetGroupsRespons is a generic response for asset group operations.
+type genericAssetGroupsResponse struct {
+	Success      bool `json:"success"`
+	AssetGroupID int  `json:"asset_group_id"`
+}
 
 // CreateAssetGroup creates a new asset group.
 //
 // TODO: make sure that the SEARCH_FIELD value is forced to uppercase
-func (c *Client) CreateAssetGroup(ctx context.Context, req types.CreateOrUpdateAssetGroupRequest) (types.CreateAssetGroupResponseData, error) {
-	var respWrapper types.CreateAssetGroupResponseWrapper
-	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateAssetGroupEndpoint, nil, nil, types.CreateOrUpdateAssetGroupRequestWrapper{AssetGroup: req}, &respWrapper, &app.DoOptions{
-		RequestWrapperKey:  "request_data",
-		ResponseWrapperKey: "reply",
+func (c *Client) CreateAssetGroup(ctx context.Context, req types.CreateOrUpdateAssetGroupRequest) (success bool, assetGroupID int, err error) {
+	var resp genericAssetGroupsResponse
+	_, err = c.internalClient.Do(ctx, http.MethodPost, CreateAssetGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data", "asset_group"},
+		ResponseWrapperKeys: []string{"reply", "data"},
 	})
-	return respWrapper.Data, err
+	return resp.Success, resp.AssetGroupID, err
 }
 
 // ListAssetGroups retrieves a list of asset groups.
-func (c *Client) ListAssetGroups(ctx context.Context, req types.ListAssetGroupsRequest) (types.ListAssetGroupsResponse, error) {
-	var resp types.ListAssetGroupsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAssetGroupsEndpoint, nil, nil, req, &resp, &app.DoOptions{
-		RequestWrapperKey:  "request_data",
-		ResponseWrapperKey: "reply",
+func (c *Client) ListAssetGroups(ctx context.Context, req types.ListAssetGroupsRequest) (assetGroups []types.AssetGroup, err error) {
+	var resp []types.AssetGroup
+	_, err = c.internalClient.Do(ctx, http.MethodPost, ListAssetGroupsEndpoint, nil, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply", "data"},
 	})
 	return resp, err
 }
 
 // UpdateAssetGroup updates an existing asset group.
-func (c *Client) UpdateAssetGroup(ctx context.Context, groupID int, req types.CreateOrUpdateAssetGroupRequest) (types.GenericAssetGroupsResponseData, error) {
-	var respWrapper types.GenericAssetGroupsResponseWrapper
-	pathParams := &[]string{strconv.Itoa(groupID)}
-	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateAssetGroupEndpoint, pathParams, nil, types.CreateOrUpdateAssetGroupRequestWrapper{AssetGroup: req}, &respWrapper, &app.DoOptions{
-		RequestWrapperKey:  "request_data",
-		ResponseWrapperKey: "reply",
+func (c *Client) UpdateAssetGroup(ctx context.Context, groupID int, req types.CreateOrUpdateAssetGroupRequest) (success bool, err error) {
+	var resp genericAssetGroupsResponse
+	_, err = c.internalClient.Do(ctx, http.MethodPost, UpdateAssetGroupEndpoint, &[]string{strconv.Itoa(groupID)}, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data", "asset_group"},
+		ResponseWrapperKeys: []string{"reply", "data"},
 	})
-	return respWrapper.Data, err
+	return resp.Success, err
 }
 
 // DeleteAssetGroup deletes an asset group.
-func (c *Client) DeleteAssetGroup(ctx context.Context, groupID int) (types.GenericAssetGroupsResponseData, error) {
-	var respWrapper types.GenericAssetGroupsResponseWrapper
-	pathParams := &[]string{strconv.Itoa(groupID)}
-	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteAssetGroupEndpoint, pathParams, nil, nil, &respWrapper, &app.DoOptions{
-		ResponseWrapperKey: "reply",
+func (c *Client) DeleteAssetGroup(ctx context.Context, groupID int) (success bool, err error) {
+	var resp genericAssetGroupsResponse
+	_, err = c.internalClient.Do(ctx, http.MethodPost, DeleteAssetGroupEndpoint, &[]string{strconv.Itoa(groupID)}, nil, nil, &resp, &client.DoOptions{
+		ResponseWrapperKeys: []string{"reply", "data"},
 	})
-	return respWrapper.Data, err
+	return resp.Success, err
 }

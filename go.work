@@ -1,15 +1,12 @@
 go 1.25.0
 
 use (
-	./api
 	./appsec
+	./client
 	./cloudonboarding
 	./cwp
 	./enums
 	./errors
-	./internal/app
-	./internal/test
-	./internal/util
 	./log
 	./platform
 	./types

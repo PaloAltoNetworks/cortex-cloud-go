@@ -13,11 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
-	search "github.com/PaloAltoNetworks/cortex-cloud-go/types"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/platform/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
-	//"github.com/stretchr/testify/require"
 )
 
 func setupAcceptanceTest(t *testing.T) *Client {
@@ -29,8 +27,8 @@ func setupAcceptanceTest(t *testing.T) *Client {
 	if err != nil {
 		t.Fatalf("failed to convert API key ID \"%s\" to int: %s", apiKeyIDStr, err.Error())
 	}
-	
-	config := &api.Config{
+
+	config := &client.Config{
 		ApiUrl:   apiUrl,
 		ApiKey:   apiKey,
 		ApiKeyId: apiKeyID,
@@ -44,158 +42,6 @@ func setupAcceptanceTest(t *testing.T) *Client {
 	return client
 }
 
-//func TestAccStaticAssetGroupLifecycle(t *testing.T) {
-//	client := setupAcceptanceTest(t)
-//	ctx := context.Background()
-//	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-//
-//	// Create
-//	groupName := fmt.Sprintf("go-sdk-acctest-account-group-%s", timestamp)
-//	groupType := "Dynamic"
-//	groupDescription := fmt.Sprintf("Go SDK Acceptance Test %s", timestamp)
-//	andCriteria1Field := "xdm.asset.name"
-//	andCriteria1Type := "NCONTAINS"
-//	andCriteria1Value := "test"
-//	membershipPredicate := search.CriteriaFilter{
-//		And: []search.Criteria{
-//			{
-//				SearchField: andCriteria1Field,
-//				SearchType: andCriteria1Type,
-//				SearchValue: andCriteria1Value,
-//			},
-//		},
-//	}
-//
-//	createReq := types.CreateOrUpdateAssetGroupRequest{
-//		GroupName: groupName,
-//		GroupType: groupType,
-//		GroupDescription: groupDescription,
-//		MembershipPredicate: membershipPredicate,
-//	}
-//
-//	createResp, err := client.CreateAssetGroup(ctx, createReq)
-//	if err != nil {
-//		t.Fatalf("error creating asset group: %s", err.Error())
-//	}
-//
-//	// Check
-//	assert.NotNil(t, createResp)
-//	assert.Equal(t, true, createResp.Success)
-//	assert.Positive(t, createResp.AssetGroupID)
-//	groupID := createResp.AssetGroupID
-//	
-//	// Defer Delete check
-//	testDeleteAssetGroup := func(t *testing.T, ctx context.Context, groupID int) {
-//		// Delete
-//		deleteResp, err := client.DeleteAssetGroup(ctx, groupID)
-//
-//		// Check
-//		if err != nil {
-//			t.Fatalf("error deleting asset group: %s", err.Error())
-//		}
-//		assert.NotNil(t, deleteResp)
-//		assert.Equal(t, true, deleteResp.Success)
-//	}
-//	defer testDeleteAssetGroup(t, ctx, groupID)
-//
-//	// Read
-//	listReq := types.ListAssetGroupsRequest{
-//		Filters: search.CriteriaFilter{
-//			And: []search.Criteria{
-//				{
-//					SearchField: "XDM.ASSET_GROUP.NAME",
-//					SearchType: "CONTAINS",
-//					SearchValue: groupName,
-//				},
-//			},
-//		},
-//	}
-//	listResp, err := client.ListAssetGroups(ctx, listReq)	
-//	if err != nil {
-//		t.Fatalf("error fetching asset group: %s", err.Error())
-//	}
-//
-//	// Check
-//	expectedFilter := []types.AssetGroupFilter{
-//		{
-//			PrettyName: "name",
-//			DataType: "TEXT",
-//			RenderType: "attribute",
-//		},
-//		{
-//			PrettyName: "doesn't contain",
-//			RenderType: "operator",
-//		},
-//		{
-//			PrettyName: andCriteria1Value,
-//			RenderType: "value",
-//		},
-//	}
-//
-//	assert.NotNil(t, listResp)
-//	assert.Len(t, listResp.Data, 1)
-//	listRespData := listResp.Data[0]
-//	assert.Equal(t, groupID, listRespData.ID)
-//	assert.Equal(t, groupName, listRespData.Name)
-//	assert.Equal(t, groupType, listRespData.Type)
-//	assert.Equal(t, groupDescription, listRespData.Description)
-//	assert.Equal(t, membershipPredicate, listRespData.MembershipPredicate)
-//	assert.Equal(t, expectedFilter, listRespData.Filter)
-//
-//	// Update
-//	updatedGroupName := fmt.Sprintf("%s-updated", groupName)
-//	updatedGroupDescription := fmt.Sprintf("%s (Updated)", groupDescription)
-//	andCriteria2Field := "xdm.asset.name"
-//	andCriteria2Type := "NCONTAINS"
-//	andCriteria2Value := "test"
-//	membershipPredicate.And = append(membershipPredicate.And, search.Criteria{
-//		SearchField: andCriteria2Field,
-//		SearchType: andCriteria2Type,
-//		SearchValue: andCriteria2Value,
-//	})
-//
-//	updateReq := types.CreateOrUpdateAssetGroupRequest{
-//		GroupName: updatedGroupName,
-//		GroupType: groupType,
-//		GroupDescription: updatedGroupDescription,
-//		MembershipPredicate: membershipPredicate,
-//	}
-//	
-//	updateResp, err := client.UpdateAssetGroup(ctx, groupID, updateReq)
-//	if err != nil {
-//		t.Fatalf("error creating asset group: %s", err.Error())
-//	}
-//
-//	// Check
-//	assert.NotNil(t, updateResp)
-//	assert.Equal(t, true, updateResp.Success)
-//	listResp, err = client.ListAssetGroups(ctx, listReq)	
-//	if err != nil {
-//		t.Fatalf("error fetching updated asset group: %s", err.Error())
-//	}
-//
-//	expectedUpdatedFilter := append(expectedFilter, 
-//		types.AssetGroupFilter{
-//			PrettyName: "AND",
-//			RenderType: "connector",
-//		},
-//		types.AssetGroupFilter{
-//			PrettyName: andCriteria2Value,
-//			RenderType: "value",
-//		},
-//	)
-//
-//	assert.NotNil(t, listResp)
-//	assert.Len(t, listResp.Data, 1)
-//	listRespData = listResp.Data[0]
-//	assert.Equal(t, groupID, listRespData.ID)
-//	assert.Equal(t, updatedGroupName, listRespData.Name)
-//	assert.Equal(t, groupType, listRespData.Type)
-//	assert.Equal(t, updatedGroupDescription, listRespData.Description)
-//	assert.Equal(t, membershipPredicate, listRespData.MembershipPredicate)
-//	assert.Equal(t, expectedUpdatedFilter, listRespData.Filter)
-//}
-
 func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	client := setupAcceptanceTest(t)
 	ctx := context.Background()
@@ -208,61 +54,64 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria1Field := "xdm.asset.name"
 	andCriteria1Type := "NCONTAINS"
 	andCriteria1Value := "test"
-	membershipPredicate := search.CriteriaFilter{
-		And: []search.Criteria{
+	membershipPredicate := types.Filter{
+		And: []*types.Filter{
 			{
 				SearchField: andCriteria1Field,
-				SearchType: andCriteria1Type,
+				SearchType:  andCriteria1Type,
 				SearchValue: andCriteria1Value,
 			},
 		},
 	}
 
 	createReq := types.CreateOrUpdateAssetGroupRequest{
-		GroupName: groupName,
-		GroupType: groupType,
-		GroupDescription: groupDescription,
+		GroupName:           groupName,
+		GroupType:           groupType,
+		GroupDescription:    groupDescription,
 		MembershipPredicate: membershipPredicate,
 	}
 
-	createResp, err := client.CreateAssetGroup(ctx, createReq)
+	createSuccess, groupID, err := client.CreateAssetGroup(ctx, createReq)
 	if err != nil {
 		t.Fatalf("error creating asset group: %s", err.Error())
 	}
+	if !createSuccess {
+		t.Fatalf("asset group creation unsuccessful: %s", err.Error())
+	}
 
 	// Check
-	assert.NotNil(t, createResp)
-	assert.Equal(t, true, createResp.Success)
-	assert.Positive(t, createResp.AssetGroupID)
-	groupID := createResp.AssetGroupID
+	assert.Equal(t, true, createSuccess)
+	assert.Positive(t, groupID)
 
 	// Defer Delete check
 	testDeleteAssetGroup := func(t *testing.T, ctx context.Context, groupID int) {
 		// Delete
-		deleteResp, err := client.DeleteAssetGroup(ctx, groupID)
+		success, err := client.DeleteAssetGroup(ctx, groupID)
 
 		// Check
 		if err != nil {
 			t.Fatalf("error deleting asset group: %s", err.Error())
 		}
-		assert.NotNil(t, deleteResp)
-		assert.Equal(t, true, deleteResp.Success)
+		if !success {
+			t.Fatalf("asset group deletion unsuccessful: %s", err.Error())
+		}
+		assert.Equal(t, true, success)
 	}
 	defer testDeleteAssetGroup(t, ctx, groupID)
 
 	// Read
 	listReq := types.ListAssetGroupsRequest{
-		Filters: search.CriteriaFilter{
-			And: []search.Criteria{
+		Filters: types.Filter{
+			And: []*types.Filter{
 				{
 					SearchField: "XDM.ASSET_GROUP.NAME",
-					SearchType: "CONTAINS",
+					SearchType:  "CONTAINS",
 					SearchValue: groupName,
 				},
 			},
 		},
 	}
-	listResp, err := client.ListAssetGroups(ctx, listReq)	
+	assetGroups, err := client.ListAssetGroups(ctx, listReq)
 	if err != nil {
 		t.Fatalf("error fetching asset group: %s", err.Error())
 	}
@@ -271,7 +120,7 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	expectedFilter := []types.AssetGroupFilter{
 		{
 			PrettyName: "name",
-			DataType: "TEXT",
+			DataType:   "TEXT",
 			RenderType: "attribute",
 		},
 		{
@@ -284,15 +133,15 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 		},
 	}
 
-	assert.NotNil(t, listResp)
-	assert.Len(t, listResp.Data, 1)
-	listRespData := listResp.Data[0]
-	assert.Equal(t, groupID, listRespData.ID)
-	assert.Equal(t, groupName, listRespData.Name)
-	assert.Equal(t, groupType, listRespData.Type)
-	assert.Equal(t, groupDescription, listRespData.Description)
-	assert.Equal(t, membershipPredicate, listRespData.MembershipPredicate)
-	assert.Equal(t, expectedFilter, listRespData.Filter)
+	assert.NotNil(t, assetGroups)
+	assert.Len(t, assetGroups, 1)
+	assetGroup := assetGroups[0]
+	assert.Equal(t, groupID, assetGroup.ID)
+	assert.Equal(t, groupName, assetGroup.Name)
+	assert.Equal(t, groupType, assetGroup.Type)
+	assert.Equal(t, groupDescription, assetGroup.Description)
+	assert.Equal(t, membershipPredicate, assetGroup.MembershipPredicate)
+	assert.Equal(t, expectedFilter, assetGroup.Filter)
 
 	// Update
 	updatedGroupName := fmt.Sprintf("%s-updated", groupName)
@@ -300,33 +149,35 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria2Field := "xdm.asset.name"
 	andCriteria2Type := "NCONTAINS"
 	andCriteria2Value := "test"
-	membershipPredicate.And = append(membershipPredicate.And, search.Criteria{
+	membershipPredicate.And = append(membershipPredicate.And, &types.Filter{
 		SearchField: andCriteria2Field,
-		SearchType: andCriteria2Type,
+		SearchType:  andCriteria2Type,
 		SearchValue: andCriteria2Value,
 	})
 
 	updateReq := types.CreateOrUpdateAssetGroupRequest{
-		GroupName: updatedGroupName,
-		GroupType: groupType,
-		GroupDescription: updatedGroupDescription,
+		GroupName:           updatedGroupName,
+		GroupType:           groupType,
+		GroupDescription:    updatedGroupDescription,
 		MembershipPredicate: membershipPredicate,
 	}
-	
-	updateResp, err := client.UpdateAssetGroup(ctx, groupID, updateReq)
+
+	updateSuccess, err := client.UpdateAssetGroup(ctx, groupID, updateReq)
 	if err != nil {
 		t.Fatalf("error creating asset group: %s", err.Error())
 	}
+	if !updateSuccess {
+		t.Fatalf("asset group update unsuccessful: %s", err.Error())
+	}
 
 	// Check
-	assert.NotNil(t, updateResp)
-	assert.Equal(t, true, updateResp.Success)
-	listResp, err = client.ListAssetGroups(ctx, listReq)	
+	assert.Equal(t, true, updateSuccess)
+	updatedAssetGroups, err := client.ListAssetGroups(ctx, listReq)
 	if err != nil {
 		t.Fatalf("error fetching updated asset group: %s", err.Error())
 	}
 
-	expectedUpdatedFilter := append(expectedFilter, 
+	expectedUpdatedFilter := append(expectedFilter,
 		types.AssetGroupFilter{
 			PrettyName: "AND",
 			RenderType: "connector",
@@ -337,13 +188,13 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 		},
 	)
 
-	assert.NotNil(t, listResp)
-	assert.Len(t, listResp.Data, 1)
-	listRespData = listResp.Data[0]
-	assert.Equal(t, groupID, listRespData.ID)
-	assert.Equal(t, updatedGroupName, listRespData.Name)
-	assert.Equal(t, groupType, listRespData.Type)
-	assert.Equal(t, updatedGroupDescription, listRespData.Description)
-	assert.Equal(t, membershipPredicate, listRespData.MembershipPredicate)
-	assert.Equal(t, expectedUpdatedFilter, listRespData.Filter)
+	assert.NotNil(t, updatedAssetGroups)
+	assert.Len(t, updatedAssetGroups, 1)
+	updatedAssetGroup := updatedAssetGroups[0]
+	assert.Equal(t, groupID, updatedAssetGroup.ID)
+	assert.Equal(t, updatedGroupName, updatedAssetGroup.Name)
+	assert.Equal(t, groupType, updatedAssetGroup.Type)
+	assert.Equal(t, updatedGroupDescription, updatedAssetGroup.Description)
+	assert.Equal(t, membershipPredicate, updatedAssetGroup.MembershipPredicate)
+	assert.Equal(t, expectedUpdatedFilter, updatedAssetGroup.Filter)
 }
