@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-// TODO: remove after creating internal/util package
 func convertInterfaceToString(value any) (string, error) {
 	switch v := value.(type) {
 	case int:

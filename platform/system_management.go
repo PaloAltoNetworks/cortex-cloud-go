@@ -5,164 +5,131 @@ package platform
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
-type User struct {
-	UserEmail     string   `json:"user_email"`
-	UserFirstName string   `json:"user_first_name"`
-	UserLastName  string   `json:"user_last_name"`
-	RoleName      string   `json:"role_name"`
-	LastLoggedIn  int      `json:"last_logged_in"`
-	UserType      string   `json:"user_type"`
-	Groups        []string `json:"groups"`
-	Scope         []string `json:"scope"`
+// GetUser retrieves the specified user in your environment.
+func (c *Client) GetUser(ctx context.Context, userEmail string) (types.User, error) {
+	var ans types.User
+	resp, err := c.ListUsers(ctx)
+	if err != nil {
+		return ans, err
+	}
+	for _, user := range resp {
+		if user.Email == userEmail {
+			ans = user
+			return ans, nil
+		}
+	}
+	return ans, fmt.Errorf("no user found with email \"%s\"", userEmail)
 }
 
-type Reason struct {
-	DateCreated string `json:"date_created"`
-	Description string `json:"description"`
-	Severity    string `json:"severity"`
-	Status      string `json:"status"`
-	Points      int    `json:"points"`
-}
-
-// ---------------------------
-// Request/Response structs
-// ---------------------------
-
-type ListUsersResponse struct {
-	Users []User `json:"reply"`
-}
-
-type ListRolesRequest struct {
-	RequestData ListRolesRequestData `json:"request_data" validate:"required"`
-}
-
-type ListRolesRequestData struct {
-	// TODO: add validation tag/function for role names?
-	RoleNames []string `json:"role_names" validate:"required,min=1"`
-}
-
-type SetRoleRequest struct {
-	RequestData SetRoleRequestData `json:"request_data" validate:"required"`
-}
-
-type SetRoleRequestData struct {
-	UserEmails []string `json:"user_emails" validate:"required,min=1,dive,required,email"`
-	RoleName   string   `json:"role_name"`
-}
-
-type GetRiskScoreRequest struct {
-	RequestData GetRiskScoreRequestData `json:"request_data" validate:"required"`
-}
-
-type GetRiskScoreRequestData struct {
-	Id string `json:"id" validate:"required,sysmgmtID"`
-}
-
-type SetRoleResponseReply struct {
-	UpdateCount string `json:"update_count"`
-}
-
-type SetRoleResponse struct {
-	Reply SetRoleResponseReply `json:"reply"`
-}
-
-type GetRiskScoreResponseReply struct {
-	Type          string   `json:"type"`
-	Id            string   `json:"id"`
-	Score         int      `json:"score"`
-	NormRiskScore int      `json:"norm_risk_score"`
-	RiskLevel     string   `json:"risk_level"`
-	Reasons       []Reason `json:"reasons"`
-	Email         string   `json:"email"`
-}
-
-type GetRiskScoreResponse struct {
-	Reply GetRiskScoreResponseReply `json:"reply"`
-}
-
-type ListRiskyUsersResponseReply struct {
-	Type          string   `json:"type"`
-	Id            string   `json:"id"`
-	Score         int      `json:"score"`
-	NormRiskScore int      `json:"norm_risk_score"`
-	RiskLevel     string   `json:"risk_level"`
-	Reasons       []Reason `json:"reasons"`
-	Email         string   `json:"email"`
-}
-
-type ListRiskyUsersResponse struct {
-	Reply []ListRiskyUsersResponseReply `json:"reply"`
-}
-
-type ListRiskyHostsResponseReply struct {
-	Type          string   `json:"type"`
-	Id            string   `json:"id"`
-	Score         int      `json:"score"`
-	NormRiskScore int      `json:"norm_risk_score"`
-	RiskLevel     string   `json:"risk_level"`
-	Reasons       []Reason `json:"reasons"`
-}
-
-type ListRiskyHostsResponse struct {
-	Reply []ListRiskyHostsResponseReply `json:"reply"`
-}
-
-// ---------------------------
-// Request functions
-// ---------------------------
-
-// List retrieves a list of the current users in your environment.
-func (c *Client) ListUsers(ctx context.Context) (ListUsersResponse, error) {
-
-	var ans ListUsersResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListUsersEndpoint, nil, nil, nil, &ans)
-
+// ListUsers retrieves a list of the current users in your environment.
+func (c *Client) ListUsers(ctx context.Context) ([]types.User, error) {
+	var ans []types.User
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListUsersEndpoint, nil, nil, nil, &ans, &client.DoOptions{
+		ResponseWrapperKeys: []string{"reply"},
+	})
 	return ans, err
 }
 
-func (c *Client) ListRoles(ctx context.Context, input ListRolesRequest) (ListUsersResponse, error) {
-	var ans ListUsersResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, input, &ans)
-
-	return ans, err
+func (c *Client) ListRoles(ctx context.Context, roleNames []string) ([]types.Role, error) {
+	var (
+		resp            [][]types.Role
+		normalizedRoles []types.Role
+	)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, roleNames, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data", "role_names"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
+	if err != nil {
+		return []types.Role{}, err
+	}
+	if len(resp) == 0 {
+		return []types.Role{}, fmt.Errorf("no roles found for provided value(s): \"%s\"", strings.Join(roleNames, "\", \""))
+	}
+	for _, innerSlice := range resp {
+		if len(innerSlice) == 1 {
+			normalizedRoles = append(normalizedRoles, innerSlice[0])
+		}
+	}
+	return normalizedRoles, err
 }
 
 // SetRole adds or removes one or more users from a role.
 //
 // If no RoleName is provided in the SetRoleRequest, the user is removed from a role.
-func (c *Client) SetRole(ctx context.Context, input SetRoleRequest) (SetRoleResponse, error) {
-	var ans SetRoleResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans)
-
+func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types.SetRoleResponse, error) {
+	var ans types.SetRoleResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
 	return ans, err
 }
 
 // GetRiskScore retrieves the risk score of a specific user or endpoint in your environment,
 // along with the reason for the score.
-func (c *Client) GetRiskScore(ctx context.Context, input GetRiskScoreRequest) (GetRiskScoreResponse, error) {
-	var ans GetRiskScoreResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, GetRiskScoreEndpoint, nil, nil, input, &ans)
+func (c *Client) GetRiskScore(ctx context.Context, req types.GetRiskScoreRequest) (types.GetRiskScoreResponse, error) {
+	var ans types.GetRiskScoreResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, GetRiskScoreEndpoint, nil, nil, req, &ans, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
 
 	return ans, err
 }
 
-// Retrieve a list of users with the highest risk score in your environment
+// ListRiskyUsers retrieves a list of users with the highest risk score in your environment
 // along with the reason affecting each score.
-func (c *Client) ListRiskyUsers(ctx context.Context) (ListRiskyUsersResponse, error) {
-	var ans ListRiskyUsersResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyUsersEndpoint, nil, nil, nil, &ans)
-
+func (c *Client) ListRiskyUsers(ctx context.Context) ([]types.ListRiskyUsersResponse, error) {
+	var ans []types.ListRiskyUsersResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyUsersEndpoint, nil, nil, nil, &ans, &client.DoOptions{
+		ResponseWrapperKeys: []string{"reply"},
+	})
 	return ans, err
 }
 
-// Retrieve a list of endpoints with the highest risk score in your environment
+// ListRiskyHosts retrieves a list of endpoints with the highest risk score in your environment
 // along with the reason affecting each score.
-func (c *Client) ListRiskyHosts(ctx context.Context) (ListRiskyHostsResponse, error) {
-	var ans ListRiskyHostsResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyHostsEndpoint, nil, nil, nil, &ans)
+func (c *Client) ListRiskyHosts(ctx context.Context) ([]types.ListRiskyHostsResponse, error) {
+	var ans []types.ListRiskyHostsResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRiskyHostsEndpoint, nil, nil, nil, &ans, &client.DoOptions{
+		ResponseWrapperKeys: []string{"reply"},
+	})
+	return ans, err
+}
 
+// HealthCheck performs a health check on the service.
+func (c *Client) HealthCheck(ctx context.Context) (types.HealthCheckResponse, error) {
+	var ans types.HealthCheckResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, HealthCheckEndpoint, nil, nil, nil, &ans, &client.DoOptions{
+		ResponseWrapperKeys: []string{"reply"},
+	})
+	return ans, err
+}
+
+// GetTenantInfo retrieves information about the specified tenants.
+func (c *Client) GetTenantInfo(ctx context.Context, req types.GetTenantInfoRequest) ([]types.TenantInfo, error) {
+	var ans []types.TenantInfo
+	_, err := c.internalClient.Do(ctx, http.MethodPost, GetTenantInfoEndpoint, nil, nil, req, &ans, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
+	return ans, err
+}
+
+// GetUserGroup retrieves information about the specified user groups.
+func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest) ([]types.UserGroup, error) {
+	var ans []types.UserGroup
+	_, err := c.internalClient.Do(ctx, http.MethodPost, GetUserGroupEndpoint, nil, nil, req, &ans, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
 	return ans, err
 }

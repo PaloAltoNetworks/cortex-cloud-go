@@ -1,7 +1,7 @@
 // Copyright (c) Palo Alto Networks, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-package app
+package client
 
 import (
 	"context"
@@ -20,23 +20,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
 	internalLog "github.com/PaloAltoNetworks/cortex-cloud-go/log"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
 const (
-	// NonceLength defines the length of the cryptographic nonce used in authentication headers.
+	// NonceLength defines the length of the cryptographic nonce used in
+	// authentication headers.
 	NonceLength = 64
 	// AuthCharset is the character set used for generating the nonce.
 	AuthCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 // Client is the core HTTP client for interacting with the Cortex Cloud API.
-// It is intended for internal use by higher-level SDK modules (e.g., xsiam).
-// All configuration is passed during its creation via an api.Config object.
+//
+// This client is intended for internal use by higher-level SDK modules.
+// All configuration is passed during its creation via a Config object.
 type Client struct {
-	config     *api.Config
+	config     *Config
 	httpClient *http.Client
 	apiKeyId   string // String representation of ApiKeyId for headers
 
@@ -45,12 +47,17 @@ type Client struct {
 	testIndex int
 }
 
-// NewClient creates and initializes a new core HTTP client.
-// It takes a pointer to an api.Config, which should be fully configured
-// by the user-facing API module.
-func NewClient(cfg *api.Config) (*Client, error) {
+// NewClient creates a new client from configuration values.
+func NewClient(apiUrl, apiKey string, apiKeyId int, checkEnvironment bool, opts ...Option) (*Client, error) {
+	cfg := NewConfig(apiUrl, apiKey, apiKeyId, checkEnvironment, opts...)
+	return NewClientFromConfig(cfg)
+}
+
+// NewClientFromConfig creates and initializes a new core HTTP client from a config object.
+// It takes a pointer to a Config, which should be fully configured.
+func NewClientFromConfig(cfg *Config) (*Client, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("received nil api.Config")
+		return nil, fmt.Errorf("received nil Config")
 	}
 
 	// Validate the configuration from the api module
@@ -81,7 +88,6 @@ func NewClient(cfg *api.Config) (*Client, error) {
 
 	// Wrap transport with logging if not skipped
 	if !cfg.SkipLoggingTransport {
-		// Pass the internal client's logging capabilities to the transport wrapper
 		httpClient.Transport = NewTransport(httpClient.Transport, &internalClientAdapter{cfg})
 	}
 
@@ -92,11 +98,11 @@ func NewClient(cfg *api.Config) (*Client, error) {
 	}, nil
 }
 
-// internalClientAdapter adapts the api.Config to the InternalClient interface
+// internalClientAdapter adapts the Config to the InternalClient interface
 // required by the transport. This allows the transport to access logging and
 // pre-request validation settings directly from the config.
 type internalClientAdapter struct {
-	cfg *api.Config
+	cfg *Config
 }
 
 // logLevelStringToInt maps string log levels to an integer for comparison.
@@ -131,10 +137,7 @@ func (a *internalClientAdapter) Log(ctx context.Context, level, msg string) {
 		return
 	}
 
-	// Map configured log level string to an integer for comparison
 	configuredLevelInt := logLevelStringToInt(a.cfg.LogLevel)
-
-	// Map incoming message level string to an integer for comparison
 	msgLevelInt := logLevelStringToInt(level)
 
 	// Only log if the message's severity is greater than or equal to the configured minimum level
@@ -149,7 +152,6 @@ func (a *internalClientAdapter) Log(ctx context.Context, level, msg string) {
 		case "error":
 			a.cfg.Logger.Error(ctx, msg)
 		default:
-			// Fallback for unknown levels, log as info
 			a.cfg.Logger.Info(ctx, msg)
 		}
 	}
@@ -164,17 +166,14 @@ func (a *internalClientAdapter) PreRequestValidationEnabled() bool {
 func (c *Client) generateHeaders(setContentType bool) (map[string]string, error) {
 	headers := make(map[string]string)
 
-	// Set Content-Type if requested
 	if setContentType {
 		headers["Content-Type"] = "application/json"
 	}
 
-	// Set User-Agent if configured
 	if c.config.Agent != "" {
 		headers["User-Agent"] = c.config.Agent
 	}
 
-	// Set XDR authentication ID
 	headers["x-xdr-auth-id"] = c.apiKeyId
 
 	// Generate nonce
@@ -189,10 +188,8 @@ func (c *Client) generateHeaders(setContentType bool) (map[string]string, error)
 	}
 	nonce := nonceBuilder.String()
 
-	// Generate timestamp
-	timestamp := strconv.FormatInt(time.Now().UnixMilli(), 10)
-
 	// Calculate Authorization hash
+	timestamp := strconv.FormatInt(time.Now().UnixMilli(), 10)
 	authKey := fmt.Sprintf("%s%s%s", c.config.ApiKey, nonce, timestamp)
 	hasher := sha256.New()
 	hasher.Write([]byte(authKey))
@@ -209,10 +206,9 @@ func (c *Client) generateHeaders(setContentType bool) (map[string]string, error)
 // calculateRetryDelay determines the sleep duration for retries using
 // exponential backoff with jitter, based on the client's configuration.
 func (c *Client) calculateRetryDelay(attempt int) time.Duration {
-	// Ensure RetryMaxDelay has a sensible default if not set in config
+	// Apply default if not configured
 	retryMaxDelay := c.config.RetryMaxDelay
 	if retryMaxDelay == 0 {
-		// Use a reasonable default if config doesn't specify
 		retryMaxDelay = 60 // seconds
 	}
 
@@ -232,39 +228,37 @@ func (c *Client) calculateRetryDelay(attempt int) time.Duration {
 // buildRequestURL constructs and validates the complete API URL from
 // the base URL, endpoint, path parameters, and query parameters.
 func (c *Client) buildRequestURL(endpoint string, pathParams *[]string, queryParams *url.Values) (string, error) {
-	// Parse base URL to ensure it's valid
+	// Validate base URL
 	baseURL, err := url.Parse(c.config.ApiUrl)
 	if err != nil {
 		return "", fmt.Errorf("invalid base API URL '%s': %w", c.config.ApiUrl, err)
 	}
 
-	// Build path components, ensuring the endpoint is properly joined
-	pathComponents := []string{strings.TrimPrefix(endpoint, "/")} // Remove leading slash from endpoint if present
+	// Handle path parameters
+	pathComponents := []string{strings.TrimPrefix(endpoint, "/")}
 	if pathParams != nil && len(*pathParams) > 0 {
-		// Append path parameters, ensuring they are also trimmed of leading/trailing slashes if necessary
 		for _, p := range *pathParams {
 			pathComponents = append(pathComponents, strings.Trim(p, "/"))
 		}
 	}
 
-	// Construct URL with path components
 	urlWithPathValues, err := url.JoinPath(baseURL.String(), pathComponents...)
 	if err != nil {
 		return "", fmt.Errorf("failed to construct URL with path components: %w", err)
 	}
 
-	// Parse the constructed URL to add query parameters
 	parsedURL, err := url.Parse(urlWithPathValues)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse constructed URL: %w", err)
 	}
 
-	// Add query parameters if they exist
+	// Handle query parameters
 	if queryParams != nil && len(*queryParams) > 0 {
 		parsedURL.RawQuery = queryParams.Encode()
 	}
 
-	// Validate the final URL (optional, as url.Parse already provides some validation)
+	// Validate full URL
+	// (optional, as url.Parse already provides some validation)
 	finalURLString := parsedURL.String()
 	if _, err := url.Parse(finalURLString); err != nil {
 		return "", fmt.Errorf("constructed URL '%s' is invalid: %w", finalURLString, err)
@@ -290,7 +284,6 @@ func isRetryableHTTPStatus(statusCode int) bool {
 // handleResponseStatus processes HTTP response status codes and returns a structured
 // error if the status code indicates an API error. It does not handle retries directly.
 func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body []byte) *errors.CortexCloudAPIError {
-	// For successful responses, return nil (no error).
 	if statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices {
 		return nil
 	}
@@ -301,20 +294,25 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 	if unmarshalErr == nil {
 		return &apiError
 	} else {
-		// If unmarshaling fails, create a generic API error with the raw body
 		c.config.Logger.Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
 		return &errors.CortexCloudAPIError{
-			Code:    Pointer(errors.CodeAPIResponseParsingFailure),
-			Message: Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
+			Code:    types.Pointer(errors.CodeAPIResponseParsingFailure),
+			Message: types.Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
 		}
 	}
 }
 
-// Do performs the given API request with iterative retry logic.
-// This is the core method for making authenticated calls to the Cortex Cloud API.
-// It returns the raw response body and a structured SDK error if any error
-// occurs (network, HTTP status, or unmarshaling).
-func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any) ([]byte, error) {
+type DoOptions struct {
+	RequestWrapperKeys  []string
+	ResponseWrapperKeys []string
+}
+
+// Do performs the given API request.
+//
+// This is the core method for making authenticated calls to the Cortex Cloud
+// API. It returns the raw response body and a structured SDK error if any
+// error occurs (network, HTTP status, or unmarshaling).
+func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any, opts *DoOptions) ([]byte, error) {
 	if c.httpClient == nil {
 		return nil, errors.NewInternalSDKError(
 			errors.CodeSDKInitializationFailure,
@@ -332,7 +330,16 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 
 	// Marshal input into JSON if present
 	if input != nil {
-		data, err = json.Marshal(input)
+		var payload any = input
+		if opts != nil && len(opts.RequestWrapperKeys) > 0 {
+			// Reverse loop to wrap from inside out
+			for i := len(opts.RequestWrapperKeys) - 1; i >= 0; i-- {
+				payload = map[string]any{
+					opts.RequestWrapperKeys[i]: payload,
+				}
+			}
+		}
+		data, err = json.Marshal(payload)
 		if err != nil {
 			return nil, errors.NewInternalSDKError(
 				errors.CodeRequestSerializationFailure,
@@ -353,7 +360,6 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 	}
 
 	for attempt := 0; attempt <= c.config.MaxRetries; attempt++ {
-		// Check for context cancellation before each attempt
 		select {
 		case <-ctx.Done():
 			return nil, errors.NewInternalSDKError(
@@ -467,7 +473,31 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 
 	// Unmarshal the response data into output if output is provided and response data exists
 	if output != nil && len(body) > 0 {
-		if err = json.Unmarshal(body, output); err != nil {
+		var dataToUnmarshal []byte = body
+		if opts != nil && len(opts.ResponseWrapperKeys) > 0 {
+			var currentData json.RawMessage = body
+			for _, key := range opts.ResponseWrapperKeys {
+				var wrapper map[string]json.RawMessage
+				if err := json.Unmarshal(currentData, &wrapper); err != nil {
+					return body, errors.NewInternalSDKError(
+						errors.CodeResponseDeserializationFailure,
+						fmt.Sprintf("failed to unmarshal response wrapper for key '%s': %v", key, err),
+						err,
+					)
+				}
+				var ok bool
+				currentData, ok = wrapper[key]
+				if !ok {
+					return body, errors.NewInternalSDKError(
+						errors.CodeResponseDeserializationFailure,
+						fmt.Sprintf("response wrapper key '%s' not found", key),
+						nil,
+					)
+				}
+			}
+			dataToUnmarshal = currentData
+		}
+		if err = json.Unmarshal(dataToUnmarshal, output); err != nil {
 			// If unmarshaling fails, return the raw body and a structured unmarshaling error
 			return body, errors.NewInternalSDKError(
 				errors.CodeResponseDeserializationFailure,

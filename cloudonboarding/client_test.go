@@ -4,14 +4,18 @@
 package cloudonboarding
 
 import (
-	"testing"
+	"os"
 	"runtime"
+	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/api"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildInfo(t *testing.T) {
+	if os.Getenv("CI") == "" {
+		t.Skip("Skipping build info test on local machine.")
+	}
 	expectedGitCommit := "test123"
 	expectedGoVersion := runtime.Version()
 	expectedBuildDate := "0000-00-00T00:00:00+0000"
@@ -29,11 +33,11 @@ func TestNewClient(t *testing.T) {
 		assert.Error(t, err)
 		assert.NotNil(t, client)
 		assert.Nil(t, client.internalClient)
-		assert.Equal(t, "received nil api.Config", err.Error())
+		assert.Equal(t, "received nil Config", err.Error())
 	})
 
 	t.Run("should create new client with valid config", func(t *testing.T) {
-		config := &api.Config{
+		config := &client.Config{
 			ApiUrl:   "https://api.example.com",
 			ApiKey:   "test-key",
 			ApiKeyId: 123,

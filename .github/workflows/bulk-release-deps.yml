@@ -1,0 +1,136 @@
+name: Bulk Create Dependent Module Releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      pre_release:
+        description: 'Create as pre-release?'
+        required: true
+        type: boolean
+        default: true
+  push:
+    branches:
+      - 'v0.0.0-dev'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Find and Release Dependent Modules
+    runs-on: ubuntu-latest
+    outputs:
+      created_tags: ${{ steps.release_step.outputs.created_tags }}
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
+        with:
+          go-version: '1.25'
+
+      - name: Find Modules, Check Tags, and Create Releases
+        id: release_step
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          CREATED_TAGS=""
+          NO_DEP_MODULES="enums errors log types"
+
+          echo "Searching for Go modules..."
+          for modfile in $(find . -name go.mod); do
+            MODULE_PATH=$(dirname "$modfile")
+            MODULE_PATH=${MODULE_PATH#./}
+
+            if [[ " $NO_DEP_MODULES " =~ " ${MODULE_PATH} " || -z "$MODULE_PATH" ]]; then
+              echo "Skipping module: $MODULE_PATH"
+              continue
+            fi
+
+            echo "---"
+            echo "Processing module at path: $MODULE_PATH"
+
+            LATEST_TAG=$(git tag -l "$MODULE_PATH/v*" | sort -V | tail -n 1)
+
+            if [ -z "$LATEST_TAG" ]; then
+              echo "No version tags found for module '$MODULE_PATH'. Skipping."
+              continue
+            fi
+            echo "Found latest tag: $LATEST_TAG"
+
+            if gh release view "$LATEST_TAG" >/dev/null 2>&1; then
+              echo "✅ Release for tag '$LATEST_TAG' already exists. Skipping."
+              continue
+            fi
+            echo "❗️ Release for '$LATEST_TAG' does not exist. Creating one now..."
+
+            MODULE_VERSION=${LATEST_TAG#$MODULE_PATH/}
+            MODULE_NAME=$(basename "$MODULE_PATH")
+            ARTIFACT_NAME="${MODULE_NAME}-${MODULE_VERSION}"
+            ARTIFACT_PATH="$GITHUB_WORKSPACE/${ARTIFACT_NAME}"
+            
+            echo "Attempting to build binary for $MODULE_NAME..."
+            if go build -C "./$MODULE_PATH" -o "$ARTIFACT_PATH"; then
+                echo "Build successful. Attaching binary to release."
+                ARTIFACT_ARGS="$ARTIFACT_PATH"
+                RELEASE_NOTES="Automated release for module **$MODULE_PATH**."
+            else
+                echo "⚠️ Build failed. This might be a library module. Creating release without binary artifact."
+                ARTIFACT_ARGS=""
+                RELEASE_NOTES="Automated release for module **$MODULE_PATH**. Build failed, so no binary is attached."
+            fi
+
+            PRE_RELEASE_FLAG=""
+            if [[ "${{ github.event.inputs.pre_release }}" == "true" ]]; then
+              PRE_RELEASE_FLAG="--prerelease"
+              echo "Marking release as a pre-release."
+            fi
+
+            echo "Creating GitHub release for $LATEST_TAG..."
+            if [ -n "$ARTIFACT_ARGS" ]; then
+              gh release create "$LATEST_TAG" \
+                --title "$MODULE_NAME $MODULE_VERSION" \
+                --notes "$RELEASE_NOTES" \
+                --generate-notes \
+                $PRE_RELEASE_FLAG \
+                "$ARTIFACT_ARGS"
+            else
+              gh release create "$LATEST_TAG" \
+                --title "$MODULE_NAME $MODULE_VERSION" \
+                --notes "$RELEASE_NOTES" \
+                --generate-notes \
+                $PRE_RELEASE_FLAG
+            fi
+            
+            if [ -f "$ARTIFACT_PATH" ]; then
+              rm "$ARTIFACT_PATH"
+            fi
+            
+            echo "Successfully created release for $LATEST_TAG."
+            CREATED_TAGS="$CREATED_TAGS $LATEST_TAG"
+          done
+          echo "---"
+          echo "created_tags=$CREATED_TAGS" >> $GITHUB_OUTPUT
+          echo "All modules processed successfully."
+
+  rollback_on_failure:
+    name: Rollback Releases on Failure
+    if: failure() && needs.release.outputs.created_tags != ''
+    runs-on: ubuntu-latest
+    needs: release
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete created releases
+        run: |
+          echo "🚨 A failure occurred. Rolling back successful releases from this run."
+          TAGS_TO_DELETE="${{ needs.release.outputs.created_tags }}"
+          for tag in $TAGS_TO_DELETE; do
+            echo "Deleting release for tag: $tag"
+            gh release delete "$tag" --yes
+          done
+          echo "Rollback complete."

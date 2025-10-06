@@ -6,90 +6,63 @@ package cloudonboarding
 import (
 	"context"
 	"net/http"
+
+	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 )
 
-// ---------------------------
-// Request/Response structs
-// ---------------------------
-
-// Get accounts in the specified integration instances
-
-type ListAccountsByInstanceRequest struct {
-	Data GetAccountsInInstancesRequestData `json:"request_data"`
+type listCloudAccountsByInstanceRequest struct {
+	InstanceIDs string           `json:"instance_id"`
+	FilterData  types.FilterData `json:"filter_data"`
 }
 
-type GetAccountsInInstancesRequestData struct {
-	InstanceId string     `json:"instance_id"`
-	FilterData FilterData `json:"filter_data"`
+type listCloudAccountsByInstanceResponse struct {
+	Data        []types.CloudAccount `json:"DATA"`
+	FilterCount int                  `json:"FILTER_COUNT"`
+	TotalCount  int                  `json:"TOTAL_COUNT"`
 }
 
-type ListAccountsByInstanceResponse struct {
-	Reply ListAccountsByInstanceResponseReply `json:"reply"`
+func (c *Client) ListCloudAccountsByInstance(ctx context.Context, instanceID string, filters types.FilterData) ([]types.CloudAccount, int, int, error) {
+	var (
+		req listCloudAccountsByInstanceRequest = listCloudAccountsByInstanceRequest{
+			InstanceIDs: instanceID,
+			FilterData:  filters,
+		}
+		resp listCloudAccountsByInstanceResponse
+	)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAccountsByInstanceEndpoint, nil, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
+
+	return resp.Data, resp.FilterCount, resp.TotalCount, err
 }
 
-type ListAccountsByInstanceResponseReply struct {
-	Data        ListAccountsByInstanceResponseData `json:"DATA"`
-	FilterCount int                                `json:"FILTER_COUNT"`
-	TotalCount  int                                `json:"TOTAL_COUNT"`
-}
-
-type ListAccountsByInstanceResponseData struct {
-	Status      string `json:"status"`
-	AccountName string `json:"account_name"`
-	AccountId   string `json:"account_id"`
-	Environment string `json:"environment"`
-	Type        string `json:"type"`
-	CreatedAt   string `json:"created_at"`
-}
-
-// Enable or disable cloud accounts
-
-type EnableDisableAccountsInInstancesRequest struct {
-	Data EnableDisableAccountsInInstancesRequestData `json:"request_data"`
-}
-
-type EnableDisableAccountsInInstancesRequestData struct {
+type enableDisableAccountsInInstancesRequest struct {
 	Ids        []string `json:"ids"`
 	InstanceId string   `json:"instance_id"`
 	Enable     bool     `json:"enable"`
 }
 
-type EnableDisableAccountsInInstancesResponse struct {
-	Reply EnableDisableAccountsInInstancesResponseReply `json:"reply"`
+func (c *Client) EnableCloudAccounts(ctx context.Context, instanceID string, accountIDs []string) error {
+	return c.toggleCloudAccounts(ctx, instanceID, accountIDs, true)
 }
 
-type EnableDisableAccountsInInstancesResponseReply struct{}
-
-// ---------------------------
-// Request functions
-// ---------------------------
-
-func (c *Client) ListAccountsByInstance(ctx context.Context, input ListAccountsByInstanceRequest) (ListAccountsByInstanceResponse, error) {
-	var ans ListAccountsByInstanceResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListAccountsByInstanceEndpoint, nil, nil, input, &ans)
-
-	return ans, err
+func (c *Client) DisableCloudAccounts(ctx context.Context, instanceID string, accountIDs []string) error {
+	return c.toggleCloudAccounts(ctx, instanceID, accountIDs, false)
 }
 
-func (c *Client) EnableAccountsInInstance(ctx context.Context, instanceId string, accountIds []string) (EnableDisableAccountsInInstancesResponse, error) {
-	return c.enableDisableAccountsInInstance(ctx, instanceId, accountIds, true)
-}
-
-func (c *Client) DisableAccountsInInstance(ctx context.Context, instanceId string, accountIds []string) (EnableDisableAccountsInInstancesResponse, error) {
-	return c.enableDisableAccountsInInstance(ctx, instanceId, accountIds, false)
-}
-
-func (c *Client) enableDisableAccountsInInstance(ctx context.Context, instanceId string, accountIds []string, enable bool) (EnableDisableAccountsInInstancesResponse, error) {
-	req := EnableDisableAccountsInInstancesRequest{
-		Data: EnableDisableAccountsInInstancesRequestData{
-			InstanceId: instanceId,
-			Ids:        accountIds,
-			Enable:     enable,
-		},
+func (c *Client) toggleCloudAccounts(ctx context.Context, instanceIDs string, accountIDs []string, enable bool) error {
+	req := enableDisableAccountsInInstancesRequest{
+		InstanceId: instanceIDs,
+		Ids:        accountIDs,
+		Enable:     enable,
 	}
 
-	var ans EnableDisableAccountsInInstancesResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableDisableAccountsInInstancesEndpoint, nil, nil, req, &ans)
+	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableDisableAccountsInInstancesEndpoint, nil, nil, req, nil, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
 
-	return ans, err
+	return err
 }
