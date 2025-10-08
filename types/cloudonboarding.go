@@ -11,17 +11,17 @@ import (
 // ----------------------------------------------------------------------------
 
 type IntegrationInstance struct {
-	ID                      string                  `json:"id" tfsdk:"id"`
-	Collector               string                  `json:"collector" tfsdk:"collector"`
-	InstanceName            string                  `json:"instance_name" tfsdk:"instance_name"`
+	ID                      string                  `json:"id"`
+	Collector               string                  `json:"collector"`
+	InstanceName            string                  `json:"instance_name"`
 	AccountName             string                  `json:"account_name,omitempty"`
 	Accounts                int                     `json:"accounts,omitempty"`
-	Scope                   string                  `json:"scope" tfsdk:"scope"`
-	CustomResourcesTags     []Tag                   `json:"tags" tfsdk:"custom_resource_tags"`
-	Scan                    Scan                    `json:"scan" tfsdk:"scan"`
-	Status                  string                  `json:"status" tfsdk:"status"`
-	CloudProvider           string                  `json:"cloud_provider" tfsdk:"cloud_provider"`
-	SecurityCapabilities    []SecurityCapability    `json:"security_capabilities" tfsdk:"security_capabilities"`
+	Scope                   string                  `json:"scope"`
+	CustomResourcesTags     []Tag                   `json:"tags"`
+	Scan                    Scan                    `json:"scan"`
+	Status                  string                  `json:"status"`
+	CloudProvider           string                  `json:"cloud_provider"`
+	SecurityCapabilities    []SecurityCapability    `json:"security_capabilities"`
 	CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
 	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
 	CreationTime            int                     `json:"creation_time,omitempty"`
@@ -33,29 +33,29 @@ type IntegrationInstance struct {
 }
 
 type Tag struct {
-	Key   string `json:"key" tfsdk:"key"`
-	Value string `json:"value" tfsdk:"value"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type Scan struct {
-	StatusUI   int    `json:"StatusUI,omitempty" tfsdk:"status_ui"`
-	OutpostID  string `json:"outpost_id,omitempty" tfsdk:"outpost_id"`
-	ScanMethod string `json:"scan_method" tfsdk:"scan_method"`
+	StatusUI   int    `json:"status_ui,omitempty"`
+	OutpostID  string `json:"outpost_id,omitempty"`
+	ScanMethod string `json:"scan_method"`
 }
 
 type SecurityCapability struct {
-	Name             string            `json:"name" tfsdk:"name"`
-	Description      string            `json:"description" tfsdk:"description"`
-	Status           int               `json:"status" tfsdk:"status"`
-	LastScanCoverage *LastScanCoverage `json:"last_scan_coverage,omitempty" tfsdk:"last_scan_coverage"`
+	Name             string            `json:"name"`
+	Description      string            `json:"description"`
+	Status           int               `json:"status"`
+	LastScanCoverage *LastScanCoverage `json:"last_scan_coverage,omitempty"`
 }
 
 type LastScanCoverage struct {
-	Excluded    int `json:"excluded" tfsdk:"excluded"`
-	Issues      int `json:"issues" tfsdk:"issues"`
-	Pending     int `json:"pending" tfsdk:"pending"`
-	Success     int `json:"success" tfsdk:"success"`
-	Unsupported int `json:"unsupported" tfsdk:"unsupported"`
+	Excluded    int `json:"excluded"`
+	Issues      int `json:"issues"`
+	Pending     int `json:"pending"`
+	Success     int `json:"success"`
+	Unsupported int `json:"unsupported"`
 }
 
 type AccountDetails struct {
@@ -63,32 +63,32 @@ type AccountDetails struct {
 }
 
 type CollectionConfiguration struct {
-	AuditLogs AuditLogsConfiguration `json:"audit_logs" tfsdk:"audit_logs"`
+	AuditLogs AuditLogsConfiguration `json:"audit_logs"`
 }
 
 type AuditLogsConfiguration struct {
-	Enabled bool `json:"enabled" tfsdk:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 type ScopeModifications struct {
-	Accounts      *ScopeModificationsOptionsGeneric `json:"accounts,omitempty" tfsdk:"accounts"`
-	Projects      *ScopeModificationsOptionsGeneric `json:"projects,omitempty" tfsdk:"projects"`
-	Subscriptions *ScopeModificationsOptionsGeneric `json:"subscriptions,omitempty" tfsdk:"subscriptions"`
-	Regions       *ScopeModificationsOptionsRegions `json:"regions,omitempty" tfsdk:"regions"`
+	Accounts      *ScopeModificationsOptionsGeneric `json:"accounts,omitempty"`
+	Projects      *ScopeModificationsOptionsGeneric `json:"projects,omitempty"`
+	Subscriptions *ScopeModificationsOptionsGeneric `json:"subscriptions,omitempty"`
+	Regions       *ScopeModificationsOptionsRegions `json:"regions,omitempty"`
 }
 
 type ScopeModificationsOptionsGeneric struct {
-	Enabled         bool     `json:"enabled" tfsdk:"enabled"`
-	Type            string   `json:"type,omitempty" tfsdk:"type"`
-	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
-	ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
-	SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
+	Enabled         bool     `json:"enabled"`
+	Type            string   `json:"type,omitempty"`
+	AccountIDs      []string `json:"account_ids,omitempty"`
+	ProjectIDs      []string `json:"project_ids,omitempty"`
+	SubscriptionIDs []string `json:"subscription_ids,omitempty"`
 }
 
 type ScopeModificationsOptionsRegions struct {
-	Enabled bool     `json:"enabled" tfsdk:"enabled"`
-	Type    string   `json:"type,omitempty" tfsdk:"type"`
-	Regions []string `json:"regions,omitempty" tfsdk:"regions"`
+	Enabled bool     `json:"enabled"`
+	Type    string   `json:"type,omitempty"`
+	Regions []string `json:"regions,omitempty"`
 }
 
 type DefaultScanningScope struct {
@@ -105,24 +105,24 @@ type AgentlessDiskScanningScope struct {
 }
 
 type AdditionalCapabilities struct {
-	XsiamAnalytics                bool                    `json:"xsiam_analytics" tfsdk:"xsiam_analytics"`
-	DataSecurityPostureManagement bool                    `json:"data_security_posture_management" tfsdk:"data_security_posture_management"`
-	RegistryScanning              bool                    `json:"registry_scanning" tfsdk:"registry_scanning"`
-	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options" tfsdk:"registry_scanning_options"`
-	AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
+	XsiamAnalytics                bool                    `json:"xsiam_analytics"`
+	DataSecurityPostureManagement bool                    `json:"data_security_posture_management"`
+	RegistryScanning              bool                    `json:"registry_scanning"`
+	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options"`
+	AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning"`
 }
 
 type RegistryScanningOptions struct {
-	Type string `json:"type" tfsdk:"type"`
+	Type string `json:"type"`
 }
 
 type Automated struct {
-	Link         string `json:"link" tfsdk:"automated_deployment_link"`
-	TrackingGuid string `json:"tracking_guid" tfsdk:"tracking_guid"`
+	Link         string `json:"link"`
+	TrackingGuid string `json:"tracking_guid"`
 }
 
 type Manual struct {
-	CF string `json:"CF" tfsdk:"manual_deployment_link"`
+	CF string `json:"CF"`
 }
 
 // CreateIntegrationTemplateRequest is the request for creating an integration template.
@@ -182,7 +182,7 @@ type GetIntegrationInstanceResponse struct {
 	SecurityCapabilities    []SecurityCapability `json:"security_capabilities"`
 	CollectionConfiguration string               `json:"collection_configuration"`
 	AdditionalCapabilities  string               `json:"additional_capabilities"`
-	UpgradeAvailable        bool                 `json:"UpgradeAvailable,omitempty"`
+	UpgradeAvailable        bool                 `json:"upgrade_available,omitempty"`
 }
 
 func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
@@ -228,20 +228,20 @@ type ListIntegrationInstancesResponseWrapper struct {
 
 // ListIntegrationInstancesResponse is the response for listing integration instances.
 type ListIntegrationInstancesResponse struct {
-	InstanceName            string             `json:"instance_name"`
-	CloudProvider           string             `json:"cloud_provider"`
-	Accounts                int                `json:"accounts,omitempty"`
-	AccountName             string             `json:"account_name,omitempty"`
-	Scope                   string             `json:"scope"`
-	ScanMode                string             `json:"scan_mode"`
-	CustomResourcesTags     string             `json:"custom_resources_tags"`
-	ProvisioningMethod      string             `json:"provisioning_method"`
-	AccountDetails          AccountDetails     `json:"account_details"`
-	ScopeModifications      ScopeModifications `json:"scope_modifications"`
-	CollectionConfiguration string             `json:"collection_configuration"`
-	AdditionalCapabilities  string             `json:"additional_capabilities"`
-	InstanceID              string             `json:"instance_id"`
-	Status                  string             `json:"status"`
+	InstanceName        string `json:"instance_name"`
+	CloudProvider       string `json:"cloud_provider"`
+	Accounts            int    `json:"accounts,omitempty"`
+	AccountName         string `json:"account_name,omitempty"`
+	Scope               string `json:"scope"`
+	ScanMode            string `json:"scan_mode"`
+	CustomResourcesTags string `json:"custom_resources_tags"`
+	ProvisioningMethod  string `json:"provisioning_method"`
+	//AccountDetails          AccountDetails     `json:"account_details"`
+	//ScopeModifications      ScopeModifications `json:"scope_modifications"`
+	CollectionConfiguration string `json:"collection_configuration"`
+	AdditionalCapabilities  string `json:"additional_capabilities"`
+	InstanceID              string `json:"instance_id"`
+	Status                  string `json:"status"`
 	//CloudPartition          string               `json:"cloud_partition"`
 	//ModifiedAt              int                  `json:"modified_at"`
 	DeletedAt            int                  `json:"deleted_at"`
@@ -374,3 +374,39 @@ type EnableDisableAccountsInInstancesRequestData struct {
 }
 
 type EnableDisableAccountsInInstancesResponseReply struct{}
+
+// ----------------------------------------------------------------------------
+// Outpost Management
+// ----------------------------------------------------------------------------
+
+// CreateOutpostTemplateRequest is the request for the CreateOutpostTemplate endpoint.
+type CreateOutpostTemplateRequest struct {
+	CloudProvider      string `json:"cloud_provider"`
+	CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
+}
+
+// UpdateOutpostRequest is the request for the UpdateOutpost endpoint.
+// The OpenAPI spec for this endpoint is faulty, so this struct is a best guess.
+type UpdateOutpostRequest struct {
+	OutpostID          string `json:"outpost_id"`
+	CloudProvider      string `json:"cloud_provider"`
+	CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
+}
+
+// ListOutpostsRequest is the request for the ListOutposts endpoint.
+type ListOutpostsRequest = ListIntegrationInstancesRequest
+
+// Outpost represents an outpost object.
+type Outpost struct {
+	CloudProvider string `json:"cloud_provider"`
+	OutpostID     string `json:"outpost_id"`
+	CreatedAt     int    `json:"created_at"`
+	Type          string `json:"type"`
+}
+
+// ListOutpostsResponse is the response for the ListOutposts endpoint.
+type ListOutpostsResponse struct {
+	Data        []Outpost `json:"DATA"`
+	FilterCount int       `json:"FILTER_COUNT"`
+	TotalCount  int       `json:"TOTAL_COUNT"`
+}
