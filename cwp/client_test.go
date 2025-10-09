@@ -4,27 +4,11 @@
 package cwp
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/stretchr/testify/assert"
 )
-
-func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
-	server := httptest.NewServer(handler)
-	config := &client.Config{
-		ApiUrl:    server.URL,
-		ApiKey:    "test-key",
-		ApiKeyId:  123,
-		Transport: server.Client().Transport.(*http.Transport),
-	}
-	client, err := NewClient(config)
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
-	return client, server
-}
 
 func TestNewClient(t *testing.T) {
 	t.Run("should return error for nil config", func(t *testing.T) {

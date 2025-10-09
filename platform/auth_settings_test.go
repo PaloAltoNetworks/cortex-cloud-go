@@ -8,28 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 )
-
-// setupTest is a helper from appsec/client_test.go
-func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
-	server := httptest.NewServer(handler)
-	config := &client.Config{
-		ApiUrl:    server.URL,
-		ApiKey:    "test-key",
-		ApiKeyId:  123,
-		Transport: server.Client().Transport.(*http.Transport),
-	}
-	client, err := NewClient(config)
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
-	return client, server
-}
 
 func TestClient_ListIDPMetadata(t *testing.T) {
 	t.Run("should list idp metadata successfully", func(t *testing.T) {

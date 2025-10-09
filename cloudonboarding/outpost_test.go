@@ -110,7 +110,7 @@ func TestClient_ListOutposts(t *testing.T) {
 						{
 							"cloud_provider": "AWS",
 							"outpost_id": "outpost-1",
-							"created_at": "2023-01-01T00:00:00Z",
+							"created_at": 1740307555361,
 							"type": "MANAGED"
 						}
 					],

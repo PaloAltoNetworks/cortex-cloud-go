@@ -33,29 +33,29 @@ type IntegrationInstance struct {
 }
 
 type Tag struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Key   string `json:"key" tfsdk:"key"`
+	Value string `json:"value" tfsdk:"value"`
 }
 
 type Scan struct {
-	StatusUI   int    `json:"status_ui,omitempty"`
-	OutpostID  string `json:"outpost_id,omitempty"`
-	ScanMethod string `json:"scan_method"`
+	StatusUI   int    `json:"status_ui,omitempty" tfsdk:"status_ui"`
+	OutpostID  string `json:"outpost_id,omitempty" tfsdk:"outpost_id"`
+	ScanMethod string `json:"scan_method" tfsdk:"scan_method"`
 }
 
 type SecurityCapability struct {
-	Name             string            `json:"name"`
-	Description      string            `json:"description"`
-	Status           int               `json:"status"`
-	LastScanCoverage *LastScanCoverage `json:"last_scan_coverage,omitempty"`
+	Name             string            `json:"name" tfsdk:"name"`
+	Description      string            `json:"description" tfsdk:"description"`
+	Status           int               `json:"status" tfsdk:"status"`
+	LastScanCoverage *LastScanCoverage `json:"last_scan_coverage,omitempty" tfsdk:"last_scan_coverage"`
 }
 
 type LastScanCoverage struct {
-	Excluded    int `json:"excluded"`
-	Issues      int `json:"issues"`
-	Pending     int `json:"pending"`
-	Success     int `json:"success"`
-	Unsupported int `json:"unsupported"`
+	Excluded    int `json:"excluded" tfsdk:"excluded"`
+	Issues      int `json:"issues" tfsdk:"issues"`
+	Pending     int `json:"pending" tfsdk:"pending"`
+	Success     int `json:"success" tfsdk:"success"`
+	Unsupported int `json:"unsupported" tfsdk:"unsupported"`
 }
 
 type AccountDetails struct {
@@ -63,32 +63,32 @@ type AccountDetails struct {
 }
 
 type CollectionConfiguration struct {
-	AuditLogs AuditLogsConfiguration `json:"audit_logs"`
+	AuditLogs AuditLogsConfiguration `json:"audit_logs" tfsdk:"audit_logs"`
 }
 
 type AuditLogsConfiguration struct {
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled" tfsdk:"enabled"`
 }
 
 type ScopeModifications struct {
-	Accounts      *ScopeModificationsOptionsGeneric `json:"accounts,omitempty"`
-	Projects      *ScopeModificationsOptionsGeneric `json:"projects,omitempty"`
-	Subscriptions *ScopeModificationsOptionsGeneric `json:"subscriptions,omitempty"`
-	Regions       *ScopeModificationsOptionsRegions `json:"regions,omitempty"`
+	Accounts      *ScopeModificationsOptionsGeneric `json:"accounts,omitempty" tfsdk:"accounts"`
+	Projects      *ScopeModificationsOptionsGeneric `json:"projects,omitempty" tfsdk:"projects"`
+	Subscriptions *ScopeModificationsOptionsGeneric `json:"subscriptions,omitempty" tfsdk:"subscriptions"`
+	Regions       *ScopeModificationsOptionsRegions `json:"regions,omitempty" tfsdk:"regions"`
 }
 
 type ScopeModificationsOptionsGeneric struct {
-	Enabled         bool     `json:"enabled"`
-	Type            string   `json:"type,omitempty"`
-	AccountIDs      []string `json:"account_ids,omitempty"`
-	ProjectIDs      []string `json:"project_ids,omitempty"`
-	SubscriptionIDs []string `json:"subscription_ids,omitempty"`
+	Enabled         bool     `json:"enabled" tfsdk:"enabled"`
+	Type            string   `json:"type,omitempty" tfsdk:"type"`
+	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
+	//ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
+	//SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
 
 type ScopeModificationsOptionsRegions struct {
-	Enabled bool     `json:"enabled"`
-	Type    string   `json:"type,omitempty"`
-	Regions []string `json:"regions,omitempty"`
+	Enabled bool     `json:"enabled" tfsdk:"enabled"`
+	Type    string   `json:"type,omitempty" tfsdk:"type"`
+	Regions []string `json:"regions,omitempty" tfsdk:"regions"`
 }
 
 type DefaultScanningScope struct {
@@ -105,24 +105,24 @@ type AgentlessDiskScanningScope struct {
 }
 
 type AdditionalCapabilities struct {
-	XsiamAnalytics                bool                    `json:"xsiam_analytics"`
-	DataSecurityPostureManagement bool                    `json:"data_security_posture_management"`
-	RegistryScanning              bool                    `json:"registry_scanning"`
-	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options"`
-	AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning"`
+	XsiamAnalytics                bool                    `json:"xsiam_analytics" tfsdk:"xsiam_analytics"`
+	DataSecurityPostureManagement bool                    `json:"data_security_posture_management" tfsdk:"data_security_posture_management"`
+	RegistryScanning              bool                    `json:"registry_scanning" tfsdk:"registry_scanning"`
+	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options" tfsdk:"registry_scanning_options"`
+	AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
 }
 
 type RegistryScanningOptions struct {
-	Type string `json:"type"`
+	Type string `json:"type" tfsdk:"type"`
 }
 
 type Automated struct {
-	Link         string `json:"link"`
-	TrackingGuid string `json:"tracking_guid"`
+	Link         string `json:"link" tfsdk:"automated_deployment_link"`
+	TrackingGuid string `json:"tracking_guid" tfsdk:"tracking_guid"`
 }
 
 type Manual struct {
-	CF string `json:"CF"`
+	CF string `json:"CF" tfsdk:"manual_deployment_link"`
 }
 
 // CreateIntegrationTemplateRequest is the request for creating an integration template.
