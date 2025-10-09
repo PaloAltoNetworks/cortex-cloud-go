@@ -54,15 +54,17 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria1Field := "xdm.asset.name"
 	andCriteria1Type := "NCONTAINS"
 	andCriteria1Value := "test"
-	membershipPredicate := types.Filter{
-		And: []*types.Filter{
-			{
-				SearchField: andCriteria1Field,
-				SearchType:  andCriteria1Type,
-				SearchValue: andCriteria1Value,
-			},
-		},
-	}
+	andFilter := types.NewAndFilter(
+		types.NewSearchFilter(
+			andCriteria1Field,
+			andCriteria1Type,
+			andCriteria1Value,
+		),
+	)
+	membershipPredicate := types.NewRootFilter(
+		[]types.Filter{ andFilter },
+		nil,
+	)
 
 	createReq := types.CreateOrUpdateAssetGroupRequest{
 		GroupName:           groupName,
@@ -101,15 +103,13 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 
 	// Read
 	listReq := types.ListAssetGroupsRequest{
-		Filters: types.Filter{
-			And: []*types.Filter{
-				{
-					SearchField: "XDM.ASSET_GROUP.NAME",
-					SearchType:  "CONTAINS",
-					SearchValue: groupName,
-				},
-			},
-		},
+		Filters: types.NewAndFilter(
+			types.NewSearchFilter(
+				"XDM.ASSET_GROUP.NAME",
+				"CONTAINS",
+				groupName,
+			),
+		),
 	}
 	assetGroups, err := client.ListAssetGroups(ctx, listReq)
 	if err != nil {
@@ -149,11 +149,18 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria2Field := "xdm.asset.name"
 	andCriteria2Type := "NCONTAINS"
 	andCriteria2Value := "test"
-	membershipPredicate.And = append(membershipPredicate.And, &types.Filter{
-		SearchField: andCriteria2Field,
-		SearchType:  andCriteria2Type,
-		SearchValue: andCriteria2Value,
-	})
+	andFilter.AddAnd(
+		types.NewSearchFilter(
+			andCriteria2Field,
+			andCriteria2Type,
+			andCriteria2Value,
+		),
+	)
+
+	membershipPredicate = types.NewRootFilter(
+		[]types.Filter{ andFilter },
+		nil,
+	)
 
 	updateReq := types.CreateOrUpdateAssetGroupRequest{
 		GroupName:           updatedGroupName,

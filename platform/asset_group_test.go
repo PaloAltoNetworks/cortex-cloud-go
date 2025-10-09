@@ -1,3 +1,6 @@
+// Copyright (c) Palo Alto Networks, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package platform
 
 import (
@@ -8,6 +11,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,15 +19,16 @@ import (
 
 func TestClient_CreateAssetGroup(t *testing.T) {
 	t.Run("should create asset group successfully", func(t *testing.T) {
-		membershipPredicate := types.Filter{
-			And: []*types.Filter{
-				{
-					SearchField: "xdm.asset.name",
-					SearchType:  "NCONTAINS",
-					SearchValue: "test",
-				},
+		membershipPredicate := types.NewRootFilter(
+			[]types.Filter{
+				types.NewSearchFilter(
+					"xdm.asset.name",
+					enums.SearchTypeNotContains.String(),
+					"test",
+				),
 			},
-		}
+			[]types.Filter{},
+		)
 
 		type requestWrapper struct {
 			RequestData struct {
@@ -37,7 +42,7 @@ func TestClient_CreateAssetGroup(t *testing.T) {
 
 			var req requestWrapper
 			err := json.NewDecoder(r.Body).Decode(&req)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, "New Group", req.RequestData.AssetGroup.GroupName)
 			assert.Equal(t, "Dynamic", req.RequestData.AssetGroup.GroupType)
 			assert.Equal(t, "Description for New Group", req.RequestData.AssetGroup.GroupDescription)

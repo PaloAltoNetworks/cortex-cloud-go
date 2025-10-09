@@ -11,17 +11,17 @@ import (
 // ----------------------------------------------------------------------------
 
 type IntegrationInstance struct {
-	ID                      string                  `json:"id" tfsdk:"id"`
-	Collector               string                  `json:"collector" tfsdk:"collector"`
-	InstanceName            string                  `json:"instance_name" tfsdk:"instance_name"`
+	ID                      string                  `json:"id"`
+	Collector               string                  `json:"collector"`
+	InstanceName            string                  `json:"instance_name"`
 	AccountName             string                  `json:"account_name,omitempty"`
 	Accounts                int                     `json:"accounts,omitempty"`
-	Scope                   string                  `json:"scope" tfsdk:"scope"`
-	CustomResourcesTags     []Tag                   `json:"tags" tfsdk:"custom_resource_tags"`
-	Scan                    Scan                    `json:"scan" tfsdk:"scan"`
-	Status                  string                  `json:"status" tfsdk:"status"`
-	CloudProvider           string                  `json:"cloud_provider" tfsdk:"cloud_provider"`
-	SecurityCapabilities    []SecurityCapability    `json:"security_capabilities" tfsdk:"security_capabilities"`
+	Scope                   string                  `json:"scope"`
+	CustomResourcesTags     []Tag                   `json:"tags"`
+	Scan                    Scan                    `json:"scan"`
+	Status                  string                  `json:"status"`
+	CloudProvider           string                  `json:"cloud_provider"`
+	SecurityCapabilities    []SecurityCapability    `json:"security_capabilities"`
 	CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
 	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
 	CreationTime            int                     `json:"creation_time,omitempty"`
@@ -38,7 +38,7 @@ type Tag struct {
 }
 
 type Scan struct {
-	StatusUI   int    `json:"StatusUI,omitempty" tfsdk:"status_ui"`
+	StatusUI   int    `json:"status_ui,omitempty" tfsdk:"status_ui"`
 	OutpostID  string `json:"outpost_id,omitempty" tfsdk:"outpost_id"`
 	ScanMethod string `json:"scan_method" tfsdk:"scan_method"`
 }
@@ -81,8 +81,8 @@ type ScopeModificationsOptionsGeneric struct {
 	Enabled         bool     `json:"enabled" tfsdk:"enabled"`
 	Type            string   `json:"type,omitempty" tfsdk:"type"`
 	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
-	ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
-	SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
+	//ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
+	//SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
 
 type ScopeModificationsOptionsRegions struct {
@@ -182,7 +182,7 @@ type GetIntegrationInstanceResponse struct {
 	SecurityCapabilities    []SecurityCapability `json:"security_capabilities"`
 	CollectionConfiguration string               `json:"collection_configuration"`
 	AdditionalCapabilities  string               `json:"additional_capabilities"`
-	UpgradeAvailable        bool                 `json:"UpgradeAvailable,omitempty"`
+	UpgradeAvailable        bool                 `json:"upgrade_available,omitempty"`
 }
 
 func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
@@ -228,20 +228,20 @@ type ListIntegrationInstancesResponseWrapper struct {
 
 // ListIntegrationInstancesResponse is the response for listing integration instances.
 type ListIntegrationInstancesResponse struct {
-	InstanceName            string             `json:"instance_name"`
-	CloudProvider           string             `json:"cloud_provider"`
-	Accounts                int                `json:"accounts,omitempty"`
-	AccountName             string             `json:"account_name,omitempty"`
-	Scope                   string             `json:"scope"`
-	ScanMode                string             `json:"scan_mode"`
-	CustomResourcesTags     string             `json:"custom_resources_tags"`
-	ProvisioningMethod      string             `json:"provisioning_method"`
-	AccountDetails          AccountDetails     `json:"account_details"`
-	ScopeModifications      ScopeModifications `json:"scope_modifications"`
-	CollectionConfiguration string             `json:"collection_configuration"`
-	AdditionalCapabilities  string             `json:"additional_capabilities"`
-	InstanceID              string             `json:"instance_id"`
-	Status                  string             `json:"status"`
+	InstanceName        string `json:"instance_name"`
+	CloudProvider       string `json:"cloud_provider"`
+	Accounts            int    `json:"accounts,omitempty"`
+	AccountName         string `json:"account_name,omitempty"`
+	Scope               string `json:"scope"`
+	ScanMode            string `json:"scan_mode"`
+	CustomResourcesTags string `json:"custom_resources_tags"`
+	ProvisioningMethod  string `json:"provisioning_method"`
+	//AccountDetails          AccountDetails     `json:"account_details"`
+	//ScopeModifications      ScopeModifications `json:"scope_modifications"`
+	CollectionConfiguration string `json:"collection_configuration"`
+	AdditionalCapabilities  string `json:"additional_capabilities"`
+	InstanceID              string `json:"instance_id"`
+	Status                  string `json:"status"`
 	//CloudPartition          string               `json:"cloud_partition"`
 	//ModifiedAt              int                  `json:"modified_at"`
 	DeletedAt            int                  `json:"deleted_at"`
@@ -374,3 +374,39 @@ type EnableDisableAccountsInInstancesRequestData struct {
 }
 
 type EnableDisableAccountsInInstancesResponseReply struct{}
+
+// ----------------------------------------------------------------------------
+// Outpost Management
+// ----------------------------------------------------------------------------
+
+// CreateOutpostTemplateRequest is the request for the CreateOutpostTemplate endpoint.
+type CreateOutpostTemplateRequest struct {
+	CloudProvider      string `json:"cloud_provider"`
+	CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
+}
+
+// UpdateOutpostRequest is the request for the UpdateOutpost endpoint.
+// The OpenAPI spec for this endpoint is faulty, so this struct is a best guess.
+type UpdateOutpostRequest struct {
+	OutpostID          string `json:"outpost_id"`
+	CloudProvider      string `json:"cloud_provider"`
+	CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
+}
+
+// ListOutpostsRequest is the request for the ListOutposts endpoint.
+type ListOutpostsRequest = ListIntegrationInstancesRequest
+
+// Outpost represents an outpost object.
+type Outpost struct {
+	CloudProvider string `json:"cloud_provider"`
+	OutpostID     string `json:"outpost_id"`
+	CreatedAt     int    `json:"created_at"`
+	Type          string `json:"type"`
+}
+
+// ListOutpostsResponse is the response for the ListOutposts endpoint.
+type ListOutpostsResponse struct {
+	Data        []Outpost `json:"DATA"`
+	FilterCount int       `json:"FILTER_COUNT"`
+	TotalCount  int       `json:"TOTAL_COUNT"`
+}

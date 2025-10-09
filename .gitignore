@@ -1,9 +1,12 @@
+# Gemini
+GEMINI.md
+
 # Misc
 .DS_Store
 test/
 .meta/
 
-# Binaries for programs and plugins
+# Binaries
 *.exe
 *.exe~
 *.dll

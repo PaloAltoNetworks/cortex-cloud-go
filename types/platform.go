@@ -17,7 +17,8 @@ type AssetGroup struct {
 	LastUpdateTime      int64              `json:"XDM.ASSET_GROUP.LAST_UPDATE_TIME"`
 	ModifiedBy          string             `json:"XDM.ASSET_GROUP.MODIFIED_BY"`
 	ModifiedByPretty    string             `json:"XDM.ASSET_GROUP.MODIFIED_BY_PRETTY"`
-	MembershipPredicate Filter             `json:"XDM.ASSET_GROUP.MEMBERSHIP_PREDICATE"`
+	//MembershipPredicate FilterGeneric      `json:"XDM.ASSET_GROUP.MEMBERSHIP_PREDICATE"`
+	MembershipPredicate FilterRoot`json:"XDM.ASSET_GROUP.MEMBERSHIP_PREDICATE"`
 	IsUsedBySBAC        bool               `json:"IS_USED_BY_SBAC"`
 }
 
@@ -33,18 +34,19 @@ type AssetGroupFilter struct {
 // CreateOrUpdateAssetGroupRequest is the request for creating or updating an
 // asset group.
 type CreateOrUpdateAssetGroupRequest struct {
-	GroupName           string `json:"group_name"`
-	GroupType           string `json:"group_type"`
-	GroupDescription    string `json:"group_description,omitempty"`
-	MembershipPredicate Filter `json:"membership_predicate"`
+	GroupName           string        `json:"group_name"`
+	GroupType           string        `json:"group_type"`
+	GroupDescription    string        `json:"group_description,omitempty"`
+	MembershipPredicate FilterRoot `json:"membership_predicate"`
 }
 
 // ListAssetGroupsRequest is the request for listing asset groups.
 type ListAssetGroupsRequest struct {
-	Filters    Filter       `json:"filters"`
-	Sort       []SortFilter `json:"sort,omitempty"`
-	SearchFrom int          `json:"search_from,omitempty"`
-	SearchTo   int          `json:"search_to,omitempty"`
+	//Filters    FilterGeneric `json:"filters"`
+	Filters    Filter `json:"filters"`
+	Sort       []SortFilter  `json:"sort,omitempty"`
+	SearchFrom int           `json:"search_from,omitempty"`
+	SearchTo   int           `json:"search_to,omitempty"`
 }
 
 // ----------------------------------------------------------------------------
@@ -182,15 +184,15 @@ type Reason struct {
 }
 
 type Role struct {
-	PrettyName  string   `json:"pretty_name" tfsdk:"pretty_name"`
-	Permissions []string `json:"permissions" tfsdk:"permissions"`
-	InsertTime  int      `json:"insert_time" tfsdk:"insert_time"`
-	UpdateTime  int      `json:"update_time" tfsdk:"update_time"`
-	CreatedBy   string   `json:"created_by" tfsdk:"created_by"`
-	Description string   `json:"description" tfsdk:"description"`
-	Tags        string   `json:"tags" tfsdk:"tags"`
-	Groups      []string `json:"groups" tfsdk:"groups"`
-	Users       []string `json:"users" tfsdk:"users"`
+	PrettyName  string   `json:"pretty_name"`
+	Permissions []string `json:"permissions"`
+	InsertTime  int      `json:"insert_time"`
+	UpdateTime  int      `json:"update_time"`
+	CreatedBy   string   `json:"created_by"`
+	Description string   `json:"description"`
+	Tags        string   `json:"tags"`
+	Groups      []string `json:"groups"`
+	Users       []string `json:"users"`
 }
 
 // GetUserRequest is the request for getting a user.
@@ -200,7 +202,7 @@ type GetUserRequest struct {
 
 // SetRoleRequest is the request for setting a role.
 type SetRoleRequest struct {
-	UserEmails []string `json:"user_emails" validate:"required,min=1,dive,required,email"`
+	UserEmails []string `json:"user_emails"`
 	RoleName   string   `json:"role_name"`
 }
 
@@ -211,7 +213,7 @@ type SetRoleResponse struct {
 
 // GetRiskScoreRequest is the request for getting a risk score.
 type GetRiskScoreRequest struct {
-	ID string `json:"id" validate:"required,sysmgmtID"`
+	ID string `json:"id"`
 }
 
 // GetRiskScoreResponse is the response for getting a risk score.

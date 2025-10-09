@@ -21,7 +21,7 @@ const (
 	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
 
 	// Asset Group Endpoints
-	CreateAssetGroupEndpoint = "public_api/v1/asset-groups/create/"
+	CreateAssetGroupEndpoint = "public_api/v1/asset-groups/create"
 	UpdateAssetGroupEndpoint = "public_api/v1/asset-groups/update/"
 	DeleteAssetGroupEndpoint = "public_api/v1/asset-groups/delete/"
 	ListAssetGroupsEndpoint  = "public_api/v1/asset-groups"

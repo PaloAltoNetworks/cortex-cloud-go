@@ -218,3 +218,219 @@ func ContainsRegistryScanningType(s string) bool {
 	}
 	return false
 }
+
+// ==============================================================================
+// SearchFieldEnums
+// ==============================================================================
+
+// SearchField represents the search field for filtering.
+type SearchField string
+
+const (
+	SearchFieldStatus               SearchField = "STATUS"
+	SearchFieldProvider             SearchField = "CLOUD_PROVIDER"
+	SearchFieldInstanceName         SearchField = "INSTANCE_NAME"
+	SearchFieldScope                SearchField = "SCOPE"
+	SearchFieldScanMode             SearchField = "SCAN_MODE"
+	SearchFieldCreationTime         SearchField = "CREATION_TIME"
+	SearchFieldOutpostID            SearchField = "OUTPOST_ID"
+	SearchFieldOutpostAccountName   SearchField = "OUTPOST_ACCOUNT_NAME"
+	SearchFieldOutpostAccountID     SearchField = "OUTPOST_ACCOUNT_ID"
+	SearchFieldAuthenticationMethod SearchField = "AUTHENTICATION_METHOD"
+	SearchFieldID                   SearchField = "ID"
+)
+
+// allSearchFields holds all valid SearchField values.
+var allSearchFields = []SearchField{
+	SearchFieldStatus,
+	SearchFieldProvider,
+	SearchFieldInstanceName,
+	SearchFieldScope,
+	SearchFieldScanMode,
+	SearchFieldCreationTime,
+	SearchFieldOutpostID,
+	SearchFieldOutpostAccountName,
+	SearchFieldOutpostAccountID,
+	SearchFieldAuthenticationMethod,
+	SearchFieldID,
+}
+
+// String returns the string representation of a SearchField.
+func (sf SearchField) String() string {
+	return string(sf)
+}
+
+// AllSearchFields returns a slice of all valid SearchField string values.
+func AllSearchFields() []string {
+	result := make([]string, len(allSearchFields))
+	for i, sf := range allSearchFields {
+		result[i] = string(sf)
+	}
+	return result
+}
+
+// ContainsSearchField checks if the given string is a valid SearchField.
+func ContainsSearchField(s string) bool {
+	for _, sf := range allSearchFields {
+		if string(sf) == s {
+			return true
+		}
+	}
+	return false
+}
+
+// ==============================================================================
+// SearchTypeEnums
+// ==============================================================================
+
+// SearchType represents the search type for filtering.
+type SearchType string
+
+const (
+	SearchTypeEqualTo              SearchType = "EQ"
+	SearchTypeNotEqualTo           SearchType = "NEQ"
+	SearchTypeGreaterThan          SearchType = "GT"
+	SearchTypeLessThan             SearchType = "LT"
+	SearchTypeGreaterThanOrEqual   SearchType = "GTE"
+	SearchTypeLessThanOrEqual      SearchType = "LTE"
+	SearchTypeIn                   SearchType = "IN"
+	SearchTypeNotIn                SearchType = "NIN"
+	SearchTypeRLIKE                SearchType = "RLIKE"
+	SearchTypeNRLIKE               SearchType = "NRLIKE"
+	SearchTypeWildcard             SearchType = "WILDCARD"
+	SearchTypeWildcardNot          SearchType = "WILDCARD_NOT"
+	SearchTypeContains             SearchType = "CONTAINS"
+	SearchTypeNotContains          SearchType = "NCONTAINS"
+	SearchTypeIPMatch              SearchType = "IP_MATCH"
+	SearchTypeIPNotMatch           SearchType = "NIP_MATCH"
+	SearchTypeArrayContains        SearchType = "ARRAY_CONTAINS"
+	SearchTypeArrayNotContains     SearchType = "ARRAY_NOT_CONTAINS"
+	SearchTypeIsEmpty              SearchType = "IS_EMPTY"
+	SearchTypeIsNotEmpty           SearchType = "NIS_EMPTY"
+	SearchTypeRegex                SearchType = "REGEX"
+	SearchTypeRegexNot             SearchType = "REGEX_NOT"
+	SearchTypeRegexMatch           SearchType = "REGEX_MATCH"
+	SearchTypeRegexNotMatch        SearchType = "REGEX_NOT_MATCH"
+	SearchTypeIPListMatch          SearchType = "IPLIST_MATCH"
+	SearchTypeListNotIPMatch       SearchType = "NLISTIP_MATCH"
+	SearchTypeInCIDR               SearchType = "INCIDR"
+	SearchTypeNotInCIDR            SearchType = "NINCIDR"
+	SearchTypeInCIDR6              SearchType = "INCIDR6"
+	SearchTypeNotInCIDR6           SearchType = "NINCIDR6"
+	SearchTypeRange                SearchType = "RANGE"
+	SearchTypeRelativeTimestamp    SearchType = "RELATIVE_TIMESTAMP"
+	SearchTypeJSONOverlaps         SearchType = "JSON_OVERLAPS"
+	SearchTypeJSONArrayContainedIn SearchType = "JSON_ARRAY_CONTAINED_IN"
+	SearchTypeJSONIsNotEmpty       SearchType = "JSON_IS_NOT_EMPTY"
+)
+
+// allSearchTypes holds all valid SearchType values.
+var allSearchTypes = []SearchType{
+	SearchTypeEqualTo,
+	SearchTypeNotEqualTo,
+	SearchTypeGreaterThan,
+	SearchTypeLessThan,
+	SearchTypeGreaterThanOrEqual,
+	SearchTypeLessThanOrEqual,
+	SearchTypeIn,
+	SearchTypeNotIn,
+	SearchTypeRLIKE,
+	SearchTypeNRLIKE,
+	SearchTypeWildcard,
+	SearchTypeWildcardNot,
+	SearchTypeContains,
+	SearchTypeNotContains,
+	SearchTypeIPMatch,
+	SearchTypeIPNotMatch,
+	SearchTypeArrayContains,
+	SearchTypeArrayNotContains,
+	SearchTypeIsEmpty,
+	SearchTypeIsNotEmpty,
+	SearchTypeRegex,
+	SearchTypeRegexNot,
+	SearchTypeRegexMatch,
+	SearchTypeRegexNotMatch,
+	SearchTypeIPListMatch,
+	SearchTypeListNotIPMatch,
+	SearchTypeInCIDR,
+	SearchTypeNotInCIDR,
+	SearchTypeInCIDR6,
+	SearchTypeNotInCIDR6,
+	SearchTypeRange,
+	SearchTypeRelativeTimestamp,
+	SearchTypeJSONOverlaps,
+	SearchTypeJSONArrayContainedIn,
+	SearchTypeJSONIsNotEmpty,
+}
+
+// String returns the string representation of a SearchType.
+func (st SearchType) String() string {
+	return string(st)
+}
+
+// AllSearchTypes returns a slice of all valid SearchType string values.
+func AllSearchTypes() []string {
+	result := make([]string, len(allSearchTypes))
+	for i, st := range allSearchTypes {
+		result[i] = string(st)
+	}
+	return result
+}
+
+// ContainsSearchType checks if the given string is a valid SearchType.
+func ContainsSearchType(s string) bool {
+	for _, st := range allSearchTypes {
+		if string(st) == s {
+			return true
+		}
+	}
+	return false
+}
+
+// ==============================================================================
+// IntegrationInstanceStatusEnums
+// ==============================================================================
+
+// IntegrationInstanceStatus represents the status of an integration instance.
+type IntegrationInstanceStatus string
+
+const (
+	IntegrationInstanceStatusPending   IntegrationInstanceStatus = "PENDING"
+	IntegrationInstanceStatusConnected IntegrationInstanceStatus = "CONNECTED"
+	IntegrationInstanceStatusWarning   IntegrationInstanceStatus = "WARNING"
+	IntegrationInstanceStatusError     IntegrationInstanceStatus = "ERROR"
+	IntegrationInstanceStatusDisabled  IntegrationInstanceStatus = "DISABLED"
+)
+
+// allIntegrationInstanceStatuses holds all valid IntegrationInstanceStatus values.
+var allIntegrationInstanceStatuses = []IntegrationInstanceStatus{
+	IntegrationInstanceStatusPending,
+	IntegrationInstanceStatusConnected,
+	IntegrationInstanceStatusWarning,
+	IntegrationInstanceStatusError,
+	IntegrationInstanceStatusDisabled,
+}
+
+// String returns the string representation of a IntegrationInstanceStatus.
+func (sf IntegrationInstanceStatus) String() string {
+	return string(sf)
+}
+
+// AllIntegrationInstanceStatuss returns a slice of all valid IntegrationInstanceStatus string values.
+func AllIntegrationInstanceStatuses() []string {
+	result := make([]string, len(allIntegrationInstanceStatuses))
+	for i, sf := range allIntegrationInstanceStatuses {
+		result[i] = string(sf)
+	}
+	return result
+}
+
+// ContainsIntegrationInstanceStatus checks if the given string is a valid IntegrationInstanceStatus.
+func ContainsIntegrationInstanceStatus(s string) bool {
+	for _, sf := range allIntegrationInstanceStatuses {
+		if string(sf) == s {
+			return true
+		}
+	}
+	return false
+}

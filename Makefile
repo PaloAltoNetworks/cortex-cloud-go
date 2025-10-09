@@ -30,8 +30,10 @@ TEST_CORTEX_PAPI_VERSION 	:= 0.0
 TEST_GO_VERSION 			:= go1.2.3
 TEST_BUILD_DATE 			:= 0000-00-00T00:00:00+0000
 
-# Package to test (defaults to all)
-TEST_PACKAGE 				?= all
+# Module to test (defaults to all)
+UNIT_TEST_MODULE 				?= all
+# Unit test to run
+UNIT_TEST_NAME				?= ""
 
 #------------------------------------------------------------------------------
 # LDFLAGS (Linker Flags) Definitions
@@ -117,19 +119,34 @@ sec: ## Scan modules for security issues with gosec.
 	@gosec -quiet ./...
 	@echo "gosec check passed!"
 
-test: test-unit test-acc ## Run all tests.
+test: test-unit test-acc # Run unit and acceptance tests.
 
-test-unit: ## Run unit tests for all or a specific module (e.g., make test-unit TEST_PACKAGE=api).
-ifeq ($(TEST_PACKAGE), all)
-	@echo "Running unit tests for all modules..."
+# To run the unit tests for the platform module:
+#
+# UNIT_TEST_MODULE=platform make test-unit
+#
+# To run only the "TestClient_GetUserGroup" unit test:
+#
+# UNIT_TEST_NAME=TestClient_GetUserGroup make test-unit
+test-unit: ## Run unit tests. Can be scoped to a specific module and/or test.
+ifeq ($(UNIT_TEST_MODULE), all)
+	@if [ -z "$(UNIT_TEST_NAME)" ]; then \
+		echo "Running unit tests for all modules..."; \
+	else \
+		echo "Running unit test \"$(UNIT_TEST_NAME)\" for all modules..."; \
+	fi
 	@$(foreach mod,$(MODULE_NAMES), \
 		echo "--- Running tests for $(mod) ---"; \
-		go test -v -race -ldflags="$(call TEST_LDFLAGS_template,$(mod))" ./$(mod) || exit 1; \
+		go test -v -race $(if $(UNIT_TEST_NAME),-run $(UNIT_TEST_NAME),) -ldflags="$(call TEST_LDFLAGS_template,$(mod))" ./$(mod) || exit 1; \
 	)
 	@echo "All unit tests passed."
 else
-	@echo "--- Running tests for $(TEST_PACKAGE) ---"
-	@go test -v -race -ldflags="$(call TEST_LDFLAGS_template,$(TEST_PACKAGE))" ./$(TEST_PACKAGE)
+	@if [ -z "$(UNIT_TEST_NAME)" ]; then \
+		echo "--- Running tests for $(UNIT_TEST_MODULE) ---"; \
+	else \
+		echo "--- Running test \"$(UNIT_TEST_NAME)\" for $(UNIT_TEST_MODULE) ---"; \
+	fi
+	@go test -v -race $(if $(UNIT_TEST_NAME),-run $(UNIT_TEST_NAME),) -ldflags="$(call TEST_LDFLAGS_template,$(UNIT_TEST_MODULE))" ./$(UNIT_TEST_MODULE)
 endif
 
 test-acc: build ## Run acceptance tests.
