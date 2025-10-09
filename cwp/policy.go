@@ -11,7 +11,8 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/cwp"
+	convert "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 )
 
 // Add Policy
@@ -32,7 +33,7 @@ func (c *Client) GetPolicyByID(ctx context.Context, policyId string) (types.Poli
 
 // List Policies
 func (c *Client) ListPolicies(ctx context.Context, policyTypes []string) ([]types.Policy, error) {
-	queryParams := types.StringSliceToQuery("policy_types", policyTypes)
+	queryParams := convert.StringSliceToQuery("policy_types", policyTypes)
 	var res []types.Policy
 	_, err := c.internalClient.Do(ctx, http.MethodGet, ListPoliciesEndpoint, nil, &queryParams, nil, &res, nil)
 	return res, err
@@ -40,7 +41,7 @@ func (c *Client) ListPolicies(ctx context.Context, policyTypes []string) ([]type
 
 // Delete Policy
 func (c *Client) DeletePolicy(ctx context.Context, policyID int, closeIssues bool) error {
-	queryVals := types.StringToQuery("close_issues", strconv.FormatBool(closeIssues))
+	queryVals := convert.StringToQuery("close_issues", strconv.FormatBool(closeIssues))
 	_, err := c.internalClient.Do(ctx, http.MethodDelete, DeletePolicyEndpoint, &[]string{strconv.Itoa(policyID)}, &queryVals, nil, nil, nil)
 	return err
 }

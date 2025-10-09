@@ -10,7 +10,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	cloudOnboardingTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/cloudonboarding"
+	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +23,7 @@ func TestClient_CreateOutpostTemplate(t *testing.T) {
 			assert.Equal(t, fmt.Sprintf("/%s", CreateOutpostTemplateEndpoint), r.URL.Path)
 
 			var reqBody struct {
-				RequestData types.CreateOutpostTemplateRequest `json:"request_data"`
+				RequestData cloudOnboardingTypes.CreateOutpostTemplateRequest `json:"request_data"`
 			}
 			err := json.NewDecoder(r.Body).Decode(&reqBody)
 			require.NoError(t, err)
@@ -38,9 +39,9 @@ func TestClient_CreateOutpostTemplate(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		input := types.CreateOutpostTemplateRequest{
+		input := cloudOnboardingTypes.CreateOutpostTemplateRequest{
 			CloudProvider: "AWS",
-			CustomResourceTags: []types.Tag{
+			CustomResourceTags: []cloudOnboardingTypes.Tag{
 				{Key: "key", Value: "value"},
 			},
 		}
@@ -61,7 +62,7 @@ func TestClient_UpdateOutpost(t *testing.T) {
 			assert.Equal(t, fmt.Sprintf("/%s", UpdateOutpostEndpoint), r.URL.Path)
 
 			var reqBody struct {
-				RequestData types.UpdateOutpostRequest `json:"request_data"`
+				RequestData cloudOnboardingTypes.UpdateOutpostRequest `json:"request_data"`
 			}
 			err := json.NewDecoder(r.Body).Decode(&reqBody)
 			require.NoError(t, err)
@@ -77,10 +78,10 @@ func TestClient_UpdateOutpost(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		input := types.UpdateOutpostRequest{
+		input := cloudOnboardingTypes.UpdateOutpostRequest{
 			OutpostID:     "outpost-123",
 			CloudProvider: "AWS",
-			CustomResourceTags: []types.Tag{
+			CustomResourceTags: []cloudOnboardingTypes.Tag{
 				{Key: "new-key", Value: "new-value"},
 			},
 		}
@@ -97,7 +98,7 @@ func TestClient_ListOutposts(t *testing.T) {
 			assert.Equal(t, fmt.Sprintf("/%s", ListOutpostsEndpoint), r.URL.Path)
 
 			var reqBody struct {
-				RequestData types.ListOutpostsRequest `json:"request_data"`
+				RequestData cloudOnboardingTypes.ListOutpostsRequest `json:"request_data"`
 			}
 			err := json.NewDecoder(r.Body).Decode(&reqBody)
 			require.NoError(t, err)
@@ -123,8 +124,8 @@ func TestClient_ListOutposts(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		input := types.ListOutpostsRequest{
-			FilterData: types.FilterData{},
+		input := cloudOnboardingTypes.ListOutpostsRequest{
+			FilterData: filterTypes.FilterData{},
 		}
 
 		resp, err := client.ListOutposts(context.Background(), input)

@@ -5,7 +5,6 @@ go 1.25.0
 require (
 	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.8
 	github.com/stretchr/testify v1.11.1
 )
 

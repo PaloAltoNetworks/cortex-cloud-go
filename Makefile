@@ -77,10 +77,7 @@ format: ## Format all Go source files.
 
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@$(foreach mod,$(MODULE_PATHS), \
-		echo "  - Tidying $(mod)"; \
-		(cd $(mod) && go mod tidy) || exit 1; \
-	)
+	@go work sync
 	@echo "Tidy successful."
 
 lint: ## Lint all modules with go vet.

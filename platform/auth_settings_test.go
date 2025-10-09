@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 	"github.com/stretchr/testify/assert"
 )
 

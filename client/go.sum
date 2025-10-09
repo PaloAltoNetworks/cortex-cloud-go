@@ -2,8 +2,6 @@ github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8 h1:ehrxS+kWaYzZablFnbh
 github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8/go.mod h1:75SBHNMHwxyrXUwhpI1dvpUU1guCfPYXrA36unQis60=
 github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8 h1:MupWF8K8mshpvcdHuLxPV6HOHnkiSvyObEirq0sVwMM=
 github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8/go.mod h1:R2dQ9LQEuhF3cUR3KPAxVfhXvIHZAtwFtD1q8g7WK34=
-github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.8 h1:MQ0jJfPnjz3qfmfEyWZ+8rvKsihCwS/K73V1VR8/eto=
-github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.8/go.mod h1:5tKIFawGP7McwFcqk23mGF59ipm2z8UUoXSOx46K9Zs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=

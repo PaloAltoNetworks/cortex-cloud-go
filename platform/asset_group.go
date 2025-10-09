@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 )
 
 // GenericAssetGroupsRespons is a generic response for asset group operations.

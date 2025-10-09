@@ -14,7 +14,8 @@ import (
 	"time"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	platformTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
+	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,19 +55,19 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria1Field := "xdm.asset.name"
 	andCriteria1Type := "NCONTAINS"
 	andCriteria1Value := "test"
-	andFilter := types.NewAndFilter(
-		types.NewSearchFilter(
+	andFilter := filterTypes.NewAndFilter(
+		filterTypes.NewSearchFilter(
 			andCriteria1Field,
 			andCriteria1Type,
 			andCriteria1Value,
 		),
 	)
-	membershipPredicate := types.NewRootFilter(
-		[]types.Filter{ andFilter },
+	membershipPredicate := filterTypes.NewRootFilter(
+		[]filterTypes.Filter{ andFilter },
 		nil,
 	)
 
-	createReq := types.CreateOrUpdateAssetGroupRequest{
+	createReq := platformTypes.CreateOrUpdateAssetGroupRequest{
 		GroupName:           groupName,
 		GroupType:           groupType,
 		GroupDescription:    groupDescription,
@@ -102,9 +103,9 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	defer testDeleteAssetGroup(t, ctx, groupID)
 
 	// Read
-	listReq := types.ListAssetGroupsRequest{
-		Filters: types.NewAndFilter(
-			types.NewSearchFilter(
+	listReq := platformTypes.ListAssetGroupsRequest{
+		Filters: filterTypes.NewAndFilter(
+			filterTypes.NewSearchFilter(
 				"XDM.ASSET_GROUP.NAME",
 				"CONTAINS",
 				groupName,
@@ -117,7 +118,7 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	}
 
 	// Check
-	expectedFilter := []types.AssetGroupFilter{
+	expectedFilter := []platformTypes.AssetGroupFilter{
 		{
 			PrettyName: "name",
 			DataType:   "TEXT",
@@ -150,19 +151,19 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	andCriteria2Type := "NCONTAINS"
 	andCriteria2Value := "test"
 	andFilter.AddAnd(
-		types.NewSearchFilter(
+		filterTypes.NewSearchFilter(
 			andCriteria2Field,
 			andCriteria2Type,
 			andCriteria2Value,
 		),
 	)
 
-	membershipPredicate = types.NewRootFilter(
-		[]types.Filter{ andFilter },
+	membershipPredicate = filterTypes.NewRootFilter(
+		[]filterTypes.Filter{ andFilter },
 		nil,
 	)
 
-	updateReq := types.CreateOrUpdateAssetGroupRequest{
+	updateReq := platformTypes.CreateOrUpdateAssetGroupRequest{
 		GroupName:           updatedGroupName,
 		GroupType:           groupType,
 		GroupDescription:    updatedGroupDescription,
@@ -185,11 +186,11 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	}
 
 	expectedUpdatedFilter := append(expectedFilter,
-		types.AssetGroupFilter{
+		platformTypes.AssetGroupFilter{
 			PrettyName: "AND",
 			RenderType: "connector",
 		},
-		types.AssetGroupFilter{
+		platformTypes.AssetGroupFilter{
 			PrettyName: andCriteria2Value,
 			RenderType: "value",
 		},
