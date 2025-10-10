@@ -13,7 +13,7 @@ type FilterRoot struct {
 }
 
 // Marker method for Filter interface compliance.
-func (FilterRoot) isFilter()     {}
+func (FilterRoot) isFilter() {}
 
 // NewRootFilter returns a new FilterRoot that represents the root of a nested
 // collection of filters.

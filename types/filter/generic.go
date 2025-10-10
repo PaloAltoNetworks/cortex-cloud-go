@@ -16,7 +16,7 @@ type FilterGeneric struct {
 }
 
 // Marker method for Filter interface compliance.
-func (FilterGeneric) isFilter()  {}
+func (FilterGeneric) isFilter() {}
 
 // NewAndFilter returns a new FilterGeneric that represents a logical AND of the provided filters.
 func NewAndFilter(filters ...Filter) FilterGeneric {

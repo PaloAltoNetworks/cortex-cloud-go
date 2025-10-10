@@ -45,7 +45,6 @@ func (f *FilterTimespan) AddOr(filters ...Filter) {
 	f.or = append(f.or, filters...)
 }
 
-
 func (f FilterTimespan) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		And         []Filter            `json:"AND,omitempty"`
@@ -106,4 +105,3 @@ func (f *FilterTimespan) UnmarshalJSON(b []byte) error {
 
 	return nil
 }
-

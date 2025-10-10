@@ -80,9 +80,9 @@ type ScopeModifications struct {
 }
 
 type ScopeModificationsOptionsGeneric struct {
-	Enabled         bool     `json:"enabled" tfsdk:"enabled"`
-	Type            string   `json:"type,omitempty" tfsdk:"type"`
-	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
+	Enabled    bool     `json:"enabled" tfsdk:"enabled"`
+	Type       string   `json:"type,omitempty" tfsdk:"type"`
+	AccountIDs []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
 	//ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
 	//SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
@@ -111,7 +111,7 @@ type AdditionalCapabilities struct {
 	DataSecurityPostureManagement bool                    `json:"data_security_posture_management" tfsdk:"data_security_posture_management"`
 	RegistryScanning              bool                    `json:"registry_scanning" tfsdk:"registry_scanning"`
 	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options" tfsdk:"registry_scanning_options"`
-	AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
+	//AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
 }
 
 type RegistryScanningOptions struct {

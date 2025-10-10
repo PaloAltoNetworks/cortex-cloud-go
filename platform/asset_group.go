@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 )
 

@@ -13,9 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	platformTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
+	platformTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,14 +28,12 @@ func setupAcceptanceTest(t *testing.T) *Client {
 		t.Fatalf("failed to convert API key ID \"%s\" to int: %s", apiKeyIDStr, err.Error())
 	}
 
-	config := &client.Config{
-		ApiUrl:   apiUrl,
-		ApiKey:   apiKey,
-		ApiKeyId: apiKeyID,
-		LogLevel: "debug",
-	}
-
-	client, err := NewClient(config)
+	client, err := NewClient(
+		WithCortexAPIURL(apiUrl),
+		WithCortexAPIKey(apiKey),
+		WithCortexAPIKeyID(apiKeyID),
+		WithLogLevel("debug"),
+	)
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 
@@ -63,7 +60,7 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 		),
 	)
 	membershipPredicate := filterTypes.NewRootFilter(
-		[]filterTypes.Filter{ andFilter },
+		[]filterTypes.Filter{andFilter},
 		nil,
 	)
 
@@ -159,7 +156,7 @@ func TestAccDynamicAssetGroupLifecycle(t *testing.T) {
 	)
 
 	membershipPredicate = filterTypes.NewRootFilter(
-		[]filterTypes.Filter{ andFilter },
+		[]filterTypes.Filter{andFilter},
 		nil,
 	)
 

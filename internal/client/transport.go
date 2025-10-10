@@ -20,7 +20,6 @@ import (
 type InternalClient interface {
 	LogLevelIsSetTo(string) bool
 	Log(ctx context.Context, level, msg string)
-	PreRequestValidationEnabled() bool
 }
 
 type transport struct {

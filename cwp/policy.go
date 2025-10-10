@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"dario.cat/mergo"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types/cwp"
 	convert "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 )

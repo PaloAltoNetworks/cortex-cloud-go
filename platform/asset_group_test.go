@@ -12,8 +12,8 @@ import (
 	"testing"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
-	platformTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
+	platformTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

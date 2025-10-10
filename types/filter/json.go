@@ -44,4 +44,3 @@ func unmarshalFilter(b []byte) (Filter, error) {
 	}
 	return f, nil
 }
-
