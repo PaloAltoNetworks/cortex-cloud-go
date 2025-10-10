@@ -4,7 +4,6 @@ go 1.25.0
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/PaloAltoNetworks/cortex-cloud-go/config v0.0.0
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8
 	github.com/stretchr/testify v1.11.1
 )
