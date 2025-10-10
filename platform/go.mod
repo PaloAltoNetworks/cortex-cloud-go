@@ -3,16 +3,14 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/platform
 go 1.25.0
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/client v0.0.8
 	github.com/PaloAltoNetworks/cortex-cloud-go/enums v0.0.8
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/types v0.0.8
 	github.com/stretchr/testify v1.11.1
 )
 
+replace github.com/PaloAltoNetworks/cortex-cloud-go/config => ../internal/config
+
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/api v0.0.4 // indirect
-	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.8 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect

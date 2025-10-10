@@ -1,9 +1,5 @@
 package types
 
-// ----------------------------------------------------------------------------
-// CWP Policy
-// ----------------------------------------------------------------------------
-
 // Policy defines the structure for a CWP policy.
 type Policy struct {
 	Id                  string   `json:"id"`

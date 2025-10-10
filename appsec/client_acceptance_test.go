@@ -11,19 +11,19 @@ package appsec
 //	"testing"
 //	"time"
 //
+//	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
 //	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
 //	"github.com/stretchr/testify/assert"
 //)
 //
 //func setupAcceptanceTest(t *testing.T) *Client {
 //	// TODO: parameterize
-//	config := &api.Config{
-//		ApiUrl:   "",
-//		ApiKey:   "",
-//		ApiKeyId: 0,
-//	}
+//	client, err := NewClient(
+//		WithCortexAPIURL(""),
+//		WithCortexAPIKey(""),
+//		WithCortexAPIKeyID(0),
+//	)
 //
-//	client, err := NewClient(config)
 //	assert.NoError(t, err)
 //	assert.NotNil(t, client)
 //	return client

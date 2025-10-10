@@ -7,13 +7,14 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/cloudonboarding"
+	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
 )
 
 type listCloudAccountsByInstanceRequest struct {
-	InstanceIDs string           `json:"instance_id"`
-	FilterData  types.FilterData `json:"filter_data"`
+	InstanceIDs string                 `json:"instance_id"`
+	FilterData  filterTypes.FilterData `json:"filter_data"`
 }
 
 type listCloudAccountsByInstanceResponse struct {
@@ -22,7 +23,7 @@ type listCloudAccountsByInstanceResponse struct {
 	TotalCount  int                  `json:"TOTAL_COUNT"`
 }
 
-func (c *Client) ListCloudAccountsByInstance(ctx context.Context, instanceID string, filters types.FilterData) ([]types.CloudAccount, int, int, error) {
+func (c *Client) ListCloudAccountsByInstance(ctx context.Context, instanceID string, filters filterTypes.FilterData) ([]types.CloudAccount, int, int, error) {
 	var (
 		req listCloudAccountsByInstanceRequest = listCloudAccountsByInstanceRequest{
 			InstanceIDs: instanceID,

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+
+	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
 )
 
 // ----------------------------------------------------------------------------
@@ -78,9 +80,9 @@ type ScopeModifications struct {
 }
 
 type ScopeModificationsOptionsGeneric struct {
-	Enabled         bool     `json:"enabled" tfsdk:"enabled"`
-	Type            string   `json:"type,omitempty" tfsdk:"type"`
-	AccountIDs      []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
+	Enabled    bool     `json:"enabled" tfsdk:"enabled"`
+	Type       string   `json:"type,omitempty" tfsdk:"type"`
+	AccountIDs []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
 	//ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
 	//SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
@@ -109,7 +111,7 @@ type AdditionalCapabilities struct {
 	DataSecurityPostureManagement bool                    `json:"data_security_posture_management" tfsdk:"data_security_posture_management"`
 	RegistryScanning              bool                    `json:"registry_scanning" tfsdk:"registry_scanning"`
 	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options" tfsdk:"registry_scanning_options"`
-	AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
+	//AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
 }
 
 type RegistryScanningOptions struct {
@@ -218,7 +220,7 @@ func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 
 // ListIntegrationInstancesRequest is the request for listing integration instances.
 type ListIntegrationInstancesRequest struct {
-	FilterData FilterData `json:"filter_data"`
+	FilterData filterTypes.FilterData `json:"filter_data"`
 }
 
 // ListIntegrationInstancesResponseWrapper is the response wrapper for listing integration instances.
@@ -332,81 +334,4 @@ type EnableOrDisableIntegrationInstancesRequest struct {
 // DeleteIntegrationInstanceRequest is the request for deleting integration instances.
 type DeleteIntegrationInstanceRequest struct {
 	IDs []string `json:"ids"`
-}
-
-// ----------------------------------------------------------------------------
-// Cloud Account Management
-// ----------------------------------------------------------------------------
-
-type CloudAccount struct {
-	Status      string `json:"status"`
-	AccountName string `json:"account_name"`
-	AccountId   string `json:"account_id"`
-	Environment string `json:"environment"`
-	Type        string `json:"type"`
-	CreatedAt   string `json:"created_at"`
-}
-
-//type GetCloudAccountsRequest struct {
-//	InstanceId string     `json:"instance_id"`
-//	FilterData FilterData `json:"filter_data"`
-//}
-
-type ListAccountsByInstanceResponseReply struct {
-	Data        []CloudAccount `json:"DATA"`
-	FilterCount int            `json:"FILTER_COUNT"`
-	TotalCount  int            `json:"TOTAL_COUNT"`
-}
-
-//type ListAccountsByInstanceResponseData struct {
-//	Status      string `json:"status"`
-//	AccountName string `json:"account_name"`
-//	AccountId   string `json:"account_id"`
-//	Environment string `json:"environment"`
-//	Type        string `json:"type"`
-//	CreatedAt   string `json:"created_at"`
-//}
-
-type EnableDisableAccountsInInstancesRequestData struct {
-	Ids        []string `json:"ids"`
-	InstanceId string   `json:"instance_id"`
-	Enable     bool     `json:"enable"`
-}
-
-type EnableDisableAccountsInInstancesResponseReply struct{}
-
-// ----------------------------------------------------------------------------
-// Outpost Management
-// ----------------------------------------------------------------------------
-
-// CreateOutpostTemplateRequest is the request for the CreateOutpostTemplate endpoint.
-type CreateOutpostTemplateRequest struct {
-	CloudProvider      string `json:"cloud_provider"`
-	CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
-}
-
-// UpdateOutpostRequest is the request for the UpdateOutpost endpoint.
-// The OpenAPI spec for this endpoint is faulty, so this struct is a best guess.
-type UpdateOutpostRequest struct {
-	OutpostID          string `json:"outpost_id"`
-	CloudProvider      string `json:"cloud_provider"`
-	CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
-}
-
-// ListOutpostsRequest is the request for the ListOutposts endpoint.
-type ListOutpostsRequest = ListIntegrationInstancesRequest
-
-// Outpost represents an outpost object.
-type Outpost struct {
-	CloudProvider string `json:"cloud_provider"`
-	OutpostID     string `json:"outpost_id"`
-	CreatedAt     int    `json:"created_at"`
-	Type          string `json:"type"`
-}
-
-// ListOutpostsResponse is the response for the ListOutposts endpoint.
-type ListOutpostsResponse struct {
-	Data        []Outpost `json:"DATA"`
-	FilterCount int       `json:"FILTER_COUNT"`
-	TotalCount  int       `json:"TOTAL_COUNT"`
 }

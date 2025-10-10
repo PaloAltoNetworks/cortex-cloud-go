@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 )
 
 // GetUser retrieves the specified user in your environment.

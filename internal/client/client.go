@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	mathRand "math/rand"
 	"net/http"
 	"net/url"
@@ -20,11 +19,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
-	internalLog "github.com/PaloAltoNetworks/cortex-cloud-go/log"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 )
-
 const (
 	// NonceLength defines the length of the cryptographic nonce used in
 	// authentication headers.
@@ -38,7 +36,7 @@ const (
 // This client is intended for internal use by higher-level SDK modules.
 // All configuration is passed during its creation via a Config object.
 type Client struct {
-	config     *Config
+	config     *config.Config
 	httpClient *http.Client
 	apiKeyId   string // String representation of ApiKeyId for headers
 
@@ -47,15 +45,9 @@ type Client struct {
 	testIndex int
 }
 
-// NewClient creates a new client from configuration values.
-func NewClient(apiUrl, apiKey string, apiKeyId int, checkEnvironment bool, opts ...Option) (*Client, error) {
-	cfg := NewConfig(apiUrl, apiKey, apiKeyId, checkEnvironment, opts...)
-	return NewClientFromConfig(cfg)
-}
-
 // NewClientFromConfig creates and initializes a new core HTTP client from a config object.
 // It takes a pointer to a Config, which should be fully configured.
-func NewClientFromConfig(cfg *Config) (*Client, error) {
+func NewClientFromConfig(cfg *config.Config) (*Client, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("received nil Config")
 	}
@@ -65,17 +57,15 @@ func NewClientFromConfig(cfg *Config) (*Client, error) {
 		return nil, fmt.Errorf("invalid API configuration: %w", err)
 	}
 
-	if cfg.Logger == nil {
-		cfg.Logger = internalLog.DefaultLogger{Logger: log.Default()}
-	}
+	cfg.SetDefaults()
 
 	// Set up the HTTP transport based on config
-	transport := cfg.Transport
+	transport := cfg.Transport()
 	if transport == nil {
 		transport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: cfg.SkipVerifyCertificate,
+				InsecureSkipVerify: cfg.SkipVerifyCertificate(),
 			},
 		}
 	}
@@ -83,18 +73,18 @@ func NewClientFromConfig(cfg *Config) (*Client, error) {
 	// Create the HTTP client
 	httpClient := &http.Client{
 		Transport: transport,
-		Timeout:   time.Duration(cfg.Timeout) * time.Second,
+		Timeout:   time.Duration(cfg.Timeout()) * time.Second,
 	}
 
 	// Wrap transport with logging if not skipped
-	if !cfg.SkipLoggingTransport {
+	if !cfg.SkipLoggingTransport() {
 		httpClient.Transport = NewTransport(httpClient.Transport, &internalClientAdapter{cfg})
 	}
 
 	return &Client{
 		config:     cfg,
 		httpClient: httpClient,
-		apiKeyId:   strconv.Itoa(cfg.ApiKeyId),
+		apiKeyId:   strconv.Itoa(cfg.CortexAPIKeyID()),
 	}, nil
 }
 
@@ -102,7 +92,7 @@ func NewClientFromConfig(cfg *Config) (*Client, error) {
 // required by the transport. This allows the transport to access logging and
 // pre-request validation settings directly from the config.
 type internalClientAdapter struct {
-	cfg *Config
+	cfg *config.Config
 }
 
 // logLevelStringToInt maps string log levels to an integer for comparison.
@@ -128,37 +118,33 @@ func logLevelStringToInt(level string) int {
 // LogLevelIsSetTo checks if the client's configured log level allows for a given specific level.
 // This method is primarily used by the transport layer to decide whether to dump detailed request/response.
 func (a *internalClientAdapter) LogLevelIsSetTo(v string) bool {
-	return logLevelStringToInt(a.cfg.LogLevel) >= logLevelStringToInt(v)
+	return logLevelStringToInt(a.cfg.LogLevel()) >= logLevelStringToInt(v)
 }
 
 // Log writes the given message to the logger according to the configured LogLevel.
 func (a *internalClientAdapter) Log(ctx context.Context, level, msg string) {
-	if a.cfg.Logger == nil {
+	if a.cfg.Logger() == nil {
 		return
 	}
 
-	configuredLevelInt := logLevelStringToInt(a.cfg.LogLevel)
+	configuredLevelInt := logLevelStringToInt(a.cfg.LogLevel())
 	msgLevelInt := logLevelStringToInt(level)
 
 	// Only log if the message's severity is greater than or equal to the configured minimum level
 	if msgLevelInt >= configuredLevelInt {
 		switch strings.ToLower(level) {
 		case "debug":
-			a.cfg.Logger.Debug(ctx, msg)
+			a.cfg.Logger().Debug(ctx, msg)
 		case "info":
-			a.cfg.Logger.Info(ctx, msg)
+			a.cfg.Logger().Info(ctx, msg)
 		case "warn":
-			a.cfg.Logger.Warn(ctx, msg)
+			a.cfg.Logger().Warn(ctx, msg)
 		case "error":
-			a.cfg.Logger.Error(ctx, msg)
+			a.cfg.Logger().Error(ctx, msg)
 		default:
-			a.cfg.Logger.Info(ctx, msg)
+			a.cfg.Logger().Info(ctx, msg)
 		}
 	}
-}
-
-func (a *internalClientAdapter) PreRequestValidationEnabled() bool {
-	return !a.cfg.SkipPreRequestValidation
 }
 
 // generateHeaders creates all header key-value pairs for the current request,
@@ -170,8 +156,8 @@ func (c *Client) generateHeaders(setContentType bool) (map[string]string, error)
 		headers["Content-Type"] = "application/json"
 	}
 
-	if c.config.Agent != "" {
-		headers["User-Agent"] = c.config.Agent
+	if c.config.Agent() != "" {
+		headers["User-Agent"] = c.config.Agent()
 	}
 
 	headers["x-xdr-auth-id"] = c.apiKeyId
@@ -190,7 +176,7 @@ func (c *Client) generateHeaders(setContentType bool) (map[string]string, error)
 
 	// Calculate Authorization hash
 	timestamp := strconv.FormatInt(time.Now().UnixMilli(), 10)
-	authKey := fmt.Sprintf("%s%s%s", c.config.ApiKey, nonce, timestamp)
+	authKey := fmt.Sprintf("%s%s%s", c.config.CortexAPIKey(), nonce, timestamp)
 	hasher := sha256.New()
 	hasher.Write([]byte(authKey))
 	apiKeyHash := hex.EncodeToString(hasher.Sum(nil))
@@ -207,7 +193,7 @@ func (c *Client) generateHeaders(setContentType bool) (map[string]string, error)
 // exponential backoff with jitter, based on the client's configuration.
 func (c *Client) calculateRetryDelay(attempt int) time.Duration {
 	// Apply default if not configured
-	retryMaxDelay := c.config.RetryMaxDelay
+	retryMaxDelay := c.config.RetryMaxDelay()
 	if retryMaxDelay == 0 {
 		retryMaxDelay = 60 // seconds
 	}
@@ -229,9 +215,9 @@ func (c *Client) calculateRetryDelay(attempt int) time.Duration {
 // the base URL, endpoint, path parameters, and query parameters.
 func (c *Client) buildRequestURL(endpoint string, pathParams *[]string, queryParams *url.Values) (string, error) {
 	// Validate base URL
-	baseURL, err := url.Parse(c.config.ApiUrl)
+	baseURL, err := url.Parse(c.config.CortexAPIURL())
 	if err != nil {
-		return "", fmt.Errorf("invalid base API URL '%s': %w", c.config.ApiUrl, err)
+		return "", fmt.Errorf("invalid base API URL '%s': %w", c.config.CortexAPIURL(), err)
 	}
 
 	// Handle path parameters
@@ -294,10 +280,10 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 	if unmarshalErr == nil {
 		return &apiError
 	} else {
-		c.config.Logger.Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
+		c.config.Logger().Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
 		return &errors.CortexCloudAPIError{
-			Code:    types.Pointer(errors.CodeAPIResponseParsingFailure),
-			Message: types.Pointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
+			Code:    types.ToPointer(errors.CodeAPIResponseParsingFailure),
+			Message: types.ToPointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
 		}
 	}
 }
@@ -359,7 +345,7 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 		)
 	}
 
-	for attempt := 0; attempt <= c.config.MaxRetries; attempt++ {
+	for attempt := 0; attempt <= c.config.MaxRetries(); attempt++ {
 		select {
 		case <-ctx.Done():
 			return nil, errors.NewInternalSDKError(
@@ -413,10 +399,10 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 					)
 				}
 				// Network or client-side errors (e.g., connection refused, timeout) are generally retryable
-				c.config.Logger.Debug(ctx, fmt.Sprintf("[ERROR] HTTP request failed (attempt %d/%d): %v", attempt+1, c.config.MaxRetries+1, err))
-				if attempt < c.config.MaxRetries {
+				c.config.Logger().Debug(ctx, fmt.Sprintf("[ERROR] HTTP request failed (attempt %d/%d): %v", attempt+1, c.config.MaxRetries()+1, err))
+				if attempt < c.config.MaxRetries() {
 					sleepDelay := c.calculateRetryDelay(attempt)
-					c.config.Logger.Debug(ctx, fmt.Sprintf("[INFO] Sleeping %v before retry (attempt %d/%d)", sleepDelay, attempt+1, c.config.MaxRetries+1))
+					c.config.Logger().Debug(ctx, fmt.Sprintf("[INFO] Sleeping %v before retry (attempt %d/%d)", sleepDelay, attempt+1, c.config.MaxRetries()+1))
 					if len(c.testData) == 0 { // Only sleep if not in test mode
 						time.Sleep(sleepDelay)
 					}
@@ -424,7 +410,7 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 				} else {
 					return nil, errors.NewInternalSDKError(
 						errors.CodeNetworkError,
-						fmt.Sprintf("HTTP request failed after %d retries: %v", c.config.MaxRetries, err),
+						fmt.Sprintf("HTTP request failed after %d retries: %v", c.config.MaxRetries(), err),
 						err,
 					)
 				}
@@ -452,8 +438,8 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 		// Handle the response status code and determine if a retry is needed
 		apiError := c.handleResponseStatus(ctx, resp.StatusCode, body)
 		if apiError != nil {
-			if isRetryableHTTPStatus(resp.StatusCode) && attempt < c.config.MaxRetries {
-				c.config.Logger.Debug(ctx, fmt.Sprintf("[INFO] API returned retryable status %d; sleeping %v before retry (attempt %d/%d)", resp.StatusCode, c.calculateRetryDelay(attempt), attempt+1, c.config.MaxRetries+1))
+			if isRetryableHTTPStatus(resp.StatusCode) && attempt < c.config.MaxRetries() {
+				c.config.Logger().Debug(ctx, fmt.Sprintf("[INFO] API returned retryable status %d; sleeping %v before retry (attempt %d/%d)", resp.StatusCode, c.calculateRetryDelay(attempt), attempt+1, c.config.MaxRetries()+1))
 				sleepDelay := c.calculateRetryDelay(attempt)
 
 				// Skip sleeping between retries if we're in a test

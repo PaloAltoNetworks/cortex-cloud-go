@@ -7,8 +7,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/types/cloudonboarding"
 )
 
 // CreateOutpostTemplate creates a new Cloud Onboarding Outpost Template.

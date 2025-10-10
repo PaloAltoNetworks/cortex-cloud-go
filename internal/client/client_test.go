@@ -1,6 +1,3 @@
-// Copyright (c) Palo Alto Networks, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package client
 
 import (
@@ -11,14 +8,12 @@ import (
 	"net/url"
 	"strings"
 	"testing"
-	//"runtime"
 
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBuildInfo(t *testing.T) {
-	// This test is a placeholder and will likely fail without build-time variables.
-	// It can be adjusted based on the actual build process.
 	t.Skip("Skipping build info test for now.")
 }
 
@@ -31,41 +26,40 @@ func TestNewClient(t *testing.T) {
 	})
 
 	t.Run("should create new client with valid config from NewClientFromConfig", func(t *testing.T) {
-		config := &Config{
-			ApiUrl:   "https://api.example.com",
-			ApiKey:   "test-key",
-			ApiKeyId: 123,
-		}
-		client, err := NewClientFromConfig(config)
+		cfg := config.NewConfig(
+			config.WithCortexAPIURL("https://api.example.com"),
+			config.WithCortexAPIKey("test-key"),
+			config.WithCortexAPIKeyID(123),
+		)
+		client, err := NewClientFromConfig(cfg)
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
 		assert.NotNil(t, client.httpClient)
-		assert.Equal(t, config, client.config)
-	})
-
-	t.Run("should create new client with valid values from NewClient", func(t *testing.T) {
-		client, err := NewClient("https://api.example.com", "test-key", 123, false)
-		assert.NoError(t, err)
-		assert.NotNil(t, client)
-		assert.NotNil(t, client.httpClient)
-		assert.Equal(t, "https://api.example.com", client.config.ApiUrl)
+		assert.Equal(t, cfg, client.config)
 	})
 
 	t.Run("should use default logger if none is provided", func(t *testing.T) {
-		config := &Config{
-			ApiUrl:   "https://api.example.com",
-			ApiKey:   "test-key",
-			ApiKeyId: 123,
-		}
-		client, err := NewClientFromConfig(config)
+		cfg := config.NewConfig(
+			config.WithCortexAPIURL("https://api.example.com"),
+			config.WithCortexAPIKey("test-key"),
+			config.WithCortexAPIKeyID(123),
+		)
+		client, err := NewClientFromConfig(cfg)
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
-		assert.NotNil(t, client.config.Logger)
+		assert.NotNil(t, client.config.Logger())
 	})
 }
 
 func TestGenerateHeaders(t *testing.T) {
-	client, _ := NewClient("https://api.example.com", "test-api-key", 1, false, WithAgent("test-agent"))
+	cfg := config.NewConfig(
+		config.WithCortexAPIURL("https://api.example.com"),
+		config.WithCortexAPIKey("test-api-key"),
+		config.WithCortexAPIKeyID(1),
+		config.WithCheckEnvironment(false),
+		config.WithAgent("test-agent"),
+	)
+	client, _ := NewClientFromConfig(cfg)
 
 	t.Run("should generate headers with content type", func(t *testing.T) {
 		headers, err := client.generateHeaders(true)
@@ -87,7 +81,13 @@ func TestGenerateHeaders(t *testing.T) {
 }
 
 func TestBuildRequestURL(t *testing.T) {
-	client, _ := NewClient("https://server.com/api/", "key", 1, false)
+	cfg := config.NewConfig(
+		config.WithCortexAPIURL("https://server.com/api/"),
+		config.WithCortexAPIKey("key"),
+		config.WithCortexAPIKeyID(1),
+		config.WithCheckEnvironment(false),
+	)
+	client, _ := NewClientFromConfig(cfg)
 
 	t.Run("should build url with path and query params", func(t *testing.T) {
 		endpoint := "v1/resource"
@@ -110,8 +110,9 @@ func TestBuildRequestURL(t *testing.T) {
 	})
 
 	t.Run("should return error for invalid base url", func(t *testing.T) {
-		client.config.ApiUrl = "::not-a-url"
-		_, err := client.buildRequestURL("v1/endpoint", nil, nil)
+		badCfg := config.NewConfig(config.WithCortexAPIURL("::not-a-url"))
+		badClient, _ := NewClientFromConfig(badCfg)
+		_, err := badClient.buildRequestURL("v1/endpoint", nil, nil)
 		assert.Error(t, err)
 	})
 }
@@ -129,15 +130,15 @@ func TestIsRetryableHTTPStatus(t *testing.T) {
 }
 
 func TestDo(t *testing.T) {
-	config := &Config{
-		ApiUrl:     "https://testing.com",
-		ApiKey:     "key",
-		ApiKeyId:   1,
-		MaxRetries: 1,
-	}
+	cfg := config.NewConfig(
+		config.WithCortexAPIURL("https://testing.com"),
+		config.WithCortexAPIKey("key"),
+		config.WithCortexAPIKeyID(1),
+		config.WithMaxRetries(1),
+	)
 
 	t.Run("should succeed on first try", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		mockResponse := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(strings.NewReader(`{"status":"success"}`)),
@@ -153,7 +154,7 @@ func TestDo(t *testing.T) {
 	})
 
 	t.Run("should retry on retryable error and then succeed", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		retryResponse := &http.Response{
 			StatusCode: http.StatusServiceUnavailable,
 			Body:       io.NopCloser(bytes.NewReader([]byte{})),
@@ -173,7 +174,7 @@ func TestDo(t *testing.T) {
 	})
 
 	t.Run("should fail on non-retryable error", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		errorResponse := &http.Response{
 			StatusCode: http.StatusNotFound,
 			Body:       io.NopCloser(strings.NewReader(`{"err_code":404,"err_msg":"Not Found"}`)),
@@ -187,7 +188,7 @@ func TestDo(t *testing.T) {
 	})
 
 	t.Run("should fail after max retries", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		retryResponse := &http.Response{
 			StatusCode: http.StatusServiceUnavailable,
 			Body:       io.NopCloser(bytes.NewReader([]byte{})),
@@ -202,7 +203,7 @@ func TestDo(t *testing.T) {
 	})
 
 	t.Run("should handle context cancellation", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel() // Cancel context immediately
 
@@ -213,7 +214,7 @@ func TestDo(t *testing.T) {
 	})
 
 	t.Run("should wrap request and unwrap response", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		// Mock response needs to be a ReadCloser
 		mockResponse := &http.Response{
 			StatusCode: http.StatusOK,
@@ -236,7 +237,7 @@ func TestDo(t *testing.T) {
 	})
 
 	t.Run("should wrap request and unwrap response with multiple keys", func(t *testing.T) {
-		client, _ := NewClientFromConfig(config)
+		client, _ := NewClientFromConfig(cfg)
 		mockResponse := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(strings.NewReader(`{"data":{"payload":{"status":"success"}}}`)),

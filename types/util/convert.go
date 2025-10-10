@@ -6,11 +6,6 @@ import (
 	"strconv"
 )
 
-// Pointer takes any type and returns a pointer for that type.
-func Pointer[T any](d T) *T {
-	return &d
-}
-
 // ConvertInterfaceToString takes an interface{} as input and attempts to convert it to a string
 // using the appropriate function from the strconv package based on its underlying type.
 // It returns the converted string and an error if the type is not supported.

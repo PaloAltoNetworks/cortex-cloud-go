@@ -12,27 +12,28 @@ import (
 	"testing"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/enums"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types"
+	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
+	platformTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/platform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient_CreateAssetGroup(t *testing.T) {
 	t.Run("should create asset group successfully", func(t *testing.T) {
-		membershipPredicate := types.NewRootFilter(
-			[]types.Filter{
-				types.NewSearchFilter(
+		membershipPredicate := filterTypes.NewRootFilter(
+			[]filterTypes.Filter{
+				filterTypes.NewSearchFilter(
 					"xdm.asset.name",
 					enums.SearchTypeNotContains.String(),
 					"test",
 				),
 			},
-			[]types.Filter{},
+			[]filterTypes.Filter{},
 		)
 
 		type requestWrapper struct {
 			RequestData struct {
-				AssetGroup types.CreateOrUpdateAssetGroupRequest `json:"asset_group"`
+				AssetGroup platformTypes.CreateOrUpdateAssetGroupRequest `json:"asset_group"`
 			} `json:"request_data"`
 		}
 
@@ -54,7 +55,7 @@ func TestClient_CreateAssetGroup(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		createReq := types.CreateOrUpdateAssetGroupRequest{
+		createReq := platformTypes.CreateOrUpdateAssetGroupRequest{
 			GroupName:           "New Group",
 			GroupType:           "Dynamic",
 			GroupDescription:    "Description for New Group",
@@ -74,7 +75,7 @@ func TestClient_UpdateAssetGroup(t *testing.T) {
 
 		type requestWrapper struct {
 			RequestData struct {
-				AssetGroup types.CreateOrUpdateAssetGroupRequest `json:"asset_group"`
+				AssetGroup platformTypes.CreateOrUpdateAssetGroupRequest `json:"asset_group"`
 			} `json:"request_data"`
 		}
 
@@ -98,7 +99,7 @@ func TestClient_UpdateAssetGroup(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		updateReq := types.CreateOrUpdateAssetGroupRequest{
+		updateReq := platformTypes.CreateOrUpdateAssetGroupRequest{
 			GroupName:        "Updated Name",
 			GroupDescription: "Updated Description",
 		}
@@ -149,7 +150,7 @@ func TestClient_ListAssetGroups(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		groups, err := client.ListAssetGroups(context.Background(), types.ListAssetGroupsRequest{})
+		groups, err := client.ListAssetGroups(context.Background(), platformTypes.ListAssetGroupsRequest{})
 		assert.NoError(t, err)
 		assert.Len(t, groups, 1)
 		assert.Equal(t, 1, groups[0].ID)

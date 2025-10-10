@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
 	"github.com/stretchr/testify/require"
 )
@@ -22,17 +21,14 @@ func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Serve
 	t.Helper()
 	t.Logf("running setupTest for %s", t.Name())
 	server := httptest.NewServer(handler)
-	config := &client.Config{
-		ApiUrl:    server.URL,
-		ApiKey:    "test-key",
-		ApiKeyId:  123,
-		Transport: server.Client().Transport.(*http.Transport),
-		Logger: log.TflogAdapter{},
-	}
-	client, err := client.NewClientFromConfig(config)
+	client, err := NewClient(
+		WithCortexAPIURL(server.URL),
+		WithCortexAPIKey(TestAPIKey),
+		WithCortexAPIKeyID(TestAPIKeyID),
+		WithTransport(server.Client().Transport.(*http.Transport)),
+		WithLogger(log.TflogAdapter{}),
+	)
 	require.NoError(t, err)
 	require.NotNil(t, client)
-	return &Client{
-		internalClient: client, 
-	}, server
+	return client, server
 }
