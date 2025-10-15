@@ -7,8 +7,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
@@ -78,7 +78,7 @@ type Client struct {
 // Marker method for CortexClient interface compliance.
 func (Client) IsCortexClient() {}
 
-// ValidateAPIKey validates the configured API Key against the target 
+// ValidateAPIKey validates the configured API Key against the target
 // Cortex tenant.
 func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
 	return c.internalClient.ValidateAPIKey(ctx)

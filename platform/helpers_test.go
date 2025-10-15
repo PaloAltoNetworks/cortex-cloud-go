@@ -16,7 +16,7 @@ import (
 //	if err != nil {
 //		return "", err
 //	}
-//	
+//
 //	return fmt.Sprintf("https://api-%s", parsedURL.Hostname()), nil
 //}
 

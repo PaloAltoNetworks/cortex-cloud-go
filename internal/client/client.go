@@ -19,18 +19,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 )
+
 const (
 	// NonceLength defines the length of the cryptographic nonce used in
 	// authentication headers.
 	NonceLength = 64
 	// AuthCharset is the character set used for generating the nonce.
 	AuthCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	// ValidateAPIKeyEndpoint is the path for the API key validation 
+	// ValidateAPIKeyEndpoint is the path for the API key validation
 	// endpoint.
 	ValidateAPIKeyEndpoint = "api_keys/validate"
 )
@@ -196,7 +197,7 @@ func (a *internalClientAdapter) Log(ctx context.Context, level, msg string) {
 	}
 }
 
-// ValidateAPIKey validates the configured API Key against the target 
+// ValidateAPIKey validates the configured API Key against the target
 // Cortex tenant.
 func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
 	var validateResp string
@@ -206,7 +207,7 @@ func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
 	return (validateResp == "true"), nil
 }
 
-// generateHeaders creates all header key-value pairs for the current request 
+// generateHeaders creates all header key-value pairs for the current request
 // using the client's configuration.
 func (c *Client) generateHeaders(setContentType bool) (map[string]string, error) {
 	headers := make(map[string]string)

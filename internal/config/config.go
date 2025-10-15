@@ -16,41 +16,41 @@ import (
 )
 
 const (
-	CORTEX_FQDN_ENV_VAR                    = "CORTEX_FQDN"
-	CORTEX_API_URL_ENV_VAR                 = "CORTEX_API_URL"
-	CORTEX_API_KEY_ENV_VAR                 = "CORTEX_API_KEY"
-	CORTEX_API_KEY_ID_ENV_VAR              = "CORTEX_API_KEY_ID"
-	CORTEX_API_KEY_TYPE_ENV_VAR            = "CORTEX_API_KEY_TYPE"
-	CORTEX_HEADERS_ENV_VAR                 = "CORTEX_HEADERS"
-	CORTEX_AGENT_ENV_VAR                   = "CORTEX_AGENT"
-	CORTEX_SKIP_SSL_VERIFY_ENV_VAR 		   = "CORTEX_SKIP_SSL_VERIFY"
-	CORTEX_CONFIG_FILE_ENV_VAR             = "CORTEX_CONFIG_FILE"
-	CORTEX_TIMEOUT_ENV_VAR                 = "CORTEX_TIMEOUT"
-	CORTEX_MAX_RETRIES_ENV_VAR             = "CORTEX_MAX_RETRIES"
-	CORTEX_RETRY_MAX_DELAY_ENV_VAR         = "CORTEX_RETRY_MAX_DELAY"
-	CORTEX_CRASH_STACK_DIR_ENV_VAR         = "CORTEX_CRASH_STACK_DIR"
-	CORTEX_LOG_LEVEL_ENV_VAR               = "CORTEX_LOG_LEVEL"
-	CORTEX_SKIP_LOGGING_TRANSPORT_ENV_VAR  = "CORTEX_SKIP_LOGGING_TRANSPORT"
+	CORTEX_FQDN_ENV_VAR                   = "CORTEX_FQDN"
+	CORTEX_API_URL_ENV_VAR                = "CORTEX_API_URL"
+	CORTEX_API_KEY_ENV_VAR                = "CORTEX_API_KEY"
+	CORTEX_API_KEY_ID_ENV_VAR             = "CORTEX_API_KEY_ID"
+	CORTEX_API_KEY_TYPE_ENV_VAR           = "CORTEX_API_KEY_TYPE"
+	CORTEX_HEADERS_ENV_VAR                = "CORTEX_HEADERS"
+	CORTEX_AGENT_ENV_VAR                  = "CORTEX_AGENT"
+	CORTEX_SKIP_SSL_VERIFY_ENV_VAR        = "CORTEX_SKIP_SSL_VERIFY"
+	CORTEX_CONFIG_FILE_ENV_VAR            = "CORTEX_CONFIG_FILE"
+	CORTEX_TIMEOUT_ENV_VAR                = "CORTEX_TIMEOUT"
+	CORTEX_MAX_RETRIES_ENV_VAR            = "CORTEX_MAX_RETRIES"
+	CORTEX_RETRY_MAX_DELAY_ENV_VAR        = "CORTEX_RETRY_MAX_DELAY"
+	CORTEX_CRASH_STACK_DIR_ENV_VAR        = "CORTEX_CRASH_STACK_DIR"
+	CORTEX_LOG_LEVEL_ENV_VAR              = "CORTEX_LOG_LEVEL"
+	CORTEX_SKIP_LOGGING_TRANSPORT_ENV_VAR = "CORTEX_SKIP_LOGGING_TRANSPORT"
 )
 
 type Config struct {
 	checkEnvironmentVars bool
-	cortexFQDN          string            `json:"fqdn"`
-	cortexAPIURL          string            `json:"api_url"`
-	cortexAPIKey          string            `json:"api_key"`
-	cortexAPIKeyID        int               `json:"api_key_id"`
-	cortexAPIKeyType      string            `json:"api_key_type"`
-	headers               map[string]string `json:"headers"`
-	agent                 string            `json:"agent"`
-	skipSSLVerify bool              `json:"skip_ssl_verify"`
-	transport             *http.Transport   `json:"-"`
-	timeout               int               `json:"timeout"`
-	maxRetries            int               `json:"max_retries"`
-	retryMaxDelay         int               `json:"retry_max_delay"`
-	crashStackDir         string            `json:"crash_stack_dir"`
-	logLevel              string            `json:"log_level"`
-	logger                cortexLog.Logger  `json:"-"`
-	skipLoggingTransport  bool              `json:"skip_logging_transport"`
+	cortexFQDN           string            `json:"fqdn"`
+	cortexAPIURL         string            `json:"api_url"`
+	cortexAPIKey         string            `json:"api_key"`
+	cortexAPIKeyID       int               `json:"api_key_id"`
+	cortexAPIKeyType     string            `json:"api_key_type"`
+	headers              map[string]string `json:"headers"`
+	agent                string            `json:"agent"`
+	skipSSLVerify        bool              `json:"skip_ssl_verify"`
+	transport            *http.Transport   `json:"-"`
+	timeout              int               `json:"timeout"`
+	maxRetries           int               `json:"max_retries"`
+	retryMaxDelay        int               `json:"retry_max_delay"`
+	crashStackDir        string            `json:"crash_stack_dir"`
+	logLevel             string            `json:"log_level"`
+	logger               cortexLog.Logger  `json:"-"`
+	skipLoggingTransport bool              `json:"skip_logging_transport"`
 }
 
 // CortexFQDN returns the FQDN of the Cortex tenant.
@@ -103,21 +103,21 @@ func (c *Config) SkipLoggingTransport() bool { return c.skipLoggingTransport }
 
 func NewConfig(opts ...Option) *Config {
 	config := &Config{
-		checkEnvironmentVars:  true,
-		cortexFQDN:            "",
-		cortexAPIURL:          "",
-		cortexAPIKeyType:      "advanced",
-		headers:               make(map[string]string),
-		agent:                 "",
-		skipSSLVerify: false,
-		transport:             http.DefaultTransport.(*http.Transport),
-		timeout:               30, // 30 seconds
-		maxRetries:            3,
-		retryMaxDelay:         60, // 60 seconds
-		crashStackDir:         os.TempDir(),
-		logLevel:              "info",
-		logger:                nil,
-		skipLoggingTransport:  false,
+		checkEnvironmentVars: true,
+		cortexFQDN:           "",
+		cortexAPIURL:         "",
+		cortexAPIKeyType:     "advanced",
+		headers:              make(map[string]string),
+		agent:                "",
+		skipSSLVerify:        false,
+		transport:            http.DefaultTransport.(*http.Transport),
+		timeout:              30, // 30 seconds
+		maxRetries:           3,
+		retryMaxDelay:        60, // 60 seconds
+		crashStackDir:        os.TempDir(),
+		logLevel:             "info",
+		logger:               nil,
+		skipLoggingTransport: false,
 	}
 
 	for _, opt := range opts {
@@ -237,7 +237,7 @@ func (c *Config) overwriteFromEnvVars() {
 			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEX_API_KEY_ID_ENV_VAR, envAPIKeyID)
 		}
 	}
-	
+
 	if envAPIKeyType, ok := os.LookupEnv(CORTEX_API_KEY_TYPE_ENV_VAR); ok {
 		c.cortexAPIKeyType = envAPIKeyType
 	}

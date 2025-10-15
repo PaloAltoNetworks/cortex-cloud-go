@@ -62,9 +62,9 @@ func convertInterfaceToString(value any) (string, error) {
 }
 
 type CortexCloudAPIError struct {
-	Reply   *CortexCloudAPIErrorReply `json:"reply,omitempty"`
-	Code    *string                   `json:"errorCode,omitempty"`
-	Message *string                   `json:"message,omitempty"`
+	Reply   *CortexCloudAPIErrorReply   `json:"reply,omitempty"`
+	Code    *string                     `json:"errorCode,omitempty"`
+	Message *string                     `json:"message,omitempty"`
 	Details *CortexCloudAPIErrorDetails `json:"details,omitempty"`
 }
 
