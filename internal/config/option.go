@@ -13,10 +13,17 @@ import (
 
 type Option func(*Config)
 
-// WithCortexAPIURL returns an Option that sets the CortexAPIURL field.
-func WithCortexAPIURL(apiUrl string) Option {
+// WithCortexFQDN returns an Option that sets the CortexFQDN field.
+func WithCortexFQDN(fqdn string) Option {
 	return func(c *Config) {
-		c.cortexAPIURL = apiUrl
+		c.cortexFQDN = fqdn
+	}
+}
+
+// WithCortexAPIURL returns an Option that sets the CortexAPIURL field.
+func WithCortexAPIURL(apiURL string) Option {
+	return func(c *Config) {
+		c.cortexAPIURL = apiURL
 	}
 }
 
@@ -28,9 +35,16 @@ func WithCortexAPIKey(apiKey string) Option {
 }
 
 // WithCortexAPIKeyID returns an Option that sets the CortexAPIKeyID field.
-func WithCortexAPIKeyID(apiKeyId int) Option {
+func WithCortexAPIKeyID(apiKeyID int) Option {
 	return func(c *Config) {
-		c.cortexAPIKeyID = apiKeyId
+		c.cortexAPIKeyID = apiKeyID
+	}
+}
+
+// WithCortexAPIKeyType returns an Option that sets the CortexAPIKeyType field.
+func WithCortexAPIKeyType(keyType string) Option {
+	return func(c *Config) {
+		c.cortexAPIKeyType = keyType
 	}
 }
 
@@ -38,13 +52,6 @@ func WithCortexAPIKeyID(apiKeyId int) Option {
 func WithCheckEnvironment(check bool) Option {
 	return func(c *Config) {
 		c.checkEnvironmentVars = check
-	}
-}
-
-// WithCortexAPIPort returns an Option that sets the CortexAPIPort field.
-func WithCortexAPIPort(port int) Option {
-	return func(c *Config) {
-		c.cortexAPIPort = port
 	}
 }
 
@@ -65,10 +72,10 @@ func WithAgent(agent string) Option {
 	}
 }
 
-// WithSkipVerifyCertificate returns an Option that sets the SkipVerifyCertificate field.
-func WithSkipVerifyCertificate(skip bool) Option {
+// WithSkipSSLVerify returns an Option that sets the SkipSSLVerify field.
+func WithSkipSSLVerify(skip bool) Option {
 	return func(c *Config) {
-		c.skipVerifyCertificate = skip
+		c.skipSSLVerify = skip
 	}
 }
 

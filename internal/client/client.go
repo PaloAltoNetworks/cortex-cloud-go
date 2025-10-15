@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 )
@@ -29,6 +30,9 @@ const (
 	NonceLength = 64
 	// AuthCharset is the character set used for generating the nonce.
 	AuthCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	// ValidateAPIKeyEndpoint is the path for the API key validation 
+	// endpoint.
+	ValidateAPIKeyEndpoint = "api_keys/validate"
 )
 
 // Client is the core HTTP client for interacting with the Cortex Cloud API.
@@ -45,6 +49,46 @@ type Client struct {
 	testIndex int
 }
 
+// Marker method for CortexClient interface compliance.
+func (Client) IsCortexClient() {}
+
+// FQDN returns the FQDN of the Cortex tenant.
+func (c *Client) FQDN() string { return c.config.CortexFQDN() }
+
+// APIURL returns the API URL for the Cortex.
+func (c *Client) APIURL() string { return c.config.CortexAPIURL() }
+
+// APIKeyType returns the Cortex API key type.
+func (c *Client) APIKeyType() string { return c.config.CortexAPIKeyType() }
+
+// SkipSSLVerify returns whether to skip TLS certificate verification.
+func (c *Client) SkipSSLVerify() bool { return c.config.SkipSSLVerify() }
+
+// Timeout returns the HTTP timeout.
+func (c *Client) Timeout() time.Duration {
+	return time.Duration(c.config.Timeout()) * time.Second
+}
+
+// MaxRetries returns the maximum number of retries.
+func (c *Client) MaxRetries() int { return c.config.MaxRetries() }
+
+// RetryMaxDelay returns the maximum retry delay.
+func (c *Client) RetryMaxDelay() time.Duration {
+	return time.Duration(c.config.RetryMaxDelay()) * time.Second
+}
+
+// CrashStackDir returns the crash stack directory.
+func (c *Client) CrashStackDir() string { return c.config.CrashStackDir() }
+
+// LogLevel returns the log level.
+func (c *Client) LogLevel() string { return c.config.LogLevel() }
+
+// Logger returns the logger.
+func (c *Client) Logger() log.Logger { return c.config.Logger() }
+
+// SkipLoggingTransport returns whether to skip logging transport.
+func (c *Client) SkipLoggingTransport() bool { return c.config.SkipLoggingTransport() }
+
 // NewClientFromConfig creates and initializes a new core HTTP client from a config object.
 // It takes a pointer to a Config, which should be fully configured.
 func NewClientFromConfig(cfg *config.Config) (*Client, error) {
@@ -59,13 +103,18 @@ func NewClientFromConfig(cfg *config.Config) (*Client, error) {
 
 	cfg.SetDefaults()
 
+	// Populate API URL using FQDN if not configured
+	//if cfg.CortexAPIURL() == "" {
+	//	cfg.CortexAPIURL
+	//}
+
 	// Set up the HTTP transport based on config
 	transport := cfg.Transport()
 	if transport == nil {
 		transport = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: cfg.SkipVerifyCertificate(),
+				InsecureSkipVerify: cfg.SkipSSLVerify(),
 			},
 		}
 	}
@@ -147,8 +196,18 @@ func (a *internalClientAdapter) Log(ctx context.Context, level, msg string) {
 	}
 }
 
-// generateHeaders creates all header key-value pairs for the current request,
-// including authentication headers, using the client's configuration.
+// ValidateAPIKey validates the configured API Key against the target 
+// Cortex tenant.
+func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
+	var validateResp string
+	if _, err := c.Do(ctx, http.MethodGet, ValidateAPIKeyEndpoint, nil, nil, nil, &validateResp, nil); err != nil {
+		return false, err
+	}
+	return (validateResp == "true"), nil
+}
+
+// generateHeaders creates all header key-value pairs for the current request 
+// using the client's configuration.
 func (c *Client) generateHeaders(setContentType bool) (map[string]string, error) {
 	headers := make(map[string]string)
 
@@ -162,29 +221,34 @@ func (c *Client) generateHeaders(setContentType bool) (map[string]string, error)
 
 	headers["x-xdr-auth-id"] = c.apiKeyId
 
-	// Generate nonce
-	nonceBytes := make([]byte, NonceLength)
-	if _, err := rand.Read(nonceBytes); err != nil {
-		return nil, fmt.Errorf("failed to generate nonce: %w", err)
+	switch strings.ToLower(c.config.CortexAPIKeyType()) {
+	case "standard":
+		headers["Authorization"] = c.config.CortexAPIKey()
+	default:
+		// Generate nonce
+		nonceBytes := make([]byte, NonceLength)
+		if _, err := rand.Read(nonceBytes); err != nil {
+			return nil, fmt.Errorf("failed to generate nonce: %w", err)
+		}
+
+		var nonceBuilder strings.Builder
+		for _, b := range nonceBytes {
+			nonceBuilder.WriteByte(AuthCharset[b%byte(len(AuthCharset))])
+		}
+		nonce := nonceBuilder.String()
+
+		// Calculate Authorization hash
+		timestamp := strconv.FormatInt(time.Now().UnixMilli(), 10)
+		authKey := fmt.Sprintf("%s%s%s", c.config.CortexAPIKey(), nonce, timestamp)
+		hasher := sha256.New()
+		hasher.Write([]byte(authKey))
+		apiKeyHash := hex.EncodeToString(hasher.Sum(nil))
+
+		// Set XDR authentication headers
+		headers["x-xdr-nonce"] = nonce
+		headers["x-xdr-timestamp"] = timestamp
+		headers["Authorization"] = apiKeyHash
 	}
-
-	var nonceBuilder strings.Builder
-	for _, b := range nonceBytes {
-		nonceBuilder.WriteByte(AuthCharset[b%byte(len(AuthCharset))])
-	}
-	nonce := nonceBuilder.String()
-
-	// Calculate Authorization hash
-	timestamp := strconv.FormatInt(time.Now().UnixMilli(), 10)
-	authKey := fmt.Sprintf("%s%s%s", c.config.CortexAPIKey(), nonce, timestamp)
-	hasher := sha256.New()
-	hasher.Write([]byte(authKey))
-	apiKeyHash := hex.EncodeToString(hasher.Sum(nil))
-
-	// Set XDR authentication headers
-	headers["x-xdr-nonce"] = nonce
-	headers["x-xdr-timestamp"] = timestamp
-	headers["Authorization"] = apiKeyHash
 
 	return headers, nil
 }

@@ -4,8 +4,6 @@
 package errors
 
 import (
-	//"bytes"
-	//"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -67,8 +65,7 @@ type CortexCloudAPIError struct {
 	Reply   *CortexCloudAPIErrorReply `json:"reply,omitempty"`
 	Code    *string                   `json:"errorCode,omitempty"`
 	Message *string                   `json:"message,omitempty"`
-	//Details map[string]any `json:"details,omitempty"`
-	Details *CortexCloudAPIErrorDetails `json:"details"`
+	Details *CortexCloudAPIErrorDetails `json:"details,omitempty"`
 }
 
 type CortexCloudAPIErrorReply struct {

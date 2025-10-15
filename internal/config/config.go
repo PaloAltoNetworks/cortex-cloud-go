@@ -16,32 +16,33 @@ import (
 )
 
 const (
-	CORTEXCLOUD_API_URL_ENV_VAR                 = "CORTEXCLOUD_API_URL"
-	CORTEXCLOUD_API_PORT_ENV_VAR                = "CORTEXCLOUD_API_PORT"
-	CORTEXCLOUD_API_KEY_ENV_VAR                 = "CORTEXCLOUD_API_KEY"
-	CORTEXCLOUD_API_KEY_ID_ENV_VAR              = "CORTEXCLOUD_API_KEY_ID"
-	CORTEXCLOUD_HEADERS_ENV_VAR                 = "CORTEXCLOUD_HEADERS"
-	CORTEXCLOUD_AGENT_ENV_VAR                   = "CORTEXCLOUD_AGENT"
-	CORTEXCLOUD_SKIP_VERIFY_CERTIFICATE_ENV_VAR = "CORTEXCLOUD_SKIP_VERIFY_CERTIFICATE"
-	CORTEXCLOUD_CONFIG_FILE_ENV_VAR             = "CORTEXCLOUD_CONFIG_FILE"
-	CORTEXCLOUD_TIMEOUT_ENV_VAR                 = "CORTEXCLOUD_TIMEOUT"
-	CORTEXCLOUD_MAX_RETRIES_ENV_VAR             = "CORTEXCLOUD_MAX_RETRIES"
-	CORTEXCLOUD_RETRY_MAX_DELAY_ENV_VAR         = "CORTEXCLOUD_RETRY_MAX_DELAY"
-	CORTEXCLOUD_CRASH_STACK_DIR_ENV_VAR         = "CORTEXCLOUD_CRASH_STACK_DIR"
-	CORTEXCLOUD_LOG_LEVEL_ENV_VAR               = "CORTEXCLOUD_LOG_LEVEL"
-	CORTEXCLOUD_SKIP_LOGGING_TRANSPORT_ENV_VAR  = "CORTEXCLOUD_SKIP_LOGGING_TRANSPORT"
+	CORTEX_FQDN_ENV_VAR                    = "CORTEX_FQDN"
+	CORTEX_API_URL_ENV_VAR                 = "CORTEX_API_URL"
+	CORTEX_API_KEY_ENV_VAR                 = "CORTEX_API_KEY"
+	CORTEX_API_KEY_ID_ENV_VAR              = "CORTEX_API_KEY_ID"
+	CORTEX_API_KEY_TYPE_ENV_VAR            = "CORTEX_API_KEY_TYPE"
+	CORTEX_HEADERS_ENV_VAR                 = "CORTEX_HEADERS"
+	CORTEX_AGENT_ENV_VAR                   = "CORTEX_AGENT"
+	CORTEX_SKIP_SSL_VERIFY_ENV_VAR 		   = "CORTEX_SKIP_SSL_VERIFY"
+	CORTEX_CONFIG_FILE_ENV_VAR             = "CORTEX_CONFIG_FILE"
+	CORTEX_TIMEOUT_ENV_VAR                 = "CORTEX_TIMEOUT"
+	CORTEX_MAX_RETRIES_ENV_VAR             = "CORTEX_MAX_RETRIES"
+	CORTEX_RETRY_MAX_DELAY_ENV_VAR         = "CORTEX_RETRY_MAX_DELAY"
+	CORTEX_CRASH_STACK_DIR_ENV_VAR         = "CORTEX_CRASH_STACK_DIR"
+	CORTEX_LOG_LEVEL_ENV_VAR               = "CORTEX_LOG_LEVEL"
+	CORTEX_SKIP_LOGGING_TRANSPORT_ENV_VAR  = "CORTEX_SKIP_LOGGING_TRANSPORT"
 )
 
 type Config struct {
 	checkEnvironmentVars bool
-	// TODO: change json tags
+	cortexFQDN          string            `json:"fqdn"`
 	cortexAPIURL          string            `json:"api_url"`
 	cortexAPIKey          string            `json:"api_key"`
 	cortexAPIKeyID        int               `json:"api_key_id"`
-	cortexAPIPort         int               `json:"cortex_api_port"`
+	cortexAPIKeyType      string            `json:"api_key_type"`
 	headers               map[string]string `json:"headers"`
 	agent                 string            `json:"agent"`
-	skipVerifyCertificate bool              `json:"skip_verify_certificate"`
+	skipSSLVerify bool              `json:"skip_ssl_verify"`
 	transport             *http.Transport   `json:"-"`
 	timeout               int               `json:"timeout"`
 	maxRetries            int               `json:"max_retries"`
@@ -52,8 +53,14 @@ type Config struct {
 	skipLoggingTransport  bool              `json:"skip_logging_transport"`
 }
 
-// CortexAPIURL returns the Cortex API URL.
+// CortexFQDN returns the FQDN of the Cortex tenant.
+func (c *Config) CortexFQDN() string { return c.cortexFQDN }
+
+// CortexAPIURL returns the API URL for the Cortex.
 func (c *Config) CortexAPIURL() string { return c.cortexAPIURL }
+
+// CortexAPIKeyType returns the Cortex API key type.
+func (c *Config) CortexAPIKeyType() string { return c.cortexAPIKeyType }
 
 // CortexAPIKey returns the Cortex API key.
 func (c *Config) CortexAPIKey() string { return c.cortexAPIKey }
@@ -61,17 +68,14 @@ func (c *Config) CortexAPIKey() string { return c.cortexAPIKey }
 // CortexAPIKeyID returns the Cortex API key ID.
 func (c *Config) CortexAPIKeyID() int { return c.cortexAPIKeyID }
 
-// CortexAPIPort returns the Cortex API port.
-func (c *Config) CortexAPIPort() int { return c.cortexAPIPort }
-
 // Headers returns the HTTP headers.
 func (c *Config) Headers() map[string]string { return c.headers }
 
 // Agent returns the user agent.
 func (c *Config) Agent() string { return c.agent }
 
-// SkipVerifyCertificate returns whether to skip TLS certificate verification.
-func (c *Config) SkipVerifyCertificate() bool { return c.skipVerifyCertificate }
+// SkipSSLVerify returns whether to skip TLS certificate verification.
+func (c *Config) SkipSSLVerify() bool { return c.skipSSLVerify }
 
 // Transport returns the HTTP transport.
 func (c *Config) Transport() *http.Transport { return c.transport }
@@ -100,10 +104,12 @@ func (c *Config) SkipLoggingTransport() bool { return c.skipLoggingTransport }
 func NewConfig(opts ...Option) *Config {
 	config := &Config{
 		checkEnvironmentVars:  true,
-		cortexAPIPort:         443,
+		cortexFQDN:            "",
+		cortexAPIURL:          "",
+		cortexAPIKeyType:      "advanced",
 		headers:               make(map[string]string),
 		agent:                 "",
-		skipVerifyCertificate: false,
+		skipSSLVerify: false,
 		transport:             http.DefaultTransport.(*http.Transport),
 		timeout:               30, // 30 seconds
 		maxRetries:            3,
@@ -122,6 +128,10 @@ func NewConfig(opts ...Option) *Config {
 		config.overwriteFromEnvVars()
 	}
 
+	if config.cortexAPIURL == "" || !strings.HasPrefix(config.cortexAPIURL, "https://api-") {
+		config.cortexAPIURL = fqdnToAPIURL(config.cortexFQDN)
+	}
+
 	return config
 }
 
@@ -136,15 +146,19 @@ func NewConfigFromFile(filepath string, checkEnvironment bool) (*Config, error) 
 		return nil, fmt.Errorf("Error unmarshalling configuration file: %s", err)
 	}
 
+	if cFile.cortexAPIURL == "" || !strings.HasPrefix(cFile.cortexAPIURL, "https://api-") {
+		cFile.cortexAPIURL = fqdnToAPIURL(cFile.cortexFQDN)
+	}
 	return NewConfig(
+		WithCortexFQDN(cFile.cortexFQDN),
 		WithCortexAPIURL(cFile.cortexAPIURL),
 		WithCortexAPIKey(cFile.cortexAPIKey),
 		WithCortexAPIKeyID(cFile.cortexAPIKeyID),
+		WithCortexAPIKeyType(cFile.cortexAPIKeyType),
 		WithCheckEnvironment(checkEnvironment),
-		WithCortexAPIPort(cFile.cortexAPIPort),
 		WithHeaders(cFile.headers),
 		WithAgent(cFile.agent),
-		WithSkipVerifyCertificate(cFile.skipVerifyCertificate),
+		WithSkipSSLVerify(cFile.skipSSLVerify),
 		WithTransport(cFile.transport),
 		WithTimeout(cFile.timeout),
 		WithMaxRetries(cFile.maxRetries),
@@ -158,13 +172,14 @@ func NewConfigFromFile(filepath string, checkEnvironment bool) (*Config, error) 
 
 func (c *Config) GetOptions() []Option {
 	return []Option{
+		WithCortexFQDN(c.cortexFQDN),
 		WithCortexAPIURL(c.cortexAPIURL),
 		WithCortexAPIKey(c.cortexAPIKey),
 		WithCortexAPIKeyID(c.cortexAPIKeyID),
-		WithCortexAPIPort(c.cortexAPIPort),
+		WithCortexAPIKeyType(c.cortexAPIKeyType),
 		WithHeaders(c.headers),
 		WithAgent(c.agent),
-		WithSkipVerifyCertificate(c.skipVerifyCertificate),
+		WithSkipSSLVerify(c.skipSSLVerify),
 		WithTransport(c.transport),
 		WithTimeout(c.timeout),
 		WithMaxRetries(c.maxRetries),
@@ -178,9 +193,16 @@ func (c *Config) GetOptions() []Option {
 
 func (c Config) Validate() error {
 	// TODO
-	// - Make sure URL begins with `api-`
-	// - Hit healthcheck endpoint
-	// - Check if basic or advanced API key
+	// - Ensure `api-` prefix
+	// - healthcheck
+	// - API key type
+	if c.cortexFQDN == "" && c.cortexAPIURL == "" {
+		return fmt.Errorf("must define at least one of the FQDN and API URL fields")
+	}
+	if c.cortexFQDN != "" && c.cortexAPIURL == "" {
+		return fmt.Errorf("API URL value not set")
+	}
+
 	return nil
 }
 
@@ -189,34 +211,36 @@ func (c *Config) SetDefaults() {
 	if c.logger == nil {
 		c.logger = cortexLog.DefaultLogger{Logger: log.Default()}
 	}
+	if c.cortexAPIKeyType == "" {
+		c.cortexAPIKeyType = "standard"
+	}
 }
 
 func (c *Config) overwriteFromEnvVars() {
-	if envApiUrl, ok := os.LookupEnv(CORTEXCLOUD_API_URL_ENV_VAR); ok {
-		c.cortexAPIURL = envApiUrl
+	if envFQDN, ok := os.LookupEnv(CORTEX_FQDN_ENV_VAR); ok {
+		c.cortexFQDN = envFQDN
+	}
+	if envAPIURL, ok := os.LookupEnv(CORTEX_API_URL_ENV_VAR); ok {
+		c.cortexAPIURL = envAPIURL
 	}
 
-	if envApiKey, ok := os.LookupEnv(CORTEXCLOUD_API_KEY_ENV_VAR); ok {
-		c.cortexAPIKey = envApiKey
+	if envAPIKey, ok := os.LookupEnv(CORTEX_API_KEY_ENV_VAR); ok {
+		c.cortexAPIKey = envAPIKey
 	}
 
-	if envApiKeyId, ok := os.LookupEnv(CORTEXCLOUD_API_KEY_ID_ENV_VAR); ok {
-		if parsedInt, err := strconv.Atoi(envApiKeyId); err == nil {
+	if envAPIKeyID, ok := os.LookupEnv(CORTEX_API_KEY_ID_ENV_VAR); ok {
+		if parsedInt, err := strconv.Atoi(envAPIKeyID); err == nil {
 			c.cortexAPIKeyID = parsedInt
 		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEXCLOUD_API_KEY_ID_ENV_VAR, envApiKeyId)
+			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEX_API_KEY_ID_ENV_VAR, envAPIKeyID)
 		}
 	}
-
-	if envApiPort, ok := os.LookupEnv(CORTEXCLOUD_API_PORT_ENV_VAR); ok {
-		if parsedInt, err := strconv.Atoi(envApiPort); err == nil {
-			c.cortexAPIPort = parsedInt
-		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEXCLOUD_API_PORT_ENV_VAR, envApiPort)
-		}
+	
+	if envAPIKeyType, ok := os.LookupEnv(CORTEX_API_KEY_TYPE_ENV_VAR); ok {
+		c.cortexAPIKeyType = envAPIKeyType
 	}
 
-	if envHeaders, ok := os.LookupEnv(CORTEXCLOUD_HEADERS_ENV_VAR); ok {
+	if envHeaders, ok := os.LookupEnv(CORTEX_HEADERS_ENV_VAR); ok {
 		// Example: HEADERS="Content-Type=application/json,Authorization=Bearer xyz"
 		if c.headers == nil {
 			c.headers = make(map[string]string)
@@ -230,55 +254,79 @@ func (c *Config) overwriteFromEnvVars() {
 		}
 	}
 
-	if envAgent, ok := os.LookupEnv(CORTEXCLOUD_AGENT_ENV_VAR); ok {
+	if envAgent, ok := os.LookupEnv(CORTEX_AGENT_ENV_VAR); ok {
 		c.agent = envAgent
 	}
 
-	if envSkipVerifyCertificate, ok := os.LookupEnv(CORTEXCLOUD_SKIP_VERIFY_CERTIFICATE_ENV_VAR); ok {
-		if parsedBool, err := strconv.ParseBool(envSkipVerifyCertificate); err == nil {
-			c.skipVerifyCertificate = parsedBool
+	if envSkipSSLVerify, ok := os.LookupEnv(CORTEX_SKIP_SSL_VERIFY_ENV_VAR); ok {
+		if parsedBool, err := strconv.ParseBool(envSkipSSLVerify); err == nil {
+			c.skipSSLVerify = parsedBool
 		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected true/false.\n", CORTEXCLOUD_SKIP_VERIFY_CERTIFICATE_ENV_VAR, envSkipVerifyCertificate)
+			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected true/false.\n", CORTEX_SKIP_SSL_VERIFY_ENV_VAR, envSkipSSLVerify)
 		}
 	}
 
-	if envTimeout, ok := os.LookupEnv(CORTEXCLOUD_TIMEOUT_ENV_VAR); ok {
+	if envTimeout, ok := os.LookupEnv(CORTEX_TIMEOUT_ENV_VAR); ok {
 		if parsedInt, err := strconv.Atoi(envTimeout); err == nil {
 			c.timeout = parsedInt
 		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEXCLOUD_TIMEOUT_ENV_VAR, envTimeout)
+			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEX_TIMEOUT_ENV_VAR, envTimeout)
 		}
 	}
 
-	if envMaxRetries, ok := os.LookupEnv(CORTEXCLOUD_MAX_RETRIES_ENV_VAR); ok {
+	if envMaxRetries, ok := os.LookupEnv(CORTEX_MAX_RETRIES_ENV_VAR); ok {
 		if parsedInt, err := strconv.Atoi(envMaxRetries); err == nil {
 			c.maxRetries = parsedInt
 		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEXCLOUD_MAX_RETRIES_ENV_VAR, envMaxRetries)
+			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEX_MAX_RETRIES_ENV_VAR, envMaxRetries)
 		}
 	}
 
-	if envRetryMaxDelay, ok := os.LookupEnv(CORTEXCLOUD_RETRY_MAX_DELAY_ENV_VAR); ok {
+	if envRetryMaxDelay, ok := os.LookupEnv(CORTEX_RETRY_MAX_DELAY_ENV_VAR); ok {
 		if parsedInt, err := strconv.Atoi(envRetryMaxDelay); err == nil {
 			c.retryMaxDelay = parsedInt
 		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEXCLOUD_RETRY_MAX_DELAY_ENV_VAR, envRetryMaxDelay)
+			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected integer.\n", CORTEX_RETRY_MAX_DELAY_ENV_VAR, envRetryMaxDelay)
 		}
 	}
 
-	if envCrashStackDir, ok := os.LookupEnv(CORTEXCLOUD_CRASH_STACK_DIR_ENV_VAR); ok {
+	if envCrashStackDir, ok := os.LookupEnv(CORTEX_CRASH_STACK_DIR_ENV_VAR); ok {
 		c.crashStackDir = envCrashStackDir
 	}
 
-	if envLogLevel, ok := os.LookupEnv(CORTEXCLOUD_LOG_LEVEL_ENV_VAR); ok {
+	if envLogLevel, ok := os.LookupEnv(CORTEX_LOG_LEVEL_ENV_VAR); ok {
 		c.logLevel = envLogLevel
 	}
 
-	if envSkipLoggingTransport, ok := os.LookupEnv(CORTEXCLOUD_SKIP_LOGGING_TRANSPORT_ENV_VAR); ok {
+	if envSkipLoggingTransport, ok := os.LookupEnv(CORTEX_SKIP_LOGGING_TRANSPORT_ENV_VAR); ok {
 		if parsedBool, err := strconv.ParseBool(envSkipLoggingTransport); err == nil {
 			c.skipLoggingTransport = parsedBool
 		} else {
-			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected true/false.\n", CORTEXCLOUD_SKIP_LOGGING_TRANSPORT_ENV_VAR, envSkipLoggingTransport)
+			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected true/false.\n", CORTEX_SKIP_LOGGING_TRANSPORT_ENV_VAR, envSkipLoggingTransport)
 		}
 	}
+}
+
+func fqdnToAPIURL(fqdn string) string {
+	fqdnLowercase := strings.ToLower(fqdn)
+	if strings.HasPrefix(fqdnLowercase, "https://api-") {
+		return fqdn
+	}
+
+	ensureAPIPrefix := func(hostname string) string {
+		if !strings.HasPrefix(hostname, "api-") {
+			return "api-" + hostname
+		}
+		return hostname
+	}
+
+	if !strings.HasPrefix(strings.ToLower(fqdn), "https://") {
+		fqdnParts := strings.SplitN(fqdn, "://", 2)
+		if len(fqdnParts) != 2 {
+			return "https://" + ensureAPIPrefix(fqdn)
+		}
+		return "https://" + ensureAPIPrefix(fqdnParts[1])
+	}
+
+	return ensureAPIPrefix(fqdn)
 }

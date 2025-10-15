@@ -11,7 +11,9 @@ import (
 
 func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
 	t.Helper()
-	t.Logf("running setupTest for %s", t.Name())
+
+	t.Logf("Creating test server for %s", t.Name())
+
 	server := httptest.NewServer(handler)
 	client, err := NewClient(
 		WithCortexAPIURL(server.URL),
