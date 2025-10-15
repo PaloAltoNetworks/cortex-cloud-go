@@ -4,8 +4,12 @@
 package appsec
 
 import (
-	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
+	"context"
+	"time"
+
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
 // API endpoint path specification.
@@ -19,20 +23,22 @@ const (
 type Option = config.Option
 
 var (
+	// WithCortexFQDN is an option to set the Cortex FQDN.
+	WithCortexFQDN = config.WithCortexFQDN
 	// WithCortexAPIURL is an option to set the Cortex API URL.
 	WithCortexAPIURL = config.WithCortexAPIURL
 	// WithCortexAPIKey is an option to set the Cortex API key.
 	WithCortexAPIKey = config.WithCortexAPIKey
 	// WithCortexAPIKeyID is an option to set the Cortex API key ID.
 	WithCortexAPIKeyID = config.WithCortexAPIKeyID
+	// WithCortexAPIKeyType is an option to set the Cortex API key type.
+	WithCortexAPIKeyType = config.WithCortexAPIKeyType
 	// WithCortexAPIPort is an option to set the Cortex API port.
-	WithCortexAPIPort = config.WithCortexAPIPort
-	// WithHeaders is an option to set the HTTP headers.
 	WithHeaders = config.WithHeaders
 	// WithAgent is an option to set the user agent.
 	WithAgent = config.WithAgent
-	// WithSkipVerifyCertificate is an option to skip TLS certificate verification.
-	WithSkipVerifyCertificate = config.WithSkipVerifyCertificate
+	// WithSkipSSLVerify is an option to skip TLS certificate verification.
+	WithSkipSSLVerify = config.WithSkipSSLVerify
 	// WithTransport is an option to set the HTTP transport.
 	WithTransport = config.WithTransport
 	// WithTimeout is an option to set the HTTP timeout.
@@ -56,6 +62,15 @@ type Client struct {
 	internalClient *client.Client
 }
 
+// Marker method for CortexClient interface compliance.
+func (Client) IsCortexClient() {}
+
+// ValidateAPIKey validates the configured API Key against the target
+// Cortex tenant.
+func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
+	return c.internalClient.ValidateAPIKey(ctx)
+}
+
 // NewClient returns a new client for this namespace.
 func NewClient(opts ...Option) (*Client, error) {
 	cfg := config.NewConfig(opts...)
@@ -71,6 +86,39 @@ func NewClientFromFile(filepath string, checkEnvironment bool) (*Client, error) 
 	}
 	return NewClient(config.GetOptions()...)
 }
+
+// FQDN returns the FQDN of the Cortex tenant.
+func (c *Client) FQDN() string { return c.internalClient.FQDN() }
+
+// APIURL returns the API URL for the Cortex.
+func (c *Client) APIURL() string { return c.internalClient.APIURL() }
+
+// APIKeyType returns the Cortex API key type.
+func (c *Client) APIKeyType() string { return c.internalClient.APIKeyType() }
+
+// SkipSSLVerify returns whether to skip TLS certificate verification.
+func (c *Client) SkipSSLVerify() bool { return c.internalClient.SkipSSLVerify() }
+
+// Timeout returns the HTTP timeout.
+func (c *Client) Timeout() time.Duration { return c.internalClient.Timeout() }
+
+// MaxRetries returns the maximum number of retries.
+func (c *Client) MaxRetries() int { return c.internalClient.MaxRetries() }
+
+// RetryMaxDelay returns the maximum retry delay.
+func (c *Client) RetryMaxDelay() time.Duration { return c.internalClient.RetryMaxDelay() }
+
+// CrashStackDir returns the crash stack directory.
+func (c *Client) CrashStackDir() string { return c.internalClient.CrashStackDir() }
+
+// LogLevel returns the log level.
+func (c *Client) LogLevel() string { return c.internalClient.LogLevel() }
+
+// Logger returns the logger.
+func (c *Client) Logger() log.Logger { return c.internalClient.Logger() }
+
+// SkipLoggingTransport returns whether to skip logging transport.
+func (c *Client) SkipLoggingTransport() bool { return c.internalClient.SkipLoggingTransport() }
 
 func (c *Client) BuildInfo() map[string]string {
 	return map[string]string{

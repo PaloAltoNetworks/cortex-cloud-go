@@ -35,14 +35,12 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Check if debug-level logging is enabled for detailed request/response dumps.
 	logLevelIsDebug := t.client.LogLevelIsSetTo("debug")
 
-	// Log request
+	// Log request as debug message
 	if logLevelIsDebug {
 		reqData, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
-			// Use "debug" as the explicit log level for request dumps.
 			t.client.Log(ctx, "debug", fmt.Sprintf(logReqMsg, prettyPrintJsonLines(reqData)))
 		} else {
-			// Log errors during request dumping at the "error" level.
 			t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] Failed to dump HTTP request: %v", err))
 		}
 	}
@@ -55,14 +53,12 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		return resp, err
 	}
 
-	// Log response
+	// Log response as debug message
 	if logLevelIsDebug {
 		respData, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			// Use "debug" as the explicit log level for response dumps.
 			t.client.Log(ctx, "debug", fmt.Sprintf(logRespMsg, prettyPrintJsonLines(respData)))
 		} else {
-			// Log errors during response dumping at the "error" level.
 			t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] Failed to dump HTTP response: %v", err))
 		}
 	}
