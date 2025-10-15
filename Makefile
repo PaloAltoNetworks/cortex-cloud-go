@@ -61,7 +61,7 @@ endef
 # Phony Targets
 #------------------------------------------------------------------------------
 
-.PHONY: help format tidy lint build work copyright-check copyright sec test test-unit test-acc tag clean
+.PHONY: help format tidy lint build work work-sync copyright-check copyright sec test test-unit test-acc tag clean
 
 #------------------------------------------------------------------------------
 # Main Targets
@@ -77,7 +77,10 @@ format: ## Format all Go source files.
 
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@go work sync
+	@$(foreach mod,$(MODULE_NAMES), \
+		echo "  - Tidying $(mod)"; \
+		(cd $(mod) && go mod tidy) || exit 1; \
+	)
 	@echo "Tidy successful."
 
 lint: ## Lint all modules with go vet.
@@ -102,6 +105,11 @@ work: ## Initialize or update the Go workspace file (go.work).
 	@go work use $(MODULE_PATHS)
 	@go work sync
 	@echo "Workspace ready."
+
+work-sync: ## Synchronize dependencies defined in Go workspace file (go.work)
+	@echo "Syncronizing Go workspace dependencies..."
+	@go work sync
+	@echo "Syncronization successful."
 
 copyright-check: ## Check for missing copyright headers.
 	@echo "Checking for missing file headers..."
