@@ -128,7 +128,9 @@ func NewConfig(opts ...Option) *Config {
 		config.overwriteFromEnvVars()
 	}
 
-	if config.cortexAPIURL == "" || !strings.HasPrefix(config.cortexAPIURL, "https://api-") {
+	// Populate API URL using FQDN if no value is configured
+	//if config.cortexAPIURL == "" || !strings.HasPrefix(config.cortexAPIURL, "https://api-") {
+	if config.cortexAPIURL == "" {
 		config.cortexAPIURL = fqdnToAPIURL(config.cortexFQDN)
 	}
 
