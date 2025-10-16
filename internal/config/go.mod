@@ -2,8 +2,6 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/internal/config
 
 go 1.25.0
 
-require github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.8
-
 replace (
 	github.com/PaloAltoNetworks/cortex-cloud-go/appsec => ../../appsec
 	github.com/PaloAltoNetworks/cortex-cloud-go/client => ../client
@@ -16,6 +14,8 @@ replace (
 	github.com/PaloAltoNetworks/cortex-cloud-go/platform => ../../platform
 	github.com/PaloAltoNetworks/cortex-cloud-go/types => ../../types
 )
+
+require github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
