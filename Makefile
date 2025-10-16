@@ -97,15 +97,6 @@ tidy: ## Tidy all go.mod files.
 	@(cd ./cwp && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
 
-
-##tidy: ## Tidy all go.mod files.
-##	@echo "Tidying all modules..."
-##	@$(foreach mod,$(MODULE_NAMES), \
-##		echo "  - Tidying $(mod)"; \
-##		(cd $(mod) && go mod tidy) || exit 1; \
-##	)
-##	@echo "Tidy successful."
-
 lint: ## Lint all modules with go vet.
 	@echo "Linting all modules..."
 	@$(foreach mod,$(MODULE_NAMES), \
