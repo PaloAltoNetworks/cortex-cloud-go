@@ -77,11 +77,34 @@ format: ## Format all Go source files.
 
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@$(foreach mod,$(MODULE_NAMES), \
-		echo "  - Tidying $(mod)"; \
-		(cd $(mod) && go mod tidy) || exit 1; \
-	)
+	@echo "  - log"
+	@(cd ./log && rm -f go.sum && go mod tidy)
+	@echo "  - errors"
+	@(cd ./errors && rm -f go.sum && go mod tidy)
+	@echo "  - enums"
+	@(cd ./enums && rm -f go.sum && go mod tidy)
+	@echo "  - types"
+	@(cd ./types && rm -f go.sum && go mod tidy)
+	@echo "  - internal/config"
+	@(cd ./internal/config && rm -f go.sum && go mod tidy)
+	@echo "  - internal/client"
+	@(cd ./internal/client && rm -f go.sum && go mod tidy)
+	@echo "  - appsec"
+	@(cd ./appsec && rm -f go.sum && go mod tidy)
+	@echo "  - cloudonboarding"
+	@(cd ./cloudonboarding && rm -f go.sum && go mod tidy)
+	@echo "  - cwp"
+	@(cd ./cwp && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
+
+
+##tidy: ## Tidy all go.mod files.
+##	@echo "Tidying all modules..."
+##	@$(foreach mod,$(MODULE_NAMES), \
+##		echo "  - Tidying $(mod)"; \
+##		(cd $(mod) && go mod tidy) || exit 1; \
+##	)
+##	@echo "Tidy successful."
 
 lint: ## Lint all modules with go vet.
 	@echo "Linting all modules..."
