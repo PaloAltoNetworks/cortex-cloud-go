@@ -16,8 +16,8 @@ type IntegrationInstance struct {
 	ID                      string                  `json:"id"`
 	Collector               string                  `json:"collector"`
 	InstanceName            string                  `json:"instance_name"`
-	AccountName             string                  `json:"account_name,omitempty"`
-	Accounts                int                     `json:"accounts,omitempty"`
+	AccountName             *string                  `json:"account_name,omitempty"`
+	Accounts                *int                     `json:"accounts,omitempty"`
 	Scope                   string                  `json:"scope"`
 	CustomResourcesTags     []Tag                   `json:"tags"`
 	Scan                    Scan                    `json:"scan"`
@@ -61,7 +61,7 @@ type LastScanCoverage struct {
 }
 
 type AccountDetails struct {
-	OrganizationID *string `json:"organization_id,omitempty"`
+	OrganizationID string `json:"organization_id"`
 }
 
 type CollectionConfiguration struct {
@@ -70,27 +70,31 @@ type CollectionConfiguration struct {
 
 type AuditLogsConfiguration struct {
 	Enabled bool `json:"enabled" tfsdk:"enabled"`
+	CollectionMethod *string `json:"collection_method,omitempty" tfsdk:"collection_method"`
+	DataEvents *bool `json:"data_events,omitempty" tfsdk:"data_events"`
+	//CollectionMethod *string `json:"collection_method,omitempty" tfsdk:"collection_method"`
+	//DataEvents *bool `json:"data_events,omitempty" tfsdk:"data_events"`
 }
 
 type ScopeModifications struct {
-	Accounts      *ScopeModificationsOptionsGeneric `json:"accounts,omitempty" tfsdk:"accounts"`
-	Projects      *ScopeModificationsOptionsGeneric `json:"projects,omitempty" tfsdk:"projects"`
-	Subscriptions *ScopeModificationsOptionsGeneric `json:"subscriptions,omitempty" tfsdk:"subscriptions"`
-	Regions       *ScopeModificationsOptionsRegions `json:"regions,omitempty" tfsdk:"regions"`
+	Accounts      *ScopeModificationGeneric `json:"accounts,omitempty" tfsdk:"accounts"`
+	Projects      *ScopeModificationGeneric `json:"projects,omitempty" tfsdk:"projects"`
+	Subscriptions *ScopeModificationGeneric `json:"subscriptions,omitempty" tfsdk:"subscriptions"`
+	Regions       *ScopeModificationRegions `json:"regions,omitempty" tfsdk:"regions"`
 }
 
-type ScopeModificationsOptionsGeneric struct {
+type ScopeModificationGeneric struct {
 	Enabled    bool     `json:"enabled" tfsdk:"enabled"`
-	Type       string   `json:"type,omitempty" tfsdk:"type"`
-	AccountIDs []string `json:"account_ids,omitempty" tfsdk:"account_ids"`
-	//ProjectIDs      []string `json:"project_ids,omitempty" tfsdk:"project_ids"`
-	//SubscriptionIDs []string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
+	Type       *string   `json:"type,omitempty" tfsdk:"type"`
+	AccountIDs *[]string `json:"account_ids,omitempty" tfsdk:"account_ids"`
+	ProjectIDs      *[]string `json:"project_ids,omitempty" tfsdk:"project_ids"`
+	SubscriptionIDs *[]string `json:"subscription_ids,omitempty" tfsdk:"subscription_ids"`
 }
 
-type ScopeModificationsOptionsRegions struct {
+type ScopeModificationRegions struct {
 	Enabled bool     `json:"enabled" tfsdk:"enabled"`
-	Type    string   `json:"type,omitempty" tfsdk:"type"`
-	Regions []string `json:"regions,omitempty" tfsdk:"regions"`
+	Type    *string   `json:"type,omitempty" tfsdk:"type"`
+	Regions *[]string `json:"regions,omitempty" tfsdk:"regions"`
 }
 
 type DefaultScanningScope struct {
@@ -107,11 +111,11 @@ type AgentlessDiskScanningScope struct {
 }
 
 type AdditionalCapabilities struct {
-	XsiamAnalytics                bool                    `json:"xsiam_analytics" tfsdk:"xsiam_analytics"`
-	DataSecurityPostureManagement bool                    `json:"data_security_posture_management" tfsdk:"data_security_posture_management"`
-	RegistryScanning              bool                    `json:"registry_scanning" tfsdk:"registry_scanning"`
-	RegistryScanningOptions       RegistryScanningOptions `json:"registry_scanning_options" tfsdk:"registry_scanning_options"`
-	//AgentlessDiskScanning         bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
+	XSIAMAnalytics                *bool                    `json:"xsiam_analytics" tfsdk:"xsiam_analytics"`
+	DataSecurityPostureManagement *bool                    `json:"data_security_posture_management" tfsdk:"data_security_posture_management"`
+	RegistryScanning              *bool                    `json:"registry_scanning" tfsdk:"registry_scanning"`
+	RegistryScanningOptions       *RegistryScanningOptions `json:"registry_scanning_options,omitempty" tfsdk:"registry_scanning_options"`
+	AgentlessDiskScanning         *bool                    `json:"agentless_disk_scanning" tfsdk:"agentless_disk_scanning"`
 }
 
 type RegistryScanningOptions struct {
@@ -129,15 +133,117 @@ type Manual struct {
 
 // CreateIntegrationTemplateRequest is the request for creating an integration template.
 type CreateIntegrationTemplateRequest struct {
-	AccountDetails          *AccountDetails         `json:"account_details,omitempty"`
-	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
-	CloudProvider           string                  `json:"cloud_provider"`
-	CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
-	CustomResourcesTags     []Tag                   `json:"custom_resources_tags"`
-	InstanceName            string                  `json:"instance_name"`
-	ScanMode                string                  `json:"scan_mode"`
-	Scope                   string                  `json:"scope"`
-	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
+	accountDetails          *AccountDetails
+	additionalCapabilities  AdditionalCapabilities
+	cloudProvider           string
+	collectionConfiguration CollectionConfiguration
+	customResourcesTags     []Tag
+	instanceName            *string
+	scanMode                string
+	scope                   string
+	scopeModifications      ScopeModifications
+}
+
+// CreateIntegrationTemplateRequestOption defines a functional option for CreateIntegrationTemplateRequest.
+type CreateIntegrationTemplateRequestOption func(*CreateIntegrationTemplateRequest)
+
+// NewCreateIntegrationTemplateRequest creates a new CreateIntegrationTemplateRequest.
+func NewCreateIntegrationTemplateRequest(options ...CreateIntegrationTemplateRequestOption) *CreateIntegrationTemplateRequest {
+	r := &CreateIntegrationTemplateRequest{}
+	for _, option := range options {
+		option(r)
+	}
+	return r
+}
+
+// WithAccountDetails sets the account details for the request.
+func WithAccountDetails(accountDetails AccountDetails) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.accountDetails = &accountDetails
+	}
+}
+
+// WithAdditionalCapabilities sets the additional capabilities for the request.
+func WithAdditionalCapabilities(additionalCapabilities AdditionalCapabilities) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.additionalCapabilities = additionalCapabilities
+	}
+}
+
+// WithCloudProvider sets the cloud provider for the request.
+func WithCloudProvider(cloudProvider string) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.cloudProvider = cloudProvider
+	}
+}
+
+// WithCollectionConfiguration sets the collection configuration for the request.
+func WithCollectionConfiguration(collectionConfiguration CollectionConfiguration) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.collectionConfiguration = collectionConfiguration
+	}
+}
+
+// WithCustomResourcesTags sets the custom resources tags for the request.
+func WithCustomResourcesTags(customResourcesTags []Tag) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.customResourcesTags = customResourcesTags
+	}
+}
+
+// WithInstanceName sets the instance name for the request.
+func WithInstanceName(instanceName string) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.instanceName = &instanceName
+	}
+}
+
+// WithScanMode sets the scan mode for the request.
+func WithScanMode(scanMode string) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.scanMode = scanMode
+	}
+}
+
+// WithScope sets the scope for the request.
+func WithScope(scope string) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.scope = scope
+	}
+}
+
+// WithScopeModifications sets the scope modifications for the request.
+func WithScopeModifications(scopeModifications ScopeModifications) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.scopeModifications = scopeModifications
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *CreateIntegrationTemplateRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		AccountDetails          *AccountDetails         `json:"account_details,omitempty"`
+		AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
+		CloudProvider           string                  `json:"cloud_provider"`
+		CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
+		CustomResourcesTags     []Tag                   `json:"custom_resources_tags"`
+		InstanceName            *string                 `json:"instance_name"`
+		ScanMode                string                  `json:"scan_mode"`
+		Scope                   string                  `json:"scope"`
+		ScopeModifications      ScopeModifications      `json:"scope_modifications"`
+	}
+
+	return json.Marshal(&alias{
+		AccountDetails:          r.accountDetails,
+		AdditionalCapabilities:  r.additionalCapabilities,
+		CloudProvider:           r.cloudProvider,
+		CollectionConfiguration: r.collectionConfiguration,
+		CustomResourcesTags:     r.customResourcesTags,
+		InstanceName:            r.instanceName,
+		ScanMode:                r.scanMode,
+		Scope:                   r.scope,
+		ScopeModifications:      r.scopeModifications,
+	})
 }
 
 // CreateTemplateOrEditIntegrationInstanceResponse is the response for creating or editing an integration instance.
@@ -168,7 +274,25 @@ func (r CreateTemplateOrEditIntegrationInstanceResponse) GetTemplateUrl() (strin
 
 // GetIntegrationInstanceRequest is the request for getting integration instance details.
 type GetIntegrationInstanceRequest struct {
-	InstanceID string `json:"id"`
+	instanceID string
+}
+
+// NewGetIntegrationInstanceRequest creates a new GetIntegrationInstanceRequest.
+func NewGetIntegrationInstanceRequest(instanceID string) *GetIntegrationInstanceRequest {
+	return &GetIntegrationInstanceRequest{
+		instanceID: instanceID,
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *GetIntegrationInstanceRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		InstanceID string `json:"id"`
+	}
+
+	return json.Marshal(&alias{
+		InstanceID: r.instanceID,
+	})
 }
 
 // GetIntegrationInstanceResponse is the response for getting integration instance details.
@@ -220,7 +344,37 @@ func (r GetIntegrationInstanceResponse) Marshal() (IntegrationInstance, error) {
 
 // ListIntegrationInstancesRequest is the request for listing integration instances.
 type ListIntegrationInstancesRequest struct {
-	FilterData filterTypes.FilterData `json:"filter_data"`
+	filterData filterTypes.FilterData
+}
+
+// ListIntegrationInstancesRequestOption defines a functional option for ListIntegrationInstancesRequest.
+type ListIntegrationInstancesRequestOption func(*ListIntegrationInstancesRequest)
+
+// NewListIntegrationInstancesRequest creates a new ListIntegrationInstancesRequest.
+func NewListIntegrationInstancesRequest(options ...ListIntegrationInstancesRequestOption) *ListIntegrationInstancesRequest {
+	r := &ListIntegrationInstancesRequest{}
+	for _, option := range options {
+		option(r)
+	}
+	return r
+}
+
+// WithFilterData sets the filter data for the request.
+func WithFilterData(filterData filterTypes.FilterData) ListIntegrationInstancesRequestOption {
+	return func(r *ListIntegrationInstancesRequest) {
+		r.filterData = filterData
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *ListIntegrationInstancesRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		FilterData filterTypes.FilterData `json:"filter_data"`
+	}
+
+	return json.Marshal(&alias{
+		FilterData: r.filterData,
+	})
 }
 
 // ListIntegrationInstancesResponseWrapper is the response wrapper for listing integration instances.
@@ -238,20 +392,20 @@ type ListIntegrationInstancesResponse struct {
 	ScanMode            string `json:"scan_mode"`
 	CustomResourcesTags string `json:"custom_resources_tags"`
 	ProvisioningMethod  string `json:"provisioning_method"`
-	//AccountDetails          AccountDetails     `json:"account_details"`
-	//ScopeModifications      ScopeModifications `json:"scope_modifications"`
 	CollectionConfiguration string `json:"collection_configuration"`
 	AdditionalCapabilities  string `json:"additional_capabilities"`
 	InstanceID              string `json:"instance_id"`
 	Status                  string `json:"status"`
-	//CloudPartition          string               `json:"cloud_partition"`
-	//ModifiedAt              int                  `json:"modified_at"`
 	DeletedAt            int                  `json:"deleted_at"`
-	DefaultScanningScope DefaultScanningScope `json:"default_scanning_scope"`
 	OutpostID            string               `json:"outpost_id"`
 	CreationTime         int                  `json:"creation_time,omitempty"`
 	UpdateStatus         string               `json:"update_status,omitempty"`
 	IsPendingChanges     int                  `json:"is_pending_changes,omitempty"`
+	//AccountDetails          AccountDetails     `json:"account_details"`
+	//ScopeModifications      ScopeModifications `json:"scope_modifications"`
+	//CloudPartition          string               `json:"cloud_partition"`
+	//ModifiedAt              int                  `json:"modified_at"`
+	//DefaultScanningScope DefaultScanningScope `json:"default_scanning_scope"`
 }
 
 func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstance, error) {
@@ -298,8 +452,8 @@ func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstanc
 			CloudProvider:           data.CloudProvider,
 			CollectionConfiguration: collectionConfiguration,
 			AdditionalCapabilities:  additionalCapabilities,
-			AccountName:             data.AccountName,
-			Accounts:                data.Accounts,
+			AccountName:             &data.AccountName,
+			Accounts:                &data.Accounts,
 			CreationTime:            data.CreationTime,
 			ProvisioningMethod:      data.ProvisioningMethod,
 			UpdateStatus:            data.UpdateStatus,
@@ -315,23 +469,150 @@ func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstanc
 
 // EditIntegrationInstanceRequest is the request for editing an integration instance.
 type EditIntegrationInstanceRequest struct {
-	InstanceID              string                  `json:"id"`
-	ScanEnvID               string                  `json:"scan_env_id"`
-	InstanceName            string                  `json:"instance_name"`
-	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
-	CloudProvider           string                  `json:"cloud_provider"`
-	CustomResourcesTags     []Tag                   `json:"custom_resources_tags"`
-	CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
-	ScopeModifications      ScopeModifications      `json:"scope_modifications"`
+	instanceID              string
+	scanEnvID               string
+	instanceName            string
+	additionalCapabilities  AdditionalCapabilities
+	cloudProvider           string
+	customResourcesTags     []Tag
+	collectionConfiguration CollectionConfiguration
+	scopeModifications      ScopeModifications
+}
+
+// EditIntegrationInstanceRequestOption defines a functional option for EditIntegrationInstanceRequest.
+type EditIntegrationInstanceRequestOption func(*EditIntegrationInstanceRequest)
+
+// NewEditIntegrationInstanceRequest creates a new EditIntegrationInstanceRequest.
+func NewEditIntegrationInstanceRequest(instanceID string, options ...EditIntegrationInstanceRequestOption) *EditIntegrationInstanceRequest {
+	r := &EditIntegrationInstanceRequest{
+		instanceID: instanceID,
+	}
+	for _, option := range options {
+		option(r)
+	}
+	return r
+}
+
+// WithScanEnvID sets the scan environment ID for the request.
+func WithScanEnvID(scanEnvID string) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.scanEnvID = scanEnvID
+	}
+}
+
+// WithEditInstanceName sets the instance name for the request.
+func WithEditInstanceName(instanceName string) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.instanceName = instanceName
+	}
+}
+
+// WithEditAdditionalCapabilities sets the additional capabilities for the request.
+func WithEditAdditionalCapabilities(additionalCapabilities AdditionalCapabilities) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.additionalCapabilities = additionalCapabilities
+	}
+}
+
+// WithEditCloudProvider sets the cloud provider for the request.
+func WithEditCloudProvider(cloudProvider string) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.cloudProvider = cloudProvider
+	}
+}
+
+// WithEditCustomResourcesTags sets the custom resources tags for the request.
+func WithEditCustomResourcesTags(customResourcesTags []Tag) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.customResourcesTags = customResourcesTags
+	}
+}
+
+// WithEditCollectionConfiguration sets the collection configuration for the request.
+func WithEditCollectionConfiguration(collectionConfiguration CollectionConfiguration) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.collectionConfiguration = collectionConfiguration
+	}
+}
+
+// WithEditScopeModifications sets the scope modifications for the request.
+func WithEditScopeModifications(scopeModifications ScopeModifications) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.scopeModifications = scopeModifications
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *EditIntegrationInstanceRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		InstanceID              string                  `json:"id"`
+		ScanEnvID               string                  `json:"scan_env_id"`
+		InstanceName            string                  `json:"instance_name"`
+		AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
+		CloudProvider           string                  `json:"cloud_provider"`
+		CustomResourcesTags     []Tag                   `json:"custom_resources_tags"`
+		CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
+		ScopeModifications      ScopeModifications      `json:"scope_modifications"`
+	}
+
+	return json.Marshal(&alias{
+		InstanceID:              r.instanceID,
+		ScanEnvID:               r.scanEnvID,
+		InstanceName:            r.instanceName,
+		AdditionalCapabilities:  r.additionalCapabilities,
+		CloudProvider:           r.cloudProvider,
+		CustomResourcesTags:     r.customResourcesTags,
+		CollectionConfiguration: r.collectionConfiguration,
+		ScopeModifications:      r.scopeModifications,
+	})
 }
 
 // EnableOrDisableIntegrationInstancesRequest is the request for enabling or disabling integration instances.
 type EnableOrDisableIntegrationInstancesRequest struct {
-	IDs    []string `json:"ids"`
-	Enable bool     `json:"enable"`
+	ids    []string
+	enable bool
+}
+
+// NewEnableOrDisableIntegrationInstancesRequest creates a new EnableOrDisableIntegrationInstancesRequest.
+func NewEnableOrDisableIntegrationInstancesRequest(ids []string, enable bool) *EnableOrDisableIntegrationInstancesRequest {
+	return &EnableOrDisableIntegrationInstancesRequest{
+		ids:    ids,
+		enable: enable,
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *EnableOrDisableIntegrationInstancesRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		IDs    []string `json:"ids"`
+		Enable bool     `json:"enable"`
+	}
+
+	return json.Marshal(&alias{
+		IDs:    r.ids,
+		Enable: r.enable,
+	})
 }
 
 // DeleteIntegrationInstanceRequest is the request for deleting integration instances.
 type DeleteIntegrationInstanceRequest struct {
-	IDs []string `json:"ids"`
+	ids []string
+}
+
+// NewDeleteIntegrationInstanceRequest creates a new DeleteIntegrationInstanceRequest.
+func NewDeleteIntegrationInstanceRequest(ids []string) *DeleteIntegrationInstanceRequest {
+	return &DeleteIntegrationInstanceRequest{
+		ids: ids,
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *DeleteIntegrationInstanceRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		IDs []string `json:"ids"`
+	}
+
+	return json.Marshal(&alias{
+		IDs: r.ids,
+	})
 }
