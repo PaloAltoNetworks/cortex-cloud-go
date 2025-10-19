@@ -61,7 +61,7 @@ endef
 # Phony Targets
 #------------------------------------------------------------------------------
 
-.PHONY: help format tidy lint build work copyright-check copyright sec test test-unit test-acc tag clean
+.PHONY: help format tidy lint build work work-sync copyright-check copyright sec test test-unit test-acc tag clean
 
 #------------------------------------------------------------------------------
 # Main Targets
@@ -77,7 +77,24 @@ format: ## Format all Go source files.
 
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@go work sync
+	@echo "  - log"
+	@(cd ./log && rm -f go.sum && go mod tidy)
+	@echo "  - errors"
+	@(cd ./errors && rm -f go.sum && go mod tidy)
+	@echo "  - enums"
+	@(cd ./enums && rm -f go.sum && go mod tidy)
+	@echo "  - types"
+	@(cd ./types && rm -f go.sum && go mod tidy)
+	@echo "  - internal/config"
+	@(cd ./internal/config && rm -f go.sum && go mod tidy)
+	@echo "  - internal/client"
+	@(cd ./internal/client && rm -f go.sum && go mod tidy)
+	@echo "  - appsec"
+	@(cd ./appsec && rm -f go.sum && go mod tidy)
+	@echo "  - cloudonboarding"
+	@(cd ./cloudonboarding && rm -f go.sum && go mod tidy)
+	@echo "  - cwp"
+	@(cd ./cwp && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
 
 lint: ## Lint all modules with go vet.
@@ -102,6 +119,11 @@ work: ## Initialize or update the Go workspace file (go.work).
 	@go work use $(MODULE_PATHS)
 	@go work sync
 	@echo "Workspace ready."
+
+work-sync: ## Synchronize dependencies defined in Go workspace file (go.work)
+	@echo "Syncronizing Go workspace dependencies..."
+	@go work sync
+	@echo "Syncronization successful."
 
 copyright-check: ## Check for missing copyright headers.
 	@echo "Checking for missing file headers..."
