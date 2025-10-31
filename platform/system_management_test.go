@@ -339,7 +339,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			require.NotNil(t, req["request_data"].Name)
-			assert.Equal(t, "Updated Name", *req["request_data"].Name)
+			assert.Equal(t, "Updated Name", req["request_data"].Name)
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"reply": {"success": true}}`)
@@ -349,7 +349,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 
 		newName := "Updated Name"
 		editReq := types.UserGroup{
-			Name: &newName,
+			Name: newName,
 		}
 		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
 		assert.NoError(t, err)
