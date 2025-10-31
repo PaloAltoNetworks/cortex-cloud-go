@@ -151,8 +151,8 @@ type GetUserGroupRequest struct {
 
 // UserGroup defines a user group.
 type UserGroup struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
+	Name        *string  `json:"name,omitempty"`
+	Description string   `json:"description,omitempty"`
 	Users       []string `json:"users"`
 	Role        string   `json:"role"`
 }

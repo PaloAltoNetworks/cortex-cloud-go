@@ -335,7 +335,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 			assert.Equal(t, http.MethodPatch, r.Method)
 			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
 
-			var req map[string]types.UserGroupEditRequest
+			var req map[string]types.UserGroup
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			require.NotNil(t, req["request_data"].Name)
@@ -348,7 +348,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 		defer server.Close()
 
 		newName := "Updated Name"
-		editReq := types.UserGroupEditRequest{
+		editReq := types.UserGroup{
 			Name: &newName,
 		}
 		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
