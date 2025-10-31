@@ -327,3 +327,51 @@ func TestClient_GetUserGroup(t *testing.T) {
 		assert.Equal(t, "Group One", resp[0].Description)
 	})
 }
+
+func TestClient_EditUserGroup(t *testing.T) {
+	t.Run("should edit user group successfully", func(t *testing.T) {
+		const groupID = "test-group-id"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPatch, r.Method)
+			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
+
+			var req map[string]types.UserGroupEditRequest
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			require.NotNil(t, req["request_data"].Name)
+			assert.Equal(t, "Updated Name", *req["request_data"].Name)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"reply": {"success": true}}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		newName := "Updated Name"
+		editReq := types.UserGroupEditRequest{
+			Name: &newName,
+		}
+		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
+		assert.NoError(t, err)
+		assert.True(t, resp["success"].(bool))
+	})
+}
+
+func TestClient_DeleteUserGroup(t *testing.T) {
+	t.Run("should delete user group successfully", func(t *testing.T) {
+		const groupID = "test-group-id-to-delete"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodDelete, r.Method)
+			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"reply": {"success": true}}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.DeleteUserGroup(context.Background(), groupID)
+		assert.NoError(t, err)
+		assert.True(t, resp["success"].(bool))
+	})
+}
