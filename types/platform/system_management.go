@@ -149,10 +149,25 @@ type GetUserGroupRequest struct {
 	GroupNames []string `json:"group_names"`
 }
 
-// UserGroup defines a user group.
+// NestedGroup represents a child group within a user group.
+type NestedGroup struct {
+	GroupID   string `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
+// UserGroup defines the structure for a single user group.
 type UserGroup struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description,omitempty"`
-	Users       []string `json:"users"`
-	Role        string   `json:"role"`
+	GroupID        string        `json:"group_id"`
+	GroupName      string        `json:"group_name"`
+	Description    string        `json:"description"`
+	RoleName       string        `json:"role_name"`
+	PrettyRoleName string        `json:"pretty_role_name"`
+	CreatedBy      string        `json:"created_by"`
+	UpdatedBy      string        `json:"updated_by"`
+	CreatedTS      int64         `json:"created_ts"`
+	UpdatedTS      int64         `json:"updated_ts"`
+	Users          []string      `json:"users"`
+	GroupType      string        `json:"group_type"`
+	NestedGroups   []NestedGroup `json:"nested_groups"`
+	IDPGroups      []string      `json:"idp_groups"`
 }

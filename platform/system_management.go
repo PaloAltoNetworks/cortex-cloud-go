@@ -129,9 +129,19 @@ func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest
 	var ans []types.UserGroup
 	_, err := c.internalClient.Do(ctx, http.MethodPost, GetUserGroupEndpoint, nil, nil, req, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
-		ResponseWrapperKeys: []string{"reply"},
+		ResponseWrapperKeys: []string{"reply", "data"},
 	})
 	return ans, err
+}
+
+// CreateUserGroup creates a new user group.
+func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroup) (types.UserGroup, error) {
+	var resp types.UserGroup
+	_, err := c.internalClient.Do(ctx, http.MethodPost, UserGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+		// Assuming the created object is returned directly without a 'reply' wrapper on 201 Created.
+	})
+	return resp, err
 }
 
 // EditUserGroup edits an existing user group.
