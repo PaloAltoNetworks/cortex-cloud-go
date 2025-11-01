@@ -388,7 +388,7 @@ func TestClient_CreateUserGroup(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, UserGroupEndpoint, r.URL.Path)
 
-			var req map[string]types.UserGroup
+			var req map[string]types.UserGroupCreateRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "New Group", req["request_data"].GroupName)
@@ -415,7 +415,7 @@ func TestClient_CreateUserGroup(t *testing.T) {
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
-		createReq := types.UserGroup{
+		createReq := types.UserGroupCreateRequest{
 			GroupName:   "New Group",
 			Description: "A new group for testing",
 		}
@@ -433,11 +433,10 @@ func TestClient_EditUserGroup(t *testing.T) {
 			assert.Equal(t, http.MethodPatch, r.Method)
 			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
 
-			var req map[string]types.UserGroup
+			var req map[string]types.UserGroupEditRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			require.NotNil(t, req["request_data"].GroupName)
-			assert.Equal(t, "testuser@example.com", req["request_data"].UpdatedBy)
 
 			w.WriteHeader(http.StatusOK)
 			// A successful PATCH often returns a simple success message.
@@ -447,9 +446,8 @@ func TestClient_EditUserGroup(t *testing.T) {
 		defer server.Close()
 
 		newName := "Updated Name"
-		editReq := types.UserGroup{
+		editReq := types.UserGroupEditRequest{
 			GroupName: newName,
-			UpdatedBy: "testuser@example.com",
 		}
 		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
 		assert.NoError(t, err)

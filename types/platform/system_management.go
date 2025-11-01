@@ -171,3 +171,23 @@ type UserGroup struct {
 	NestedGroups   []NestedGroup `json:"nested_groups"`
 	IDPGroups      []string      `json:"idp_groups"`
 }
+
+// UserGroupCreateRequest defines the request for creating a user group.
+type UserGroupCreateRequest struct {
+	GroupName    string   `json:"group_name"`
+	RoleName     string   `json:"role_name,omitempty"`
+	Description  string   `json:"description,omitempty"`
+	Users        []string `json:"users,omitempty"`
+	NestedGroups []string `json:"nested_groups,omitempty"`
+	IDPGroups    []string `json:"idp_groups,omitempty"`
+}
+
+// UserGroupEditRequest defines the request for editing a user group.
+type UserGroupEditRequest struct {
+	GroupName      string   `json:"group_name,omitempty"`
+	RoleName       string   `json:"role_name,omitempty"`
+	Description    string   `json:"description,omitempty"`
+	Users          []string `json:"users,omitempty"`
+	NestedGroupIDs []string `json:"nested_group_ids,omitempty"`
+	IDPGroups      []string `json:"idp_groups,omitempty"`
+}

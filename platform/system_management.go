@@ -144,18 +144,17 @@ func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest
 }
 
 // CreateUserGroup creates a new user group.
-func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroup) (types.UserGroup, error) {
+func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (types.UserGroup, error) {
 	var resp types.UserGroup
 	_, err := c.internalClient.Do(ctx, http.MethodPost, UserGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
-		// Assuming the created object is returned directly without a 'reply' wrapper on 201 Created.
 	})
 	return resp, err
 }
 
 // EditUserGroup edits an existing user group.
 // It takes a groupID and a UserGroupEditRequest object containing the fields to update.
-func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroup) (map[string]any, error) {
+func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (map[string]any, error) {
 	var resp map[string]any
 	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
 	_, err := c.internalClient.Do(ctx, http.MethodPatch, UserGroupEndpoint, &[]string{groupID}, nil, req, &resp, &client.DoOptions{
