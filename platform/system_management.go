@@ -124,6 +124,15 @@ func (c *Client) GetTenantInfo(ctx context.Context, req types.GetTenantInfoReque
 	return ans, err
 }
 
+// ListUserGroups retrieves a list of all user groups.
+func (c *Client) ListUserGroups(ctx context.Context) ([]types.UserGroup, error) {
+	var ans []types.UserGroup
+	_, err := c.internalClient.Do(ctx, http.MethodGet, UserGroupEndpoint, nil, nil, nil, &ans, &client.DoOptions{
+		ResponseWrapperKeys: []string{"data"},
+	})
+	return ans, err
+}
+
 // GetUserGroup retrieves information about the specified user groups.
 func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest) ([]types.UserGroup, error) {
 	var ans []types.UserGroup

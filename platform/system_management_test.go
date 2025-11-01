@@ -291,6 +291,46 @@ func TestClient_GetTenantInfo(t *testing.T) {
 	})
 }
 
+func TestClient_ListUserGroups(t *testing.T) {
+	t.Run("should list user groups successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, UserGroupEndpoint, r.URL.Path)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": [
+					{
+						"group_id": "test_group1",
+						"group_name": "Group1",
+						"description": "Group One",
+						"role_name": "role_name01",
+						"pretty_role_name": "Role Name 01",
+						"created_by": "user1@test.com",
+						"updated_by": "user1@test.com",
+						"created_ts": 1661170832341,
+						"updated_ts": 1661171650679,
+						"users": ["user1@test.com"],
+						"group_type": "custom",
+						"nested_groups": [],
+						"idp_groups": []
+					}
+				],
+				"metadata": {"total_count": 1}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.ListUserGroups(context.Background())
+		assert.NoError(t, err)
+		require.Len(t, resp, 1)
+		assert.Equal(t, "test_group1", resp[0].GroupID)
+		assert.Equal(t, "Group1", resp[0].GroupName)
+		assert.Equal(t, "Group One", resp[0].Description)
+	})
+}
+
 func TestClient_GetUserGroup(t *testing.T) {
 	t.Run("should get user group successfully", func(t *testing.T) {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
