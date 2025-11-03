@@ -32,11 +32,11 @@ const (
 	ListAssetGroupsEndpoint  = "public_api/v1/asset-groups"
 
 	// Auth Settings Endpoints
-	ListIDPMetadataEndpoint    = "public_api/v1/sso/get_idp_metadata/"
-	ListAuthSettingsEndpoint   = "public_api/v1/sso/get_sso_config/"
-	CreateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
-	UpdateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
-	DeleteAuthSettingsEndpoint = "public_api/v1/sso/delete_config/"
+	ListIDPMetadataEndpoint    = "public_api/v1/authentication-settings/get/metadata"
+	ListAuthSettingsEndpoint   = "public_api/v1/authentication-settings/get/settings"
+	CreateAuthSettingsEndpoint = "public_api/v1/authentication-settings/create"
+	UpdateAuthSettingsEndpoint = "public_api/v1/authentication-settings/update"
+	DeleteAuthSettingsEndpoint = "public_api/v1/authentication-settings/delete"
 )
 
 // Option is a functional option for configuring the client.
