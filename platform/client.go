@@ -24,6 +24,7 @@ const (
 	GetRiskScoreEndpoint   = "public_api/v1/get_risk_score/"
 	ListRiskyUsersEndpoint = "public_api/v1/risk/get_risky_users/"
 	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
+	UserGroupEndpoint      = "/iam/v1/user-group"
 
 	// Asset Group Endpoints
 	CreateAssetGroupEndpoint = "public_api/v1/asset-groups/create"
@@ -32,11 +33,12 @@ const (
 	ListAssetGroupsEndpoint  = "public_api/v1/asset-groups"
 
 	// Auth Settings Endpoints
-	ListIDPMetadataEndpoint    = "public_api/v1/sso/get_idp_metadata/"
-	ListAuthSettingsEndpoint   = "public_api/v1/sso/get_sso_config/"
-	CreateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
-	UpdateAuthSettingsEndpoint = "public_api/v1/sso/set_config/"
-	DeleteAuthSettingsEndpoint = "public_api/v1/sso/delete_config/"
+	// Updated on Oct 30 per https://cortex-panw.stoplight.io/docs/cortex-cloud/ endpoint change
+	ListIDPMetadataEndpoint    = "public_api/v1/authentication-settings/get/metadata"
+	ListAuthSettingsEndpoint   = "public_api/v1/authentication-settings/get/settings"
+	CreateAuthSettingsEndpoint = "public_api/v1/authentication-settings/create"
+	UpdateAuthSettingsEndpoint = "public_api/v1/authentication-settings/update"
+	DeleteAuthSettingsEndpoint = "public_api/v1/authentication-settings/delete"
 )
 
 // Option is a functional option for configuring the client.

@@ -291,6 +291,46 @@ func TestClient_GetTenantInfo(t *testing.T) {
 	})
 }
 
+func TestClient_ListUserGroups(t *testing.T) {
+	t.Run("should list user groups successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, UserGroupEndpoint, r.URL.Path)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": [
+					{
+						"group_id": "test_group1",
+						"group_name": "Group1",
+						"description": "Group One",
+						"role_name": "role_name01",
+						"pretty_role_name": "Role Name 01",
+						"created_by": "user1@test.com",
+						"updated_by": "user1@test.com",
+						"created_ts": 1661170832341,
+						"updated_ts": 1661171650679,
+						"users": ["user1@test.com"],
+						"group_type": "custom",
+						"nested_groups": [],
+						"idp_groups": []
+					}
+				],
+				"metadata": {"total_count": 1}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.ListUserGroups(context.Background())
+		assert.NoError(t, err)
+		require.Len(t, resp, 1)
+		assert.Equal(t, "test_group1", resp[0].GroupID)
+		assert.Equal(t, "Group1", resp[0].GroupName)
+		assert.Equal(t, "Group One", resp[0].Description)
+	})
+}
+
 func TestClient_GetUserGroup(t *testing.T) {
 	t.Run("should get user group successfully", func(t *testing.T) {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -303,15 +343,28 @@ func TestClient_GetUserGroup(t *testing.T) {
 			assert.Equal(t, []string{"group1"}, req["request_data"].GroupNames)
 
 			w.WriteHeader(http.StatusOK)
+			// This mock response is based on the API spec provided by the user.
 			fmt.Fprint(w, `{
-				"reply": [
-					{
-						"name": "group1",
-						"description": "Group One",
-						"users": ["user1@example.com"],
-						"role": "Role1"
-					}
-				]
+				"reply": {
+					"data": [
+						{
+							"group_id": "test_group1",
+							"group_name": "Group1",
+							"description": "Group One",
+							"role_name": "role_name01",
+							"pretty_role_name": "Role Name 01",
+							"created_by": "user1@test.com",
+							"updated_by": "user1@test.com",
+							"created_ts": 1661170832341,
+							"updated_ts": 1661171650679,
+							"users": ["user1@test.com"],
+							"group_type": "custom",
+							"nested_groups": [],
+							"idp_groups": []
+						}
+					],
+					"metadata": {"total_count": 1}
+				}
 			}`)
 		})
 		client, server := setupTest(t, handler)
@@ -322,8 +375,102 @@ func TestClient_GetUserGroup(t *testing.T) {
 		}
 		resp, err := client.GetUserGroup(context.Background(), getReq)
 		assert.NoError(t, err)
-		assert.Len(t, resp, 1)
-		assert.Equal(t, "group1", resp[0].Name)
+		require.Len(t, resp, 1)
+		assert.Equal(t, "test_group1", resp[0].GroupID)
+		assert.Equal(t, "Group1", resp[0].GroupName)
 		assert.Equal(t, "Group One", resp[0].Description)
+	})
+}
+
+func TestClient_CreateUserGroup(t *testing.T) {
+	t.Run("should create user group successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, UserGroupEndpoint, r.URL.Path)
+
+			var req map[string]types.UserGroupCreateRequest
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			assert.Equal(t, "New Group", req["request_data"].GroupName)
+			assert.Equal(t, "A new group for testing", req["request_data"].Description)
+
+			w.WriteHeader(http.StatusCreated)
+			// A create operation typically returns the newly created object.
+			fmt.Fprint(w, `{
+				"group_id": "new-group-id",
+				"group_name": "New Group",
+				"description": "A new group for testing",
+				"role_name": "role_name02",
+				"pretty_role_name": "Role Name 02",
+				"created_by": "creator@test.com",
+				"updated_by": "creator@test.com",
+				"created_ts": 1670000000000,
+				"updated_ts": 1670000000000,
+				"users": [],
+				"group_type": "custom",
+				"nested_groups": [],
+				"idp_groups": []
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		createReq := types.UserGroupCreateRequest{
+			GroupName:   "New Group",
+			Description: "A new group for testing",
+		}
+		resp, err := client.CreateUserGroup(context.Background(), createReq)
+		assert.NoError(t, err)
+		assert.Equal(t, "new-group-id", resp.GroupID)
+		assert.Equal(t, "New Group", resp.GroupName)
+	})
+}
+
+func TestClient_EditUserGroup(t *testing.T) {
+	t.Run("should edit user group successfully", func(t *testing.T) {
+		const groupID = "group-to-edit-id"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPatch, r.Method)
+			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
+
+			var req map[string]types.UserGroupEditRequest
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			require.NotNil(t, req["request_data"].GroupName)
+
+			w.WriteHeader(http.StatusOK)
+			// A successful PATCH often returns a simple success message.
+			fmt.Fprint(w, `{"reply": {"success": true}}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		newName := "Updated Name"
+		editReq := types.UserGroupEditRequest{
+			GroupName: newName,
+		}
+		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
+		assert.NoError(t, err)
+		assert.True(t, resp["success"].(bool))
+	})
+}
+
+func TestClient_DeleteUserGroup(t *testing.T) {
+	t.Run("should delete user group successfully", func(t *testing.T) {
+		const groupID = "group-to-delete-id"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodDelete, r.Method)
+			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
+
+			w.WriteHeader(http.StatusOK)
+			// A successful DELETE often returns a simple success message.
+			fmt.Fprint(w, `{"reply": {"success": true}}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.DeleteUserGroup(context.Background(), groupID)
+		assert.NoError(t, err)
+		assert.True(t, resp["success"].(bool))
 	})
 }
