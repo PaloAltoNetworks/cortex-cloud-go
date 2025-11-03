@@ -124,12 +124,51 @@ func (c *Client) GetTenantInfo(ctx context.Context, req types.GetTenantInfoReque
 	return ans, err
 }
 
+// ListUserGroups retrieves a list of all user groups.
+func (c *Client) ListUserGroups(ctx context.Context) ([]types.UserGroup, error) {
+	var ans []types.UserGroup
+	_, err := c.internalClient.Do(ctx, http.MethodGet, UserGroupEndpoint, nil, nil, nil, &ans, &client.DoOptions{
+		ResponseWrapperKeys: []string{"data"},
+	})
+	return ans, err
+}
+
 // GetUserGroup retrieves information about the specified user groups.
 func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest) ([]types.UserGroup, error) {
 	var ans []types.UserGroup
 	_, err := c.internalClient.Do(ctx, http.MethodPost, GetUserGroupEndpoint, nil, nil, req, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
-		ResponseWrapperKeys: []string{"reply"},
+		ResponseWrapperKeys: []string{"reply", "data"},
 	})
 	return ans, err
+}
+
+// CreateUserGroup creates a new user group.
+func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (types.UserGroup, error) {
+	var resp types.UserGroup
+	_, err := c.internalClient.Do(ctx, http.MethodPost, UserGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+	})
+	return resp, err
+}
+
+// EditUserGroup edits an existing user group.
+// It takes a groupID and a UserGroupEditRequest object containing the fields to update.
+func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (map[string]any, error) {
+	var resp map[string]any
+	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
+	_, err := c.internalClient.Do(ctx, http.MethodPatch, UserGroupEndpoint, &[]string{groupID}, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys:  []string{"request_data"},
+		ResponseWrapperKeys: []string{"reply"},
+	})
+	return resp, err
+}
+
+// DeleteUserGroup deletes an existing user group by its ID.
+func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (map[string]any, error) {
+	var resp map[string]any
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, UserGroupEndpoint, &[]string{groupID}, nil, nil, &resp, &client.DoOptions{
+		ResponseWrapperKeys: []string{"reply"},
+	})
+	return resp, err
 }
