@@ -474,3 +474,143 @@ func TestClient_DeleteUserGroup(t *testing.T) {
 		assert.True(t, resp["success"].(bool))
 	})
 }
+
+func TestClient_ListIAMUsers(t *testing.T) {
+	t.Run("should list iam users successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/"+IamUsersEndpoint, r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": [
+					{
+						"user_email": "user1@test.com",
+						"user_first_name": "<first name>",
+						"user_last_name": "<last name>",
+						"phone_number": "408-753-4000",
+						"status": true,
+						"role_name": "Investigator",
+						"last_logged_in": 1640024700241,
+						"hidden": true,
+						"user_type": "CSP",
+						"groups": [
+							{
+								"group_id": "1234",
+								"group_name": "usergroup1"
+							}
+						]
+					},
+					{
+						"user_email": "user2@test.com",
+						"user_first_name": "<first name>",
+						"user_last_name": "<last name>",
+						"phone_number": "408-753-4000",
+						"status": true,
+						"role_name": "Investigator",
+						"last_logged_in": 1640024700241,
+						"hidden": true,
+						"user_type": "CSP",
+						"groups": [
+							{
+								"group_id": "123",
+								"group_name": "usergroup2"
+							}
+						]
+					}
+				],
+				"metadata": {
+					"total_count": 2
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.ListIAMUsers(context.Background())
+		assert.NoError(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 2, resp.Metadata.TotalCount)
+		require.Len(t, resp.Data, 2)
+
+		user1 := resp.Data[0]
+		assert.Equal(t, "user1@test.com", user1.Email)
+		assert.Equal(t, "<first name>", user1.FirstName)
+		assert.Equal(t, "usergroup1", user1.Groups[0].GroupName)
+
+		user2 := resp.Data[1]
+		assert.Equal(t, "user2@test.com", user2.Email)
+		assert.Equal(t, "usergroup2", user2.Groups[0].GroupName)
+	})
+}
+
+func TestClient_GetIAMUser(t *testing.T) {
+	t.Run("should get iam user successfully", func(t *testing.T) {
+		userEmail := "user@test.com"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, fmt.Sprintf("/%s/%s", IamUsersEndpoint, userEmail), r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": {
+					"user_email": "user@test.com",
+					"user_first_name": "<first name>",
+					"user_last_name": "<last name>",
+					"phone_number": "408-753-4000",
+					"status": true,
+					"role_name": "Account Admin",
+					"last_logged_in": 1640024700241,
+					"hidden": true,
+					"user_type": "CSP",
+					"groups": [
+						{
+							"group_id": "unique_group_id",
+							"group_name": "usergroup"
+						}
+					]
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		user, err := client.GetIAMUser(context.Background(), userEmail)
+		assert.NoError(t, err)
+		require.NotNil(t, user)
+		assert.Equal(t, "user@test.com", user.Email)
+		assert.Equal(t, "Account Admin", user.RoleName)
+		require.Len(t, user.Groups, 1)
+		assert.Equal(t, "unique_group_id", user.Groups[0].GroupID)
+		assert.Equal(t, "usergroup", user.Groups[0].GroupName)
+	})
+}
+
+func TestClient_EditIAMUser(t *testing.T) {
+	t.Run("should edit iam user successfully", func(t *testing.T) {
+		userEmail := "user@test.com"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPatch, r.Method)
+			assert.Equal(t, fmt.Sprintf("/%s/%s", IamUsersEndpoint, userEmail), r.URL.Path)
+
+			var reqBody types.IamUserEditRequest
+			err := json.NewDecoder(r.Body).Decode(&reqBody)
+			assert.NoError(t, err)
+			assert.Equal(t, "NewName", *reqBody.FirstName)
+			assert.Equal(t, []string{"newgroup"}, reqBody.Groups)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"success": true}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		newFirstName := "NewName"
+		editReq := types.IamUserEditRequest{
+			FirstName: &newFirstName,
+			Groups:    []string{"newgroup"},
+		}
+		resp, err := client.EditIAMUser(context.Background(), userEmail, editReq)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.True(t, resp["success"].(bool))
+	})
+}

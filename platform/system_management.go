@@ -172,3 +172,29 @@ func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (map[strin
 	})
 	return resp, err
 }
+
+// ListIAMUsers retrieves a list of all users and their respective properties.
+func (c *Client) ListIAMUsers(ctx context.Context) (*types.ListIamUsersResponse, error) {
+	var ans types.ListIamUsersResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, IamUsersEndpoint, nil, nil, nil, &ans, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ans, nil
+}
+
+// GetIAMUser retrieves a user and its respective properties.
+func (c *Client) GetIAMUser(ctx context.Context, userEmail string) (*types.IamUser, error) {
+	var ans types.GetIamUserResponse
+	if _, err := c.internalClient.Do(ctx, http.MethodGet, IamUsersEndpoint, &[]string{userEmail}, nil, nil, &ans, nil); err != nil {
+		return nil, err
+	}
+	return &ans.Data, nil
+}
+
+// EditIAMUser edits an existing user.
+func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.IamUserEditRequest) (map[string]any, error) {
+	var resp map[string]any
+	_, err := c.internalClient.Do(ctx, http.MethodPatch, IamUsersEndpoint, &[]string{userEmail}, nil, req, &resp, nil)
+	return resp, err
+}
