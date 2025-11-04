@@ -143,34 +143,53 @@ func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest
 	return ans, err
 }
 
-// CreateUserGroup creates a new user group.
-func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (types.UserGroup, error) {
-	var resp types.UserGroup
+// CreateUserGroup creates a new user group and returns its ID.
+func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (string, error) {
+	var resp struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
 	_, err := c.internalClient.Do(ctx, http.MethodPost, UserGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
 	})
-	return resp, err
+	if err != nil {
+		return "", err
+	}
+
+	// Message is "user group with group id <id> created successfully"
+	parts := strings.Split(resp.Data.Message, " ")
+	if len(parts) < 6 || parts[0] != "user" || parts[1] != "group" {
+		return "", fmt.Errorf("unexpected create user group response message: %s", resp.Data.Message)
+	}
+	groupID := parts[5]
+	return groupID, nil
 }
 
 // EditUserGroup edits an existing user group.
 // It takes a groupID and a UserGroupEditRequest object containing the fields to update.
-func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (map[string]any, error) {
-	var resp map[string]any
+func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (string, error) {
+	var resp struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
 	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
 	_, err := c.internalClient.Do(ctx, http.MethodPatch, UserGroupEndpoint, &[]string{groupID}, nil, req, &resp, &client.DoOptions{
-		RequestWrapperKeys:  []string{"request_data"},
-		ResponseWrapperKeys: []string{"reply"},
+		RequestWrapperKeys: []string{"request_data"},
 	})
-	return resp, err
+	return resp.Data.Message, err
 }
 
 // DeleteUserGroup deletes an existing user group by its ID.
-func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (map[string]any, error) {
-	var resp map[string]any
-	_, err := c.internalClient.Do(ctx, http.MethodDelete, UserGroupEndpoint, &[]string{groupID}, nil, nil, &resp, &client.DoOptions{
-		ResponseWrapperKeys: []string{"reply"},
-	})
-	return resp, err
+func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (string, error) {
+	var resp struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, UserGroupEndpoint, &[]string{groupID}, nil, nil, &resp, nil)
+	return resp.Data.Message, err
 }
 
 // ListIAMUsers retrieves a list of all users and their respective properties.

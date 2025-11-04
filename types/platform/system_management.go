@@ -160,10 +160,9 @@ type UserGroup struct {
 	GroupID        string        `json:"group_id"`
 	GroupName      string        `json:"group_name"`
 	Description    string        `json:"description"`
-	RoleName       string        `json:"role_name"`
+	RoleName       string        `json:"role_id"`
 	PrettyRoleName string        `json:"pretty_role_name"`
 	CreatedBy      string        `json:"created_by"`
-	UpdatedBy      string        `json:"updated_by"`
 	CreatedTS      int64         `json:"created_ts"`
 	UpdatedTS      int64         `json:"updated_ts"`
 	Users          []string      `json:"users"`
@@ -175,17 +174,17 @@ type UserGroup struct {
 // UserGroupCreateRequest defines the request for creating a user group.
 type UserGroupCreateRequest struct {
 	GroupName    string   `json:"group_name"`
-	RoleName     string   `json:"role_name,omitempty"`
+	RoleName     string   `json:"role_id,omitempty"`
 	Description  string   `json:"description,omitempty"`
 	Users        []string `json:"users,omitempty"`
-	NestedGroups []string `json:"nested_groups,omitempty"`
+	NestedGroups []string `json:"nested_group_ids,omitempty"`
 	IDPGroups    []string `json:"idp_groups,omitempty"`
 }
 
 // UserGroupEditRequest defines the request for editing a user group.
 type UserGroupEditRequest struct {
 	GroupName      string   `json:"group_name,omitempty"`
-	RoleName       string   `json:"role_name,omitempty"`
+	RoleName       string   `json:"role_id,omitempty"`
 	Description    string   `json:"description,omitempty"`
 	Users          []string `json:"users,omitempty"`
 	NestedGroupIDs []string `json:"nested_group_ids,omitempty"`

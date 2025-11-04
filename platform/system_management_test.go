@@ -397,19 +397,9 @@ func TestClient_CreateUserGroup(t *testing.T) {
 			w.WriteHeader(http.StatusCreated)
 			// A create operation typically returns the newly created object.
 			fmt.Fprint(w, `{
-				"group_id": "new-group-id",
-				"group_name": "New Group",
-				"description": "A new group for testing",
-				"role_name": "role_name02",
-				"pretty_role_name": "Role Name 02",
-				"created_by": "creator@test.com",
-				"updated_by": "creator@test.com",
-				"created_ts": 1670000000000,
-				"updated_ts": 1670000000000,
-				"users": [],
-				"group_type": "custom",
-				"nested_groups": [],
-				"idp_groups": []
+				"data": {
+					"message": "user group with group id new-group-id created successfully"
+				}
 			}`)
 		})
 		client, server := setupTest(t, handler)
@@ -421,8 +411,7 @@ func TestClient_CreateUserGroup(t *testing.T) {
 		}
 		resp, err := client.CreateUserGroup(context.Background(), createReq)
 		assert.NoError(t, err)
-		assert.Equal(t, "new-group-id", resp.GroupID)
-		assert.Equal(t, "New Group", resp.GroupName)
+		assert.Equal(t, "new-group-id", resp)
 	})
 }
 
@@ -440,7 +429,11 @@ func TestClient_EditUserGroup(t *testing.T) {
 
 			w.WriteHeader(http.StatusOK)
 			// A successful PATCH often returns a simple success message.
-			fmt.Fprint(w, `{"reply": {"success": true}}`)
+			fmt.Fprint(w, `{
+				"data": {
+					"message": "user group with group id group-to-edit-id updated successfully"
+				}
+			}`)
 		})
 		client, server := setupTest(t, handler)
 		defer server.Close()
@@ -451,7 +444,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 		}
 		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
 		assert.NoError(t, err)
-		assert.True(t, resp["success"].(bool))
+		assert.Equal(t, "user group with group id group-to-edit-id updated successfully", resp)
 	})
 }
 
@@ -464,14 +457,18 @@ func TestClient_DeleteUserGroup(t *testing.T) {
 
 			w.WriteHeader(http.StatusOK)
 			// A successful DELETE often returns a simple success message.
-			fmt.Fprint(w, `{"reply": {"success": true}}`)
+			fmt.Fprint(w, `{
+				"data": {
+					"message": "user group with group id group-to-delete-id deleted successfully"
+				}
+			}`)
 		})
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
 		resp, err := client.DeleteUserGroup(context.Background(), groupID)
 		assert.NoError(t, err)
-		assert.True(t, resp["success"].(bool))
+		assert.Equal(t, "user group with group id group-to-delete-id deleted successfully", resp)
 	})
 }
 
