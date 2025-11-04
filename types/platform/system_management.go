@@ -160,10 +160,9 @@ type UserGroup struct {
 	GroupID        string        `json:"group_id"`
 	GroupName      string        `json:"group_name"`
 	Description    string        `json:"description"`
-	RoleName       string        `json:"role_name"`
+	RoleName       string        `json:"role_id"`
 	PrettyRoleName string        `json:"pretty_role_name"`
 	CreatedBy      string        `json:"created_by"`
-	UpdatedBy      string        `json:"updated_by"`
 	CreatedTS      int64         `json:"created_ts"`
 	UpdatedTS      int64         `json:"updated_ts"`
 	Users          []string      `json:"users"`
@@ -175,19 +174,66 @@ type UserGroup struct {
 // UserGroupCreateRequest defines the request for creating a user group.
 type UserGroupCreateRequest struct {
 	GroupName    string   `json:"group_name"`
-	RoleName     string   `json:"role_name,omitempty"`
+	RoleName     string   `json:"role_id,omitempty"`
 	Description  string   `json:"description,omitempty"`
 	Users        []string `json:"users,omitempty"`
-	NestedGroups []string `json:"nested_groups,omitempty"`
+	NestedGroups []string `json:"nested_group_ids,omitempty"`
 	IDPGroups    []string `json:"idp_groups,omitempty"`
 }
 
 // UserGroupEditRequest defines the request for editing a user group.
 type UserGroupEditRequest struct {
 	GroupName      string   `json:"group_name,omitempty"`
-	RoleName       string   `json:"role_name,omitempty"`
+	RoleName       string   `json:"role_id,omitempty"`
 	Description    string   `json:"description,omitempty"`
 	Users          []string `json:"users,omitempty"`
 	NestedGroupIDs []string `json:"nested_group_ids,omitempty"`
 	IDPGroups      []string `json:"idp_groups,omitempty"`
+}
+
+// IamUserGroupInfo represents a group a user belongs to.
+type IamUserGroupInfo struct {
+	GroupID   int    `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
+// IamUser represents a user account in the platform.
+type IamUser struct {
+	Email        string      `json:"user_email"`
+	FirstName    string      `json:"user_first_name"`
+	LastName     string      `json:"user_last_name"`
+	PhoneNumber  string      `json:"phone_number"`
+	Status       bool        `json:"status"`
+	RoleName     string      `json:"role_name"`
+	LastLoggedIn int64       `json:"last_logged_in"`
+	Hidden       bool        `json:"hidden"`
+	UserType     string      `json:"user_type"`
+	Groups       []UserGroup `json:"groups"`
+}
+
+// IamUsersMetadata contains metadata for a list of users.
+type IamUsersMetadata struct {
+	TotalCount int `json:"total_count"`
+}
+
+// ListIamUsersResponse is the response from the ListIAMUsers API.
+type ListIamUsersResponse struct {
+	Data     []IamUser        `json:"data"`
+	Metadata IamUsersMetadata `json:"metadata"`
+}
+
+// GetIamUserResponse is the response from the GetIAMUser API.
+type GetIamUserResponse struct {
+	Data IamUser `json:"data"`
+}
+
+// IamUserEditRequest defines the request for editing a user.
+type IamUserEditRequest struct {
+	FirstName   *string  `json:"user_first_name,omitempty"`
+	LastName    *string  `json:"user_last_name,omitempty"`
+	PhoneNumber *string  `json:"phone_number,omitempty"`
+	Status      *bool    `json:"status,omitempty"`
+	RoleName    *string  `json:"role_name,omitempty"`
+	Hidden      *bool    `json:"hidden,omitempty"`
+	Groups      []string `json:"groups,omitempty"`
 }

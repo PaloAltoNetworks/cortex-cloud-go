@@ -15,16 +15,22 @@ import (
 // API endpoint path specification.
 const (
 	// System Management Endpoints
-	HealthCheckEndpoint    = "public_api/v1/health_check/"
-	GetTenantInfoEndpoint  = "public_api/v1/get_tenant_info/"
-	ListUsersEndpoint      = "public_api/v1/rbac/get_users/"
-	GetUserGroupEndpoint   = "public_api/v1/rbac/get_user_group/"
-	ListRolesEndpoint      = "public_api/v1/rbac/get_roles/"
-	SetUserRoleEndpoint    = "public_api/v1/rbac/set_user_role/"
-	GetRiskScoreEndpoint   = "public_api/v1/get_risk_score/"
+	HealthCheckEndpoint   = "public_api/v1/health_check/"
+	GetTenantInfoEndpoint = "public_api/v1/get_tenant_info/"
+
+	ListUsersEndpoint    = "public_api/v1/rbac/get_users/"
+	GetUserGroupEndpoint = "public_api/v1/rbac/get_user_group/"
+
+	ListRolesEndpoint    = "public_api/v1/rbac/get_roles/"
+	SetUserRoleEndpoint  = "public_api/v1/rbac/set_user_role/"
+	GetRiskScoreEndpoint = "public_api/v1/get_risk_score/"
+
 	ListRiskyUsersEndpoint = "public_api/v1/risk/get_risky_users/"
 	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
-	UserGroupEndpoint      = "/iam/v1/user-group"
+
+	UserGroupEndpoint = "platform/iam/v1/user-group"
+
+	IamUsersEndpoint = "platform/iam/v1/user"
 
 	// Asset Group Endpoints
 	CreateAssetGroupEndpoint = "public_api/v1/asset-groups/create"
