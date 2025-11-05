@@ -199,16 +199,16 @@ type IamUserGroupInfo struct {
 
 // IamUser represents a user account in the platform.
 type IamUser struct {
-	Email        string      `json:"user_email"`
-	FirstName    string      `json:"user_first_name"`
-	LastName     string      `json:"user_last_name"`
-	PhoneNumber  string      `json:"phone_number"`
-	Status       bool        `json:"status"`
-	RoleName     string      `json:"role_name"`
-	LastLoggedIn int64       `json:"last_logged_in"`
-	Hidden       bool        `json:"hidden"`
-	UserType     string      `json:"user_type"`
-	Groups       []UserGroup `json:"groups"`
+	Email        string        `json:"user_email"`
+	FirstName    string        `json:"user_first_name"`
+	LastName     string        `json:"user_last_name"`
+	PhoneNumber  string        `json:"phone_number"`
+	Status       string        `json:"status"`
+	RoleName     string        `json:"role_name"`
+	LastLoggedIn int64         `json:"last_logged_in"`
+	Hidden       bool          `json:"is_hidden"`
+	UserType     string        `json:"user_type"`
+	Groups       []NestedGroup `json:"groups"`
 }
 
 // IamUsersMetadata contains metadata for a list of users.
@@ -231,9 +231,9 @@ type GetIamUserResponse struct {
 type IamUserEditRequest struct {
 	FirstName   *string  `json:"user_first_name,omitempty"`
 	LastName    *string  `json:"user_last_name,omitempty"`
+	RoleId      *string  `json:"role_id,omitempty"`
 	PhoneNumber *string  `json:"phone_number,omitempty"`
-	Status      *bool    `json:"status,omitempty"`
-	RoleName    *string  `json:"role_name,omitempty"`
-	Hidden      *bool    `json:"hidden,omitempty"`
-	Groups      []string `json:"groups,omitempty"`
+	Status      *string  `json:"status,omitempty"`
+	Hidden      *bool    `json:"is_hidden,omitempty"`
+	UserGroups  []string `json:"user_groups,omitempty"`
 }

@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
@@ -584,30 +585,37 @@ func TestClient_GetIAMUser(t *testing.T) {
 func TestClient_EditIAMUser(t *testing.T) {
 	t.Run("should edit iam user successfully", func(t *testing.T) {
 		userEmail := "user@test.com"
+
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodPatch, r.Method)
 			assert.Equal(t, fmt.Sprintf("/%s/%s", IamUsersEndpoint, userEmail), r.URL.Path)
 
-			var reqBody types.IamUserEditRequest
-			err := json.NewDecoder(r.Body).Decode(&reqBody)
+			var body struct {
+				RequestData types.IamUserEditRequest `json:"request_data"`
+			}
+			err := json.NewDecoder(r.Body).Decode(&body)
 			assert.NoError(t, err)
-			assert.Equal(t, "NewName", *reqBody.FirstName)
-			assert.Equal(t, []string{"newgroup"}, reqBody.Groups)
 
+			assert.NotNil(t, body.RequestData.FirstName)
+			assert.Equal(t, "NewName", *body.RequestData.FirstName)
+			assert.Equal(t, []string{"newgroup"}, body.RequestData.UserGroups)
+
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `{"success": true}`)
+			io.WriteString(w, `{"data":{"message":"User updated successfully"}}`)
 		})
+
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
 		newFirstName := "NewName"
 		editReq := types.IamUserEditRequest{
-			FirstName: &newFirstName,
-			Groups:    []string{"newgroup"},
+			FirstName:  &newFirstName,
+			UserGroups: []string{"newgroup"},
 		}
+
 		resp, err := client.EditIAMUser(context.Background(), userEmail, editReq)
 		assert.NoError(t, err)
-		assert.NotNil(t, resp)
-		assert.True(t, resp["success"].(bool))
+		assert.Equal(t, "User updated successfully", resp)
 	})
 }
