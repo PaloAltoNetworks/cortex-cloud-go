@@ -12,29 +12,96 @@ type User struct {
 }
 
 type Scope struct {
-	Endpoints   Endpoints   `json:"endpoints"`
-	CasesIssues CasesIssues `json:"cases_issues"`
+	Assets       *Assets       `json:"assets"`
+	DatasetsRows *DatasetsRows `json:"datasets_rows"`
+	Endpoints    *Endpoints    `json:"endpoints"`
+	CasesIssues  *CasesIssues  `json:"cases_issues"`
+}
+
+type Assets struct {
+	Mode        string            `json:"mode"`
+	AssetGroups []ScopeAssetGroup `json:"asset_groups"`
+}
+
+type ScopeAssetGroup struct {
+	ID   int    `json:"asset_group_id"`
+	Name string `json:"asset_group_name"`
+}
+
+type DatasetsRows struct {
+	DefaultFilterMode string   `json:"default_filter_mode"`
+	Filters           []Filter `json:"filters"`
+}
+
+type Filter struct {
+	Dataset string `json:"dataset"`
+	Filter  string `json:"filter"`
 }
 
 type Endpoints struct {
-	EndpointGroups EndpointGroups `json:"endpoint_groups"`
-	EndpointTags   EndpointTags   `json:"endpoint_tags"`
-	Mode           string         `json:"mode"`
+	EndpointGroups *EndpointGroups `json:"endpoint_groups"`
+	EndpointTags   *EndpointTags   `json:"endpoint_tags"`
 }
 
 type EndpointGroups struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode"`
+	Tags []Tag  `json:"tags"`
 }
 
 type EndpointTags struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode"`
+	Tags []Tag  `json:"tags"`
 }
 
 type CasesIssues struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode"`
+	Tags []Tag  `json:"tags"`
+}
+
+type Tag struct {
+	TagID   string `json:"tag_id"`
+	TagName string `json:"tag_name"`
+}
+
+type EditScopeRequest struct {
+	RequestData EditScopeRequestData `json:"request_data"`
+}
+
+type EditScopeRequestData struct {
+	Endpoints    *EditEndpoints    `json:"endpoints"`
+	CasesIssues  *EditCasesIssues  `json:"cases_issues"`
+	Assets       *EditAssets       `json:"assets"`
+	DatasetsRows *EditDatasetsRows `json:"datasets_rows"`
+}
+
+type EditEndpoints struct {
+	EndpointGroups *EditEndpointGroups `json:"endpoint_groups"`
+	EndpointTags   *EditEndpointTags   `json:"endpoint_tags"`
+}
+
+type EditEndpointGroups struct {
+	Names []string `json:"names"`
+	Mode  string   `json:"mode"`
+}
+
+type EditEndpointTags struct {
+	Names []string `json:"names"`
+	Mode  string   `json:"mode"`
+}
+
+type EditCasesIssues struct {
+	Mode  string   `json:"mode"`
+	Names []string `json:"names"`
+}
+
+type EditAssets struct {
+	Mode          string `json:"mode"`
+	AssetGroupIDs []int  `json:"asset_group_ids"`
+}
+
+type EditDatasetsRows struct {
+	Filters           []Filter `json:"filters"`
+	DefaultFilterMode string   `json:"default_filter_mode"`
 }
 
 type Reason struct {
@@ -181,6 +248,11 @@ type UserGroupCreateRequest struct {
 	IDPGroups    []string `json:"idp_groups,omitempty"`
 }
 
+// UserGroupCreateResponse is the response from the UserGroupCreate API.
+type UserGroupCreateResponse struct {
+	Message    string   `json:"message"`
+}
+
 // UserGroupEditRequest defines the request for editing a user group.
 type UserGroupEditRequest struct {
 	GroupName      string   `json:"group_name,omitempty"`
@@ -189,6 +261,16 @@ type UserGroupEditRequest struct {
 	Users          []string `json:"users,omitempty"`
 	NestedGroupIDs []string `json:"nested_group_ids,omitempty"`
 	IDPGroups      []string `json:"idp_groups,omitempty"`
+}
+
+// UserGroupEditResponse is the response from the UserGroupEdit API.
+type UserGroupEditResponse struct {
+	Message string `json:"message"`
+}
+
+// UserGroupDeleteResponse is the response from the UserGroupDelete API.
+type UserGroupDeleteResponse struct {
+	Message string `json:"message"`
 }
 
 // IamUserGroupInfo represents a group a user belongs to.
@@ -237,3 +319,9 @@ type IamUserEditRequest struct {
 	Hidden      *bool    `json:"is_hidden,omitempty"`
 	UserGroups  []string `json:"user_groups,omitempty"`
 }
+
+// IamUserEditResponse is the response from the IamUserEdit API.
+type IamUserEditResponse struct {
+	Message string `json:"message"`
+}
+
