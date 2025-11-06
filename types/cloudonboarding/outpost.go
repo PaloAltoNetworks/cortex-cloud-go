@@ -1,6 +1,19 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
+)
+
+// Outpost represents an outpost object.
+type Outpost struct {
+	CloudProvider string `json:"cloud_provider"`
+	OutpostID     string `json:"outpost_id"`
+	CreatedAt     int    `json:"created_at"`
+	Type          string `json:"type"`
+}
+
 
 // CreateOutpostTemplateRequest is the request for the CreateOutpostTemplate endpoint.
 type CreateOutpostTemplateRequest struct {
@@ -88,14 +101,38 @@ func (r *UpdateOutpostRequest) MarshalJSON() ([]byte, error) {
 }
 
 // ListOutpostsRequest is the request for the ListOutposts endpoint.
-type ListOutpostsRequest = ListIntegrationInstancesRequest
+type ListOutpostsRequest struct {
+	filterData filterTypes.FilterData
+}
 
-// Outpost represents an outpost object.
-type Outpost struct {
-	CloudProvider string `json:"cloud_provider"`
-	OutpostID     string `json:"outpost_id"`
-	CreatedAt     int    `json:"created_at"`
-	Type          string `json:"type"`
+// ListOutpostsRequestOption defines a functional option for ListOutpostsRequest.
+type ListOutpostsRequestOption func(*ListOutpostsRequest)
+
+// NewListOutpostsRequest creates a new ListOutpostsRequest.
+func NewListOutpostsRequest(options ...ListOutpostsRequestOption) *ListOutpostsRequest {
+	r := &ListOutpostsRequest{}
+	for _, option := range options {
+		option(r)
+	}
+	return r
+}
+
+// WithOutpostFilterData sets the filter data for the request.
+func WithOutpostFilterData(filterData filterTypes.FilterData) ListOutpostsRequestOption {
+	return func(r *ListOutpostsRequest) {
+		r.filterData = filterData
+	}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (r *ListOutpostsRequest) MarshalJSON() ([]byte, error) {
+	type alias struct {
+		FilterData filterTypes.FilterData `json:"filter_data"`
+	}
+
+	return json.Marshal(&alias{
+		FilterData: r.filterData,
+	})
 }
 
 // ListOutpostsResponse is the response for the ListOutposts endpoint.
