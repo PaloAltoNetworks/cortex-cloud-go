@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"path"
+	//"path"
 	"regexp"
 
 	filterTypes "github.com/PaloAltoNetworks/cortex-cloud-go/types/filter"
@@ -293,21 +293,11 @@ func (r CreateTemplateOrEditIntegrationInstanceResponse) GetTrackingGUIDFromAzur
 		return "", fmt.Errorf("failed to extract ARM template GUID: reply.manual.ARM is empty string")
 	}
 
-	// Parse the raw URL into a URL struct
-	parsedURL, err := url.Parse(*r.Manual.ARM)
-	if err != nil {
-		return "", fmt.Errorf("error parsing raw API response URL into struct during ARM template GUID extraction: %w", err)
-	}
-
-	// Extract the filename from the URL path
-	filename := path.Base(parsedURL.Path)
-
-	// Find the GUID in the filename
+	// Find the GUID in the response payloads's ARM field
 	re := regexp.MustCompile(`arm-([a-f0-9]{32})-`)
-	matches := re.FindStringSubmatch(filename)
-	//if len(matches) < 2 {
+	matches := re.FindStringSubmatch(*r.Manual.ARM)
 	if len(matches) < 1 {
-		return "", fmt.Errorf("failed to find GUID in ARM template filename: %s", filename)
+		return "", fmt.Errorf("failed to find GUID in ARM template filename: %s", *r.Manual.ARM)
 	}
 
 	return matches[1], nil
