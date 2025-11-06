@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
@@ -295,7 +296,7 @@ func TestClient_ListUserGroups(t *testing.T) {
 	t.Run("should list user groups successfully", func(t *testing.T) {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodGet, r.Method)
-			assert.Equal(t, UserGroupEndpoint, r.URL.Path)
+			assert.Equal(t, "/"+UserGroupEndpoint, r.URL.Path)
 
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{
@@ -386,7 +387,7 @@ func TestClient_CreateUserGroup(t *testing.T) {
 	t.Run("should create user group successfully", func(t *testing.T) {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodPost, r.Method)
-			assert.Equal(t, UserGroupEndpoint, r.URL.Path)
+			assert.Equal(t, "/"+UserGroupEndpoint, r.URL.Path)
 
 			var req map[string]types.UserGroupCreateRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
@@ -397,19 +398,9 @@ func TestClient_CreateUserGroup(t *testing.T) {
 			w.WriteHeader(http.StatusCreated)
 			// A create operation typically returns the newly created object.
 			fmt.Fprint(w, `{
-				"group_id": "new-group-id",
-				"group_name": "New Group",
-				"description": "A new group for testing",
-				"role_name": "role_name02",
-				"pretty_role_name": "Role Name 02",
-				"created_by": "creator@test.com",
-				"updated_by": "creator@test.com",
-				"created_ts": 1670000000000,
-				"updated_ts": 1670000000000,
-				"users": [],
-				"group_type": "custom",
-				"nested_groups": [],
-				"idp_groups": []
+				"data": {
+					"message": "user group with group id new-group-id created successfully"
+				}
 			}`)
 		})
 		client, server := setupTest(t, handler)
@@ -421,8 +412,7 @@ func TestClient_CreateUserGroup(t *testing.T) {
 		}
 		resp, err := client.CreateUserGroup(context.Background(), createReq)
 		assert.NoError(t, err)
-		assert.Equal(t, "new-group-id", resp.GroupID)
-		assert.Equal(t, "New Group", resp.GroupName)
+		assert.Equal(t, "new-group-id", resp)
 	})
 }
 
@@ -431,7 +421,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 		const groupID = "group-to-edit-id"
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodPatch, r.Method)
-			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
+			assert.Equal(t, fmt.Sprintf("/"+UserGroupEndpoint+"/%s", groupID), r.URL.Path)
 
 			var req map[string]types.UserGroupEditRequest
 			err := json.NewDecoder(r.Body).Decode(&req)
@@ -440,7 +430,11 @@ func TestClient_EditUserGroup(t *testing.T) {
 
 			w.WriteHeader(http.StatusOK)
 			// A successful PATCH often returns a simple success message.
-			fmt.Fprint(w, `{"reply": {"success": true}}`)
+			fmt.Fprint(w, `{
+				"data": {
+					"message": "user group with group id group-to-edit-id updated successfully"
+				}
+			}`)
 		})
 		client, server := setupTest(t, handler)
 		defer server.Close()
@@ -451,7 +445,7 @@ func TestClient_EditUserGroup(t *testing.T) {
 		}
 		resp, err := client.EditUserGroup(context.Background(), groupID, editReq)
 		assert.NoError(t, err)
-		assert.True(t, resp["success"].(bool))
+		assert.Equal(t, "user group with group id group-to-edit-id updated successfully", resp)
 	})
 }
 
@@ -460,17 +454,233 @@ func TestClient_DeleteUserGroup(t *testing.T) {
 		const groupID = "group-to-delete-id"
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodDelete, r.Method)
-			assert.Equal(t, fmt.Sprintf(UserGroupEndpoint+"/%s", groupID), r.URL.Path)
+			assert.Equal(t, fmt.Sprintf("/"+UserGroupEndpoint+"/%s", groupID), r.URL.Path)
 
 			w.WriteHeader(http.StatusOK)
 			// A successful DELETE often returns a simple success message.
-			fmt.Fprint(w, `{"reply": {"success": true}}`)
+			fmt.Fprint(w, `{
+				"data": {
+					"message": "user group with group id group-to-delete-id deleted successfully"
+				}
+			}`)
 		})
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
 		resp, err := client.DeleteUserGroup(context.Background(), groupID)
 		assert.NoError(t, err)
-		assert.True(t, resp["success"].(bool))
+		assert.Equal(t, "user group with group id group-to-delete-id deleted successfully", resp)
+	})
+}
+
+func TestClient_ListIAMUsers(t *testing.T) {
+	t.Run("should list iam users successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/"+IamUsersEndpoint, r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": [
+					{
+						"user_email": "user1@test.com",
+						"user_first_name": "<first name>",
+						"user_last_name": "<last name>",
+						"phone_number": "408-753-4000",
+						"status": "Active",
+						"role_name": "Investigator",
+						"last_logged_in": 1640024700241,
+						"hidden": true,
+						"user_type": "CSP",
+						"groups": [
+							{
+								"group_id": "1234",
+								"group_name": "usergroup1"
+							}
+						]
+					},
+					{
+						"user_email": "user2@test.com",
+						"user_first_name": "<first name>",
+						"user_last_name": "<last name>",
+						"phone_number": "408-753-4000",
+						"status": "Active",
+						"role_name": "Investigator",
+						"last_logged_in": 1640024700241,
+						"hidden": true,
+						"user_type": "CSP",
+						"groups": [
+							{
+								"group_id": "123",
+								"group_name": "usergroup2"
+							}
+						]
+					}
+				],
+				"metadata": {
+					"total_count": 2
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.ListIAMUsers(context.Background())
+		assert.NoError(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 2, resp.Metadata.TotalCount)
+		require.Len(t, resp.Data, 2)
+
+		user1 := resp.Data[0]
+		assert.Equal(t, "user1@test.com", user1.Email)
+		assert.Equal(t, "<first name>", user1.FirstName)
+		assert.Equal(t, "usergroup1", user1.Groups[0].GroupName)
+
+		user2 := resp.Data[1]
+		assert.Equal(t, "user2@test.com", user2.Email)
+		assert.Equal(t, "usergroup2", user2.Groups[0].GroupName)
+	})
+}
+
+func TestClient_GetIAMUser(t *testing.T) {
+	t.Run("should get iam user successfully", func(t *testing.T) {
+		userEmail := "user@test.com"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, fmt.Sprintf("/%s/%s", IamUsersEndpoint, userEmail), r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": {
+					"user_email": "user@test.com",
+					"user_first_name": "<first name>",
+					"user_last_name": "<last name>",
+					"phone_number": "408-753-4000",
+					"status": "Active",
+					"role_name": "Account Admin",
+					"last_logged_in": 1640024700241,
+					"hidden": true,
+					"user_type": "CSP",
+					"groups": [
+						{
+							"group_id": "unique_group_id",
+							"group_name": "usergroup"
+						}
+					]
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		user, err := client.GetIAMUser(context.Background(), userEmail)
+		assert.NoError(t, err)
+		require.NotNil(t, user)
+		assert.Equal(t, "user@test.com", user.Email)
+		assert.Equal(t, "Account Admin", user.RoleName)
+		require.Len(t, user.Groups, 1)
+		assert.Equal(t, "unique_group_id", user.Groups[0].GroupID)
+		assert.Equal(t, "usergroup", user.Groups[0].GroupName)
+	})
+}
+
+func TestClient_EditIAMUser(t *testing.T) {
+	t.Run("should edit iam user successfully", func(t *testing.T) {
+		userEmail := "user@test.com"
+
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPatch, r.Method)
+			assert.Equal(t, fmt.Sprintf("/%s/%s", IamUsersEndpoint, userEmail), r.URL.Path)
+
+			var body struct {
+				RequestData types.IamUserEditRequest `json:"request_data"`
+			}
+			err := json.NewDecoder(r.Body).Decode(&body)
+			assert.NoError(t, err)
+
+			assert.NotNil(t, body.RequestData.FirstName)
+			assert.Equal(t, "NewName", *body.RequestData.FirstName)
+			assert.Equal(t, []string{"newgroup"}, body.RequestData.UserGroups)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			io.WriteString(w, `{"data":{"message":"User updated successfully"}}`)
+		})
+
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		newFirstName := "NewName"
+		editReq := types.IamUserEditRequest{
+			FirstName:  &newFirstName,
+			UserGroups: []string{"newgroup"},
+		}
+
+		resp, err := client.EditIAMUser(context.Background(), userEmail, editReq)
+		assert.NoError(t, err)
+		assert.Equal(t, "User updated successfully", resp)
+	})
+}
+
+func TestClient_GetScope(t *testing.T) {
+	t.Run("should get scope successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/platform/iam/v1/scope/user/123", r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": {
+					"assets": {
+						"mode": "scope",
+						"asset_groups": [
+							{
+								"asset_group_id": 1,
+								"asset_group_name": "Asset Test Group 1"
+							}
+						]
+					}
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		scope, err := client.GetScope(context.Background(), "user", "123")
+		assert.NoError(t, err)
+		require.NotNil(t, scope)
+		assert.Equal(t, "scope", scope.Assets.Mode)
+		require.Len(t, scope.Assets.AssetGroups, 1)
+		assert.Equal(t, 1, scope.Assets.AssetGroups[0].ID)
+		assert.Equal(t, "Asset Test Group 1", scope.Assets.AssetGroups[0].Name)
+	})
+}
+
+func TestClient_EditScope(t *testing.T) {
+	t.Run("should edit scope successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPut, r.Method)
+			assert.Equal(t, "/platform/iam/v1/scope/user/123", r.URL.Path)
+
+			var req struct {
+				RequestData types.EditScopeRequestData `json:"request_data"`
+			}
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			assert.NotNil(t, req.RequestData)
+			require.NotNil(t, req.RequestData.Assets)
+			assert.Equal(t, "scope", req.RequestData.Assets.Mode)
+			assert.Equal(t, []int{1, 2, 3}, req.RequestData.Assets.AssetGroupIDs)
+
+			w.WriteHeader(http.StatusOK)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		editReq := types.EditScopeRequestData{
+			Assets: &types.EditAssets{
+				Mode:          "scope",
+				AssetGroupIDs: []int{1, 2, 3},
+			},
+		}
+		err := client.EditScope(context.Background(), "user", "123", editReq)
+		assert.NoError(t, err)
 	})
 }

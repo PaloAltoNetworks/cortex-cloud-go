@@ -63,7 +63,7 @@ func (c *Client) ListRoles(ctx context.Context, roleNames []string) ([]types.Rol
 
 // SetRole adds or removes one or more users from a role.
 //
-// If no RoleName is provided in the SetRoleRequest, the user is removed from a role.
+// If no value is provided for RoleName in the SetRoleRequest, the user is removed from a role.
 func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types.SetRoleResponse, error) {
 	var ans types.SetRoleResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &client.DoOptions{
@@ -143,32 +143,91 @@ func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest
 	return ans, err
 }
 
-// CreateUserGroup creates a new user group.
-func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (types.UserGroup, error) {
-	var resp types.UserGroup
+// CreateUserGroup creates a new user group and returns its ID.
+func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (string, error) {
+	var resp types.UserGroupCreateResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, UserGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
+		ResponseWrapperKeys: []string{"data"},
 	})
-	return resp, err
+	if err != nil {
+		return "", err
+	}
+
+	// Message is "user group with group id <id> created successfully"
+	parts := strings.Split(resp.Message, " ")
+	if len(parts) < 6 || parts[0] != "user" || parts[1] != "group" {
+		return "", fmt.Errorf("unexpected create user group response message: %s", resp.Message)
+	}
+	groupID := parts[5]
+	return groupID, nil
 }
 
 // EditUserGroup edits an existing user group.
 // It takes a groupID and a UserGroupEditRequest object containing the fields to update.
-func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (map[string]any, error) {
-	var resp map[string]any
-	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
+func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (string, error) {
+	var resp types.UserGroupEditResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPatch, UserGroupEndpoint, &[]string{groupID}, nil, req, &resp, &client.DoOptions{
-		RequestWrapperKeys:  []string{"request_data"},
-		ResponseWrapperKeys: []string{"reply"},
+		RequestWrapperKeys: []string{"request_data"},
+		ResponseWrapperKeys: []string{"data"},
 	})
-	return resp, err
+	return resp.Message, err
 }
 
 // DeleteUserGroup deletes an existing user group by its ID.
-func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (map[string]any, error) {
-	var resp map[string]any
+func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (string, error) {
+	var resp types.UserGroupDeleteResponse
 	_, err := c.internalClient.Do(ctx, http.MethodDelete, UserGroupEndpoint, &[]string{groupID}, nil, nil, &resp, &client.DoOptions{
-		ResponseWrapperKeys: []string{"reply"},
+		ResponseWrapperKeys: []string{"data"},
 	})
-	return resp, err
+	return resp.Message, err
+}
+
+// ListIAMUsers retrieves a list of all users and their respective properties.
+func (c *Client) ListIAMUsers(ctx context.Context) (*types.ListIamUsersResponse, error) {
+	var ans types.ListIamUsersResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, IamUsersEndpoint, nil, nil, nil, &ans, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ans, nil
+}
+
+// GetIAMUser retrieves a user and its respective properties.
+func (c *Client) GetIAMUser(ctx context.Context, userEmail string) (*types.IamUser, error) {
+	var ans types.GetIamUserResponse
+	if _, err := c.internalClient.Do(ctx, http.MethodGet, IamUsersEndpoint, &[]string{userEmail}, nil, nil, &ans, nil); err != nil {
+		return nil, err
+	}
+	return &ans.Data, nil
+}
+
+// EditIAMUser edits an existing user.
+func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.IamUserEditRequest) (string, error) {
+	var resp types.IamUserEditResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPatch, IamUsersEndpoint, &[]string{userEmail}, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+		ResponseWrapperKeys: []string{"data"},
+	})
+	return resp.Message, err
+}
+
+// GetScope retrieves the scope for the given entity type and ID.
+func (c *Client) GetScope(ctx context.Context, entityType, entityID string) (*types.Scope, error) {
+	var scope types.Scope
+	_, err := c.internalClient.Do(ctx, http.MethodGet, ScopeEndpoint, &[]string{entityType, entityID}, nil, nil, &scope, &client.DoOptions{
+		ResponseWrapperKeys: []string{"data"},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &scope, nil
+}
+
+// EditScope modifies the scope for the given entity type and ID.
+func (c *Client) EditScope(ctx context.Context, entityType, entityID string, req types.EditScopeRequestData) error {
+	_, err := c.internalClient.Do(ctx, http.MethodPut, ScopeEndpoint, &[]string{entityType, entityID}, nil, req, nil, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+	})
+	return err
 }
