@@ -63,7 +63,7 @@ func (c *Client) ListRoles(ctx context.Context, roleNames []string) ([]types.Rol
 
 // SetRole adds or removes one or more users from a role.
 //
-// If no RoleName is provided in the SetRoleRequest, the user is removed from a role.
+// If no RoleId is provided in the SetRoleRequest, the user is removed from a role.
 func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types.SetRoleResponse, error) {
 	var ans types.SetRoleResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &client.DoOptions{
@@ -212,8 +212,15 @@ func (c *Client) GetIAMUser(ctx context.Context, userEmail string) (*types.IamUs
 }
 
 // EditIAMUser edits an existing user.
-func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.IamUserEditRequest) (map[string]any, error) {
-	var resp map[string]any
-	_, err := c.internalClient.Do(ctx, http.MethodPatch, IamUsersEndpoint, &[]string{userEmail}, nil, req, &resp, nil)
-	return resp, err
+func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.IamUserEditRequest) (string, error) {
+	var resp struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
+	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
+	_, err := c.internalClient.Do(ctx, http.MethodPatch, IamUsersEndpoint, &[]string{userEmail}, nil, req, &resp, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+	})
+	return resp.Data.Message, err
 }
