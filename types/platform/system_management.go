@@ -258,6 +258,11 @@ type UserGroupEditRequest struct {
 	IDPGroups      []string `json:"idp_groups,omitempty"`
 }
 
+// UserGroupEditResponse is the response from the UserGroupEdit API.
+type UserGroupEditResponse struct {
+	Message string `json:"message"`
+}
+
 // IamUserGroupInfo represents a group a user belongs to.
 type IamUserGroupInfo struct {
 	GroupID   int    `json:"group_id"`
