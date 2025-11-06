@@ -29,9 +29,8 @@ const (
 	ListRiskyHostsEndpoint = "public_api/v1/risky_hosts/"
 
 	UserGroupEndpoint = "platform/iam/v1/user-group"
-
-	IamUsersEndpoint = "platform/iam/v1/user"
-
+	IamUsersEndpoint  = "platform/iam/v1/user"
+	ScopeEndpoint     = "platform/iam/v1/scope"
 	// Asset Group Endpoints
 	CreateAssetGroupEndpoint = "public_api/v1/asset-groups/create"
 	UpdateAssetGroupEndpoint = "public_api/v1/asset-groups/update/"

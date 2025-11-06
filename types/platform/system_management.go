@@ -12,29 +12,96 @@ type User struct {
 }
 
 type Scope struct {
-	Endpoints   Endpoints   `json:"endpoints"`
-	CasesIssues CasesIssues `json:"cases_issues"`
+	Assets       *Assets       `json:"assets,omitempty"`
+	DatasetsRows *DatasetsRows `json:"datasets_rows,omitempty"`
+	Endpoints    *Endpoints    `json:"endpoints,omitempty"`
+	CasesIssues  *CasesIssues  `json:"cases_issues,omitempty"`
+}
+
+type Assets struct {
+	Mode        string            `json:"mode,omitempty"`
+	AssetGroups []ScopeAssetGroup `json:"asset_groups,omitempty"`
+}
+
+type ScopeAssetGroup struct {
+	ID   int    `json:"asset_group_id,omitempty"`
+	Name string `json:"asset_group_name,omitempty"`
+}
+
+type DatasetsRows struct {
+	DefaultFilterMode string   `json:"default_filter_mode,omitempty"`
+	Filters           []Filter `json:"filters,omitempty"`
+}
+
+type Filter struct {
+	Dataset string `json:"dataset,omitempty"`
+	Filter  string `json:"filter,omitempty"`
 }
 
 type Endpoints struct {
-	EndpointGroups EndpointGroups `json:"endpoint_groups"`
-	EndpointTags   EndpointTags   `json:"endpoint_tags"`
-	Mode           string         `json:"mode"`
+	EndpointGroups *EndpointGroups `json:"endpoint_groups,omitempty"`
+	EndpointTags   *EndpointTags   `json:"endpoint_tags,omitempty"`
 }
 
 type EndpointGroups struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode,omitempty"`
+	Tags []Tag  `json:"tags,omitempty"`
 }
 
 type EndpointTags struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode,omitempty"`
+	Tags []Tag  `json:"tags,omitempty"`
 }
 
 type CasesIssues struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode,omitempty"`
+	Tags []Tag  `json:"tags,omitempty"`
+}
+
+type Tag struct {
+	TagID   string `json:"tag_id,omitempty"`
+	TagName string `json:"tag_name,omitempty"`
+}
+
+type EditScopeRequest struct {
+	RequestData EditScopeRequestData `json:"request_data"`
+}
+
+type EditScopeRequestData struct {
+	Endpoints    *EditEndpoints    `json:"endpoints,omitempty"`
+	CasesIssues  *EditCasesIssues  `json:"cases_issues,omitempty"`
+	Assets       *EditAssets       `json:"assets,omitempty"`
+	DatasetsRows *EditDatasetsRows `json:"datasets_rows,omitempty"`
+}
+
+type EditEndpoints struct {
+	EndpointGroups *EditEndpointGroups `json:"endpoint_groups,omitempty"`
+	EndpointTags   *EditEndpointTags   `json:"endpoint_tags,omitempty"`
+}
+
+type EditEndpointGroups struct {
+	Names []string `json:"names,omitempty"`
+	Mode  string   `json:"mode,omitempty"`
+}
+
+type EditEndpointTags struct {
+	Names []string `json:"names,omitempty"`
+	Mode  string   `json:"mode,omitempty"`
+}
+
+type EditCasesIssues struct {
+	Mode  string   `json:"mode,omitempty"`
+	Names []string `json:"names,omitempty"`
+}
+
+type EditAssets struct {
+	Mode          string `json:"mode,omitempty"`
+	AssetGroupIDs []int  `json:"asset_group_ids,omitempty"`
+}
+
+type EditDatasetsRows struct {
+	Filters           []Filter `json:"filters,omitempty"`
+	DefaultFilterMode string   `json:"default_filter_mode,omitempty"`
 }
 
 type Reason struct {

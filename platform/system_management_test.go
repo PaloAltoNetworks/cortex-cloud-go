@@ -619,3 +619,68 @@ func TestClient_EditIAMUser(t *testing.T) {
 		assert.Equal(t, "User updated successfully", resp)
 	})
 }
+
+func TestClient_GetScope(t *testing.T) {
+	t.Run("should get scope successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/platform/iam/v1/scope/user/123", r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": {
+					"assets": {
+						"mode": "scope",
+						"asset_groups": [
+							{
+								"asset_group_id": 1,
+								"asset_group_name": "Asset Test Group 1"
+							}
+						]
+					}
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		scope, err := client.GetScope(context.Background(), "user", "123")
+		assert.NoError(t, err)
+		require.NotNil(t, scope)
+		assert.Equal(t, "scope", scope.Assets.Mode)
+		require.Len(t, scope.Assets.AssetGroups, 1)
+		assert.Equal(t, 1, scope.Assets.AssetGroups[0].ID)
+		assert.Equal(t, "Asset Test Group 1", scope.Assets.AssetGroups[0].Name)
+	})
+}
+
+func TestClient_EditScope(t *testing.T) {
+	t.Run("should edit scope successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPut, r.Method)
+			assert.Equal(t, "/platform/iam/v1/scope/user/123", r.URL.Path)
+
+			var req struct {
+				RequestData types.EditScopeRequestData `json:"request_data"`
+			}
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			assert.NotNil(t, req.RequestData)
+			require.NotNil(t, req.RequestData.Assets)
+			assert.Equal(t, "scope", req.RequestData.Assets.Mode)
+			assert.Equal(t, []int{1, 2, 3}, req.RequestData.Assets.AssetGroupIDs)
+
+			w.WriteHeader(http.StatusOK)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		editReq := types.EditScopeRequestData{
+			Assets: &types.EditAssets{
+				Mode:          "scope",
+				AssetGroupIDs: []int{1, 2, 3},
+			},
+		}
+		err := client.EditScope(context.Background(), "user", "123", editReq)
+		assert.NoError(t, err)
+	})
+}

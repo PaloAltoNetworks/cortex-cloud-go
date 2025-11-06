@@ -224,3 +224,23 @@ func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.Ia
 	})
 	return resp.Data.Message, err
 }
+
+// GetScope retrieves the scope for the given entity type and ID.
+func (c *Client) GetScope(ctx context.Context, entityType, entityID string) (*types.Scope, error) {
+	var scope types.Scope
+	_, err := c.internalClient.Do(ctx, http.MethodGet, ScopeEndpoint, &[]string{entityType, entityID}, nil, nil, &scope, &client.DoOptions{
+		ResponseWrapperKeys: []string{"data"},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &scope, nil
+}
+
+// EditScope modifies the scope for the given entity type and ID.
+func (c *Client) EditScope(ctx context.Context, entityType, entityID string, req types.EditScopeRequestData) error {
+	_, err := c.internalClient.Do(ctx, http.MethodPut, ScopeEndpoint, &[]string{entityType, entityID}, nil, req, nil, &client.DoOptions{
+		RequestWrapperKeys: []string{"request_data"},
+	})
+	return err
+}
