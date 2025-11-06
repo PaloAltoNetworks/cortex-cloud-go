@@ -145,22 +145,19 @@ func (c *Client) GetUserGroup(ctx context.Context, req types.GetUserGroupRequest
 
 // CreateUserGroup creates a new user group and returns its ID.
 func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateRequest) (string, error) {
-	var resp struct {
-		Data struct {
-			Message string `json:"message"`
-		} `json:"data"`
-	}
+	var resp types.UserGroupCreateResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, UserGroupEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
+		ResponseWrapperKeys: []string{"data"},
 	})
 	if err != nil {
 		return "", err
 	}
 
 	// Message is "user group with group id <id> created successfully"
-	parts := strings.Split(resp.Data.Message, " ")
+	parts := strings.Split(resp.Message, " ")
 	if len(parts) < 6 || parts[0] != "user" || parts[1] != "group" {
-		return "", fmt.Errorf("unexpected create user group response message: %s", resp.Data.Message)
+		return "", fmt.Errorf("unexpected create user group response message: %s", resp.Message)
 	}
 	groupID := parts[5]
 	return groupID, nil
@@ -169,27 +166,21 @@ func (c *Client) CreateUserGroup(ctx context.Context, req types.UserGroupCreateR
 // EditUserGroup edits an existing user group.
 // It takes a groupID and a UserGroupEditRequest object containing the fields to update.
 func (c *Client) EditUserGroup(ctx context.Context, groupID string, req types.UserGroupEditRequest) (string, error) {
-	var resp struct {
-		Data struct {
-			Message string `json:"message"`
-		} `json:"data"`
-	}
-	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
+	var resp types.UserGroupEditResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPatch, UserGroupEndpoint, &[]string{groupID}, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
+		ResponseWrapperKeys: []string{"data"},
 	})
-	return resp.Data.Message, err
+	return resp.Message, err
 }
 
 // DeleteUserGroup deletes an existing user group by its ID.
 func (c *Client) DeleteUserGroup(ctx context.Context, groupID string) (string, error) {
-	var resp struct {
-		Data struct {
-			Message string `json:"message"`
-		} `json:"data"`
-	}
-	_, err := c.internalClient.Do(ctx, http.MethodDelete, UserGroupEndpoint, &[]string{groupID}, nil, nil, &resp, nil)
-	return resp.Data.Message, err
+	var resp types.UserGroupDeleteResponse
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, UserGroupEndpoint, &[]string{groupID}, nil, nil, &resp, &client.DoOptions{
+		ResponseWrapperKeys: []string{"data"},
+	})
+	return resp.Message, err
 }
 
 // ListIAMUsers retrieves a list of all users and their respective properties.
@@ -213,7 +204,7 @@ func (c *Client) GetIAMUser(ctx context.Context, userEmail string) (*types.IamUs
 
 // EditIAMUser edits an existing user.
 func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.IamUserEditRequest) (string, error) {
-	var resp types.UserGroupEditResponse
+	var resp types.IamUserEditResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPatch, IamUsersEndpoint, &[]string{userEmail}, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
 		ResponseWrapperKeys: []string{"data"},
