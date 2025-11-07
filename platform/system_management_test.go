@@ -653,22 +653,22 @@ func TestClient_CreateRole(t *testing.T) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "/"+RoleEndpoint, r.URL.Path)
 
+			// 请求体是 {"request_data": {...}}
 			var req map[string]types.RoleCreateRequestData
 			err := json.NewDecoder(r.Body).Decode(&req)
 			assert.NoError(t, err)
 			assert.Equal(t, "CustomRoleName", req["request_data"].PrettyName)
 
+			// 按 OpenAPI 返回 {"data":{"message":"role_id <id> created successfully."}}
+			// 这样 SDK 的 CreateRole 才能从 message 中解析出 role_id
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprint(w, `{
-				"role_id": "test_role_01",
-				"pretty_name": "CustomRoleName",
-				"description": "A custom role with specific permissions",
-				"is_custom": true,
-				"created_by": "User 01",
-				"created_ts": 1661171650679,
-				"updated_ts": 1661171650679
+				"data": {
+					"message": "role_id test_role_01 created successfully."
+				}
 			}`)
 		})
+
 		client, server := setupTest(t, handler)
 		defer server.Close()
 
@@ -680,6 +680,8 @@ func TestClient_CreateRole(t *testing.T) {
 		}
 		resp, err := client.CreateRole(context.Background(), createReq)
 		assert.NoError(t, err)
+
+		// SDK 解析 message 后应把 RoleID 回填到响应结构中
 		assert.Equal(t, "test_role_01", resp.RoleID)
 	})
 }

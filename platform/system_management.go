@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
@@ -45,13 +46,31 @@ func (c *Client) ListAllRoles(ctx context.Context) (*types.ListRolesResponse, er
 }
 
 func (c *Client) CreateRole(ctx context.Context, req types.RoleCreateRequest) (*types.RoleCreateResponse, error) {
-	var resp types.RoleCreateResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, RoleEndpoint, nil, nil, req.RequestData, &resp,
+	var raw struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
+	_, err := c.internalClient.Do(ctx, http.MethodPost, RoleEndpoint, nil, nil, req.RequestData, &raw,
 		&client.DoOptions{
 			RequestWrapperKeys: []string{"request_data"},
 		},
 	)
-	return &resp, err
+	if err != nil {
+		return nil, err
+	}
+
+	roleID := ""
+	if raw.Data.Message != "" {
+		re := regexp.MustCompile(`(?i)\brole_id\s+([^\s]+)\s+created`)
+		if m := re.FindStringSubmatch(raw.Data.Message); len(m) == 2 {
+			roleID = m[1]
+		}
+	}
+
+	return &types.RoleCreateResponse{
+		RoleID: roleID,
+	}, nil
 }
 
 func (c *Client) DeleteRole(ctx context.Context, roleID string) error {
