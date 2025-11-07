@@ -112,18 +112,6 @@ type Reason struct {
 	Points      int    `json:"points"`
 }
 
-type Role struct {
-	PrettyName  string   `json:"pretty_name"`
-	Permissions []string `json:"permissions"`
-	InsertTime  int      `json:"insert_time"`
-	UpdateTime  int      `json:"update_time"`
-	CreatedBy   string   `json:"created_by"`
-	Description string   `json:"description"`
-	Tags        string   `json:"tags"`
-	Groups      []string `json:"groups"`
-	Users       []string `json:"users"`
-}
-
 // GetUserRequest is the request for getting a user.
 type GetUserRequest struct {
 	Email string `json:"email"`
@@ -320,8 +308,83 @@ type IamUserEditRequest struct {
 	UserGroups  []string `json:"user_groups,omitempty"`
 }
 
-// IamUserEditResponse is the response from the IamUserEdit API.
-type IamUserEditResponse struct {
-	Message string `json:"message"`
+type RoleListItem struct {
+	RoleID      string `json:"role_id"`
+	PrettyName  string `json:"pretty_name"`
+	Description string `json:"description"`
+	IsCustom    bool   `json:"is_custom"`
+	CreatedBy   string `json:"created_by"`
+	CreatedTs   int64  `json:"created_ts"`
+	UpdatedTs   int64  `json:"updated_ts"`
+}
+
+type ListRolesResponse struct {
+	Data     []RoleListItem `json:"data"`
+	Metadata struct {
+		TotalCount int `json:"total_count"`
+	} `json:"metadata"`
+}
+
+type DatasetPermission struct {
+	Category    string   `json:"category"`
+	AccessAll   bool     `json:"access_all"`
+	Permissions []string `json:"permissions"`
+}
+
+type RoleCreateRequestData struct {
+	ComponentPermissions []string            `json:"component_permissions"`
+	DatasetPermissions   []DatasetPermission `json:"dataset_permissions,omitempty"`
+	PrettyName           string              `json:"pretty_name"`
+	Description          string              `json:"description,omitempty"`
+}
+
+type RoleCreateRequest struct {
+	RequestData RoleCreateRequestData `json:"request_data"`
+}
+
+type RoleCreateResponse struct {
+	RoleID      string `json:"role_id"`
+	PrettyName  string `json:"pretty_name"`
+	Description string `json:"description"`
+	IsCustom    bool   `json:"is_custom"`
+	CreatedBy   string `json:"created_by"`
+	CreatedTs   int64  `json:"created_ts"`
+	UpdatedTs   int64  `json:"updated_ts"`
+}
+
+type PermissionConfig struct {
+	Name           string          `json:"name"`
+	ViewName       string          `json:"view_name"`
+	ActionName     string          `json:"action_name"`
+	SubPermissions []SubPermission `json:"sub_permissions"`
+}
+
+type SubPermission struct {
+	ActionName string `json:"action_name"`
+	Name       string `json:"name"`
+}
+
+type SubCategory struct {
+	SubCategoryName string             `json:"sub_category_name"`
+	Permissions     []PermissionConfig `json:"permissions"`
+}
+
+type RbacPermission struct {
+	CategoryName  string        `json:"category_name"`
+	SubCategories []SubCategory `json:"sub_categories"`
+}
+
+type DatasetGroup struct {
+	Datasets        []string `json:"datasets"`
+	DatasetCategory string   `json:"dataset_category"`
+}
+
+type PermissionConfigsResponseData struct {
+	RbacPermissions []RbacPermission `json:"rbac_permissions"`
+	DatasetGroups   []DatasetGroup   `json:"datasetGroups"`
+}
+
+type ListPermissionConfigsResponse struct {
+	Data PermissionConfigsResponseData `json:"data"`
 }
 

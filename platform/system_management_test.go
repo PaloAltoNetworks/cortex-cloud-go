@@ -47,77 +47,6 @@ func TestClient_ListUsers(t *testing.T) {
 	})
 }
 
-func TestClient_ListRoles(t *testing.T) {
-	t.Run("should list roles successfully", func(t *testing.T) {
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			assert.Equal(t, http.MethodPost, r.Method)
-			assert.Equal(t, "/"+ListRolesEndpoint, r.URL.Path)
-
-			var req map[string]map[string][]string
-			err := json.NewDecoder(r.Body).Decode(&req)
-			assert.NoError(t, err)
-			require.NotNil(t, req["request_data"]["role_names"])
-			assert.Equal(t, []string{"Admin", "User"}, req["request_data"]["role_names"])
-
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, `{
-				"reply": [
-					[
-					{
-						"pretty_name": "Admin",
-						"permissions": [
-						"Reports",
-						"Playbooks",
-						"Datasets Access Control",
-						"Dashboards",
-						"Scripts"
-						],
-						"insert_time": 1658315576844,
-						"update_time": null,
-						"created_by": "admin@example.com",
-						"description": "",
-						"groups": [
-						"group1",
-						"group2"
-						],
-						"users": ["admin@example.com"]
-					}
-					],
-					[
-					{
-						"pretty_name": "User",
-						"permissions": [
-						"Dashboards",
-						"Datasets Access Control"
-						],
-						"insert_time": 1661435660656,
-						"update_time": null,
-						"created_by": "admin@example.com",
-						"description": "",
-						"groups": [],
-						"users": ["user@example.com"]
-					}
-					]
-				]
-			}`)
-		})
-		client, server := setupTest(t, handler)
-		defer server.Close()
-
-		roles, err := client.ListRoles(context.Background(), []string{"Admin", "User"})
-		assert.NoError(t, err)
-		require.Len(t, roles, 2)
-		assert.Equal(t, "Admin", roles[0].PrettyName)
-		assert.Equal(t, "admin@example.com", roles[0].CreatedBy)
-		assert.Len(t, roles[0].Users, 1)
-		assert.Equal(t, "admin@example.com", roles[0].Users[0])
-		assert.Equal(t, "User", roles[1].PrettyName)
-		assert.Equal(t, "admin@example.com", roles[1].CreatedBy)
-		assert.Len(t, roles[1].Users, 1)
-		assert.Equal(t, "user@example.com", roles[1].Users[0])
-	})
-}
-
 func TestClient_SetRole(t *testing.T) {
 	t.Run("should set role successfully", func(t *testing.T) {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -682,5 +611,135 @@ func TestClient_EditScope(t *testing.T) {
 		}
 		err := client.EditScope(context.Background(), "user", "123", editReq)
 		assert.NoError(t, err)
+	})
+}
+
+func TestClient_ListAllRoles(t *testing.T) {
+	t.Run("should list all roles successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/"+RoleEndpoint, r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": [
+					{
+						"role_id": "test_role_01",
+						"pretty_name": "Test Role Pretty Name 01",
+						"description": "Complete description",
+						"is_custom": true,
+						"created_by": "User 01",
+						"created_ts": 1661171650679,
+						"updated_ts": 1661171650679
+					}
+				],
+				"metadata": {"total_count": 1}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.ListAllRoles(context.Background())
+		assert.NoError(t, err)
+		require.NotNil(t, resp)
+		assert.Equal(t, 1, resp.Metadata.TotalCount)
+		require.Len(t, resp.Data, 1)
+		assert.Equal(t, "test_role_01", resp.Data[0].RoleID)
+	})
+}
+
+func TestClient_CreateRole(t *testing.T) {
+	t.Run("should create role successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, "/"+RoleEndpoint, r.URL.Path)
+
+			var req map[string]types.RoleCreateRequestData
+			err := json.NewDecoder(r.Body).Decode(&req)
+			assert.NoError(t, err)
+			assert.Equal(t, "CustomRoleName", req["request_data"].PrettyName)
+
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{
+				"data": {
+					"message": "role_id test_role_01 created successfully."
+				}
+			}`)
+		})
+
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		createReq := types.RoleCreateRequest{
+			RequestData: types.RoleCreateRequestData{
+				PrettyName:           "CustomRoleName",
+				ComponentPermissions: []string{"rules_action"},
+			},
+		}
+		resp, err := client.CreateRole(context.Background(), createReq)
+		assert.NoError(t, err)
+
+		assert.Equal(t, "test_role_01", resp.RoleID)
+	})
+}
+
+func TestClient_DeleteRole(t *testing.T) {
+	t.Run("should delete role successfully", func(t *testing.T) {
+		const roleID = "role-to-delete-id"
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodDelete, r.Method)
+			assert.Equal(t, fmt.Sprintf("/"+RoleEndpoint+roleID), r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		err := client.DeleteRole(context.Background(), roleID)
+		assert.NoError(t, err)
+	})
+}
+
+func TestClient_ListPermissionConfigs(t *testing.T) {
+	t.Run("should list permission configs successfully", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodGet, r.Method)
+			assert.Equal(t, "/"+PermissionConfigEndpoint, r.URL.Path)
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{
+				"data": {
+					"rbac_permissions": [
+						{
+							"category_name": "Dashboards & Reports",
+							"sub_categories": [
+								{
+									"permissions": [
+										{
+											"name": "Dashboards",
+											"view_name": "dashboard_view",
+											"action_name": "dashboard_action"
+										}
+									]
+								}
+							]
+						}
+					],
+					"datasetGroups": [
+						{
+							"datasets": ["alerts"],
+							"dataset_category": "System"
+						}
+					]
+				}
+			}`)
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		resp, err := client.ListPermissionConfigs(context.Background())
+		assert.NoError(t, err)
+		require.NotNil(t, resp)
+		require.Len(t, resp.Data.RbacPermissions, 1)
+		assert.Equal(t, "Dashboards & Reports", resp.Data.RbacPermissions[0].CategoryName)
+		require.Len(t, resp.Data.DatasetGroups, 1)
+		assert.Equal(t, "System", resp.Data.DatasetGroups[0].DatasetCategory)
 	})
 }
