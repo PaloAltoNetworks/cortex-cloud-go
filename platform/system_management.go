@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
@@ -38,32 +39,54 @@ func (c *Client) ListUsers(ctx context.Context) ([]types.User, error) {
 	return ans, err
 }
 
-func (c *Client) ListRoles(ctx context.Context, roleNames []string) ([]types.Role, error) {
-	var (
-		resp            [][]types.Role
-		normalizedRoles []types.Role
+func (c *Client) ListAllRoles(ctx context.Context) (*types.ListRolesResponse, error) {
+	var resp types.ListRolesResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, RoleEndpoint, nil, nil, nil, &resp, &client.DoOptions{})
+	return &resp, err
+}
+
+func (c *Client) CreateRole(ctx context.Context, req types.RoleCreateRequest) (*types.RoleCreateResponse, error) {
+	var raw struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
+	_, err := c.internalClient.Do(ctx, http.MethodPost, RoleEndpoint, nil, nil, req.RequestData, &raw,
+		&client.DoOptions{
+			RequestWrapperKeys: []string{"request_data"},
+		},
 	)
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, roleNames, &resp, &client.DoOptions{
-		RequestWrapperKeys:  []string{"request_data", "role_names"},
-		ResponseWrapperKeys: []string{"reply"},
-	})
 	if err != nil {
-		return []types.Role{}, err
+		return nil, err
 	}
-	if len(resp) == 0 {
-		return []types.Role{}, fmt.Errorf("no roles found for provided value(s): \"%s\"", strings.Join(roleNames, "\", \""))
-	}
-	for _, innerSlice := range resp {
-		if len(innerSlice) == 1 {
-			normalizedRoles = append(normalizedRoles, innerSlice[0])
+
+	roleID := ""
+	if raw.Data.Message != "" {
+		re := regexp.MustCompile(`(?i)\brole_id\s+([^\s]+)\s+created`)
+		if m := re.FindStringSubmatch(raw.Data.Message); len(m) == 2 {
+			roleID = m[1]
 		}
 	}
-	return normalizedRoles, err
+
+	return &types.RoleCreateResponse{
+		RoleID: roleID,
+	}, nil
+}
+
+func (c *Client) DeleteRole(ctx context.Context, roleID string) error {
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, RoleEndpoint, &[]string{roleID}, nil, nil, nil, &client.DoOptions{})
+	return err
+}
+
+func (c *Client) ListPermissionConfigs(ctx context.Context) (*types.ListPermissionConfigsResponse, error) {
+	var resp types.ListPermissionConfigsResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, PermissionConfigEndpoint, nil, nil, nil, &resp, &client.DoOptions{})
+	return &resp, err
 }
 
 // SetRole adds or removes one or more users from a role.
 //
-// If no value is provided for RoleName in the SetRoleRequest, the user is removed from a role.
+// If no RoleId is provided in the SetRoleRequest, the user is removed from a role.
 func (c *Client) SetRole(ctx context.Context, input types.SetRoleRequest) (types.SetRoleResponse, error) {
 	var ans types.SetRoleResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, SetUserRoleEndpoint, nil, nil, input, &ans, &client.DoOptions{
@@ -204,12 +227,16 @@ func (c *Client) GetIAMUser(ctx context.Context, userEmail string) (*types.IamUs
 
 // EditIAMUser edits an existing user.
 func (c *Client) EditIAMUser(ctx context.Context, userEmail string, req types.IamUserEditRequest) (string, error) {
-	var resp types.IamUserEditResponse
+	var resp struct {
+		Data struct {
+			Message string `json:"message"`
+		} `json:"data"`
+	}
+	// The request body is wrapped in {"request_data": ...} as seen in other API calls.
 	_, err := c.internalClient.Do(ctx, http.MethodPatch, IamUsersEndpoint, &[]string{userEmail}, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
-		ResponseWrapperKeys: []string{"data"},
 	})
-	return resp.Message, err
+	return resp.Data.Message, err
 }
 
 // GetScope retrieves the scope for the given entity type and ID.
