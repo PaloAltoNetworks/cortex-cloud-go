@@ -41,20 +41,20 @@ UNIT_TEST_NAME				?= ""
 
 define LDFLAGS_template
 -s -w \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(GIT_COMMIT)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexServerVersion=$(CORTEX_SERVER_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexPAPIVersion=$(CORTEX_PAPI_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).BuildDate=$(BUILD_DATE)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GoVersion=$(GO_VERSION)'
+-X '$(1).GitCommit=$(GIT_COMMIT)' \
+-X '$(1).CortexServerVersion=$(CORTEX_SERVER_VERSION)' \
+-X '$(1).CortexPAPIVersion=$(CORTEX_PAPI_VERSION)' \
+-X '$(1).BuildDate=$(BUILD_DATE)' \
+-X '$(1).GoVersion=$(GO_VERSION)'
 endef
 
 define TEST_LDFLAGS_template
 -s -w \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(TEST_GIT_COMMIT)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexServerVersion=$(TEST_CORTEX_SERVER_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexPAPIVersion=$(TEST_CORTEX_PAPI_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).BuildDate=$(TEST_BUILD_DATE)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GoVersion=$(TEST_GO_VERSION)'
+-X '$(1).GitCommit=$(TEST_GIT_COMMIT)' \
+-X '$(1).CortexServerVersion=$(TEST_CORTEX_SERVER_VERSION)' \
+-X '$(1).CortexPAPIVersion=$(TEST_CORTEX_PAPI_VERSION)' \
+-X '$(1).BuildDate=$(TEST_BUILD_DATE)' \
+-X '$(1).GoVersion=$(TEST_GO_VERSION)'
 endef
 
 #------------------------------------------------------------------------------
@@ -75,6 +75,7 @@ format: ## Format all Go source files.
 	@gofmt -l -w .
 	@echo "Done."
 
+# DO NOT CHANGE THIS ORDER
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
 	@echo "  - log"
