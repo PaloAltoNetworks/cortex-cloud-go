@@ -236,6 +236,11 @@ type UserGroupCreateRequest struct {
 	IDPGroups    []string `json:"idp_groups,omitempty"`
 }
 
+// UserGroupCreateResponse is the response from the UserGroupCreate API.
+type UserGroupCreateResponse struct {
+	Message    string   `json:"message"`
+}
+
 // UserGroupEditRequest defines the request for editing a user group.
 type UserGroupEditRequest struct {
 	GroupName      string   `json:"group_name,omitempty"`
@@ -244,6 +249,16 @@ type UserGroupEditRequest struct {
 	Users          []string `json:"users,omitempty"`
 	NestedGroupIDs []string `json:"nested_group_ids,omitempty"`
 	IDPGroups      []string `json:"idp_groups,omitempty"`
+}
+
+// UserGroupEditResponse is the response from the UserGroupEdit API.
+type UserGroupEditResponse struct {
+	Message string `json:"message"`
+}
+
+// UserGroupDeleteResponse is the response from the UserGroupDelete API.
+type UserGroupDeleteResponse struct {
+	Message string `json:"message"`
 }
 
 // IamUserGroupInfo represents a group a user belongs to.
@@ -372,3 +387,4 @@ type PermissionConfigsResponseData struct {
 type ListPermissionConfigsResponse struct {
 	Data PermissionConfigsResponseData `json:"data"`
 }
+

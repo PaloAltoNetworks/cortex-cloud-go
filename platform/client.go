@@ -40,7 +40,6 @@ const (
 	ListAssetGroupsEndpoint  = "public_api/v1/asset-groups"
 
 	// Auth Settings Endpoints
-	// Updated on Oct 30 per https://cortex-panw.stoplight.io/docs/cortex-cloud/ endpoint change
 	ListIDPMetadataEndpoint    = "public_api/v1/authentication-settings/get/metadata"
 	ListAuthSettingsEndpoint   = "public_api/v1/authentication-settings/get/settings"
 	CreateAuthSettingsEndpoint = "public_api/v1/authentication-settings/create"
