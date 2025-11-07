@@ -75,6 +75,7 @@ format: ## Format all Go source files.
 	@gofmt -l -w .
 	@echo "Done."
 
+# DO NOT CHANGE THIS ORDER
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
 	@echo "  - log"

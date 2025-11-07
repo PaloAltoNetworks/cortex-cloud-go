@@ -12,7 +12,7 @@ import (
 )
 
 // CreateOutpostTemplate creates a new Cloud Onboarding Outpost Template.
-func (c *Client) CreateOutpostTemplate(ctx context.Context, input types.CreateOutpostTemplateRequest) (*types.CreateTemplateOrEditIntegrationInstanceResponse, error) {
+func (c *Client) CreateOutpostTemplate(ctx context.Context, input *types.CreateOutpostTemplateRequest) (*types.CreateTemplateOrEditIntegrationInstanceResponse, error) {
 	var ans types.CreateTemplateOrEditIntegrationInstanceResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateOutpostTemplateEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
@@ -25,7 +25,7 @@ func (c *Client) CreateOutpostTemplate(ctx context.Context, input types.CreateOu
 }
 
 // UpdateOutpost updates an existing Outpost.
-func (c *Client) UpdateOutpost(ctx context.Context, input types.UpdateOutpostRequest) error {
+func (c *Client) UpdateOutpost(ctx context.Context, input *types.UpdateOutpostRequest) error {
 	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateOutpostEndpoint, nil, nil, input, nil, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
 	})
@@ -33,7 +33,7 @@ func (c *Client) UpdateOutpost(ctx context.Context, input types.UpdateOutpostReq
 }
 
 // ListOutposts returns a list of outposts.
-func (c *Client) ListOutposts(ctx context.Context, input types.ListOutpostsRequest) (*types.ListOutpostsResponse, error) {
+func (c *Client) ListOutposts(ctx context.Context, input *types.ListOutpostsRequest) (*types.ListOutpostsResponse, error) {
 	var ans types.ListOutpostsResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, ListOutpostsEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},

@@ -14,7 +14,7 @@ import (
 // CreateTemplate creates a new Cloud Onboarding Integration Template.
 //
 // TODO: details
-func (c *Client) CreateIntegrationTemplate(ctx context.Context, input types.CreateIntegrationTemplateRequest) (types.CreateTemplateOrEditIntegrationInstanceResponse, error) {
+func (c *Client) CreateIntegrationTemplate(ctx context.Context, input *types.CreateIntegrationTemplateRequest) (types.CreateTemplateOrEditIntegrationInstanceResponse, error) {
 	var ans types.CreateTemplateOrEditIntegrationInstanceResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateIntegrationTemplateEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
@@ -27,7 +27,7 @@ func (c *Client) CreateIntegrationTemplate(ctx context.Context, input types.Crea
 // GetDetails returns the configuration details of the specified integration instance.
 func (c *Client) GetIntegrationInstanceDetails(ctx context.Context, instanceID string) (types.IntegrationInstance, error) {
 	var ans types.GetIntegrationInstanceResponse
-	_, err := c.internalClient.Do(ctx, http.MethodPost, GetIntegrationInstanceDetailsEndpoint, nil, nil, types.GetIntegrationInstanceRequest{InstanceID: instanceID}, &ans, &client.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, GetIntegrationInstanceDetailsEndpoint, nil, nil, types.NewGetIntegrationInstanceRequest(instanceID), &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
 	})
@@ -38,7 +38,7 @@ func (c *Client) GetIntegrationInstanceDetails(ctx context.Context, instanceID s
 }
 
 // TODO: Create alternate version that doesn't marshal the response into IntegrationInstance
-func (c *Client) ListIntegrationInstances(ctx context.Context, input types.ListIntegrationInstancesRequest) ([]types.IntegrationInstance, error) {
+func (c *Client) ListIntegrationInstances(ctx context.Context, input *types.ListIntegrationInstancesRequest) ([]types.IntegrationInstance, error) {
 	var ans types.ListIntegrationInstancesResponseWrapper
 	_, err := c.internalClient.Do(ctx, http.MethodPost, ListIntegrationInstancesEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
@@ -49,7 +49,7 @@ func (c *Client) ListIntegrationInstances(ctx context.Context, input types.ListI
 	}
 	return ans.Marshal()
 }
-func (c *Client) EditIntegrationInstance(ctx context.Context, input types.EditIntegrationInstanceRequest) (types.CreateTemplateOrEditIntegrationInstanceResponse, error) {
+func (c *Client) EditIntegrationInstance(ctx context.Context, input *types.EditIntegrationInstanceRequest) (types.CreateTemplateOrEditIntegrationInstanceResponse, error) {
 	var ans types.CreateTemplateOrEditIntegrationInstanceResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, EditIntegrationInstanceEndpoint, nil, nil, input, &ans, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
@@ -60,21 +60,21 @@ func (c *Client) EditIntegrationInstance(ctx context.Context, input types.EditIn
 }
 
 func (c *Client) EnableIntegrationInstances(ctx context.Context, instanceIDs []string) error {
-	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableOrDisableIntegrationInstancesEndpoint, nil, nil, types.EnableOrDisableIntegrationInstancesRequest{IDs: instanceIDs, Enable: true}, nil, &client.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableOrDisableIntegrationInstancesEndpoint, nil, nil, types.NewEnableOrDisableIntegrationInstancesRequest(instanceIDs, true), nil, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
 	})
 	return err
 }
 
 func (c *Client) DisableIntegrationInstances(ctx context.Context, instanceIDs []string) error {
-	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableOrDisableIntegrationInstancesEndpoint, nil, nil, types.EnableOrDisableIntegrationInstancesRequest{IDs: instanceIDs, Enable: false}, nil, &client.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, EnableOrDisableIntegrationInstancesEndpoint, nil, nil, types.NewEnableOrDisableIntegrationInstancesRequest(instanceIDs, false), nil, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
 	})
 	return err
 }
 
 func (c *Client) DeleteIntegrationInstances(ctx context.Context, instanceIDs []string) error {
-	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteIntegrationInstancesEndpoint, nil, nil, types.DeleteIntegrationInstanceRequest{IDs: instanceIDs}, nil, &client.DoOptions{
+	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteIntegrationInstancesEndpoint, nil, nil, types.NewDeleteIntegrationInstanceRequest(instanceIDs), nil, &client.DoOptions{
 		RequestWrapperKeys: []string{"request_data"},
 	})
 	return err

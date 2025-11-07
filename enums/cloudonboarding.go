@@ -416,7 +416,7 @@ func (sf IntegrationInstanceStatus) String() string {
 	return string(sf)
 }
 
-// AllIntegrationInstanceStatuss returns a slice of all valid IntegrationInstanceStatus string values.
+// AllIntegrationInstanceStatuses returns a slice of all valid IntegrationInstanceStatus string values.
 func AllIntegrationInstanceStatuses() []string {
 	result := make([]string, len(allIntegrationInstanceStatuses))
 	for i, sf := range allIntegrationInstanceStatuses {
@@ -428,6 +428,48 @@ func AllIntegrationInstanceStatuses() []string {
 // ContainsIntegrationInstanceStatus checks if the given string is a valid IntegrationInstanceStatus.
 func ContainsIntegrationInstanceStatus(s string) bool {
 	for _, sf := range allIntegrationInstanceStatuses {
+		if string(sf) == s {
+			return true
+		}
+	}
+	return false
+}
+
+// ==============================================================================
+// AuditLogCollectionMethodEnums
+// ==============================================================================
+
+// AuditLogCollectionMethod represents the method of audit log collection.
+type AuditLogCollectionMethod string
+
+const (
+	AuditLogCollectionMethodAutomated   AuditLogCollectionMethod = "AUTOMATED"
+	AuditLogCollectionMethodCustom AuditLogCollectionMethod = "CUSTOM"
+)
+
+// allAuditLogCollectionMethods holds all valid AuditLogCollectionMethod values.
+var allAuditLogCollectionMethods = []AuditLogCollectionMethod{
+	AuditLogCollectionMethodAutomated,
+	AuditLogCollectionMethodCustom,
+}
+
+// String returns the string representation of a AuditLogCollectionMethod.
+func (sf AuditLogCollectionMethod) String() string {
+	return string(sf)
+}
+
+// AllAuditLogCollectionMethods returns a slice of all valid AuditLogCollectionMethod string values.
+func AllAuditLogCollectionMethods() []string {
+	result := make([]string, len(allAuditLogCollectionMethods))
+	for i, sf := range allAuditLogCollectionMethods {
+		result[i] = string(sf)
+	}
+	return result
+}
+
+// ContainsAuditLogCollectionMethod checks if the given string is a valid AuditLogCollectionMethod.
+func ContainsAuditLogCollectionMethod(s string) bool {
+	for _, sf := range allAuditLogCollectionMethods {
 		if string(sf) == s {
 			return true
 		}
