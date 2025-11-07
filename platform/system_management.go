@@ -38,27 +38,31 @@ func (c *Client) ListUsers(ctx context.Context) ([]types.User, error) {
 	return ans, err
 }
 
-func (c *Client) ListRoles(ctx context.Context, roleNames []string) ([]types.Role, error) {
-	var (
-		resp            [][]types.Role
-		normalizedRoles []types.Role
+func (c *Client) ListAllRoles(ctx context.Context) (*types.ListRolesResponse, error) {
+	var resp types.ListRolesResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, RoleEndpoint, nil, nil, nil, &resp, &client.DoOptions{})
+	return &resp, err
+}
+
+func (c *Client) CreateRole(ctx context.Context, req types.RoleCreateRequest) (*types.RoleCreateResponse, error) {
+	var resp types.RoleCreateResponse
+	_, err := c.internalClient.Do(ctx, http.MethodPost, RoleEndpoint, nil, nil, req.RequestData, &resp,
+		&client.DoOptions{
+			RequestWrapperKeys: []string{"request_data"},
+		},
 	)
-	_, err := c.internalClient.Do(ctx, http.MethodPost, ListRolesEndpoint, nil, nil, roleNames, &resp, &client.DoOptions{
-		RequestWrapperKeys:  []string{"request_data", "role_names"},
-		ResponseWrapperKeys: []string{"reply"},
-	})
-	if err != nil {
-		return []types.Role{}, err
-	}
-	if len(resp) == 0 {
-		return []types.Role{}, fmt.Errorf("no roles found for provided value(s): \"%s\"", strings.Join(roleNames, "\", \""))
-	}
-	for _, innerSlice := range resp {
-		if len(innerSlice) == 1 {
-			normalizedRoles = append(normalizedRoles, innerSlice[0])
-		}
-	}
-	return normalizedRoles, err
+	return &resp, err
+}
+
+func (c *Client) DeleteRole(ctx context.Context, roleID string) error {
+	_, err := c.internalClient.Do(ctx, http.MethodDelete, RoleEndpoint, &[]string{roleID}, nil, nil, nil, &client.DoOptions{})
+	return err
+}
+
+func (c *Client) ListPermissionConfigs(ctx context.Context) (*types.ListPermissionConfigsResponse, error) {
+	var resp types.ListPermissionConfigsResponse
+	_, err := c.internalClient.Do(ctx, http.MethodGet, PermissionConfigEndpoint, nil, nil, nil, &resp, &client.DoOptions{})
+	return &resp, err
 }
 
 // SetRole adds or removes one or more users from a role.
