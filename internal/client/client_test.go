@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBuildInfo(t *testing.T) {
-	t.Skip("Skipping build info test for now.")
-}
+//func TestBuildInfo(t *testing.T) {
+//	t.Skip("Skipping build info test for now.")
+//}
 
 func TestNewClient(t *testing.T) {
 	t.Run("should return error for nil config from NewClientFromConfig", func(t *testing.T) {

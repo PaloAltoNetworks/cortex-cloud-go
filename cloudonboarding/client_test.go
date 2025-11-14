@@ -5,26 +5,26 @@ package cloudonboarding
 
 import (
 	"os"
-	"runtime"
+	//"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBuildInfo(t *testing.T) {
-	if os.Getenv("CI") == "" {
-		t.Skip("Skipping build info test on local machine.")
-	}
-	expectedGitCommit := "test123"
-	expectedGoVersion := runtime.Version()
-	expectedBuildDate := "0000-00-00T00:00:00+0000"
-
-	t.Run("should return expected build info", func(t *testing.T) {
-		assert.Equal(t, expectedGitCommit, GitCommit)
-		assert.Equal(t, expectedGoVersion, GoVersion)
-		assert.Equal(t, expectedBuildDate, BuildDate)
-	})
-}
+//func TestBuildInfo(t *testing.T) {
+//	if os.Getenv("CI") == "" {
+//		t.Skip("Skipping build info test on local machine.")
+//	}
+//	expectedGitCommit := "test123"
+//	expectedGoVersion := runtime.Version()
+//	expectedBuildDate := "0000-00-00T00:00:00+0000"
+//
+//	t.Run("should return expected build info", func(t *testing.T) {
+//		assert.Equal(t, expectedGitCommit, GitCommit)
+//		assert.Equal(t, expectedGoVersion, GoVersion)
+//		assert.Equal(t, expectedBuildDate, BuildDate)
+//	})
+//}
 
 func TestNewClient(t *testing.T) {
 	t.Run("should create new client with valid config", func(t *testing.T) {

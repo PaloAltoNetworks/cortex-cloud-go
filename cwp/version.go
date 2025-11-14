@@ -3,14 +3,10 @@
 
 package cwp
 
-import (
-	"runtime"
-)
-
 var (
 	GitCommit           = "NOCOMMIT"
-	CortexServerVersion = ""
-	CortexPAPIVersion   = ""
-	GoVersion           = runtime.Version()
-	BuildDate           = ""
+	CortexServerVersion = "UNKNOWN"
+	CortexPAPIVersion   = "UNKNOWN"
+	GoVersion           = "UNKNOWN"
+	BuildDate           = "UNKNOWN"
 )

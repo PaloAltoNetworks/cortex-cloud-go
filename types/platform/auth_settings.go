@@ -7,10 +7,10 @@ type AuthSettings struct {
 	IDPEnabled         bool             `json:"idp_enabled"`
 	DefaultRole        string           `json:"default_role"`
 	IsAccountRole      bool             `json:"is_account_role"`
-	IDPCertificate     string           `json:"idp_certificate"`
-	IDPIssuer          string           `json:"idp_issuer"`
-	IDPSingleSignOnURL string           `json:"idp_sso_url"`
-	MetadataURL        string           `json:"metadata_url"`
+	IDPCertificate     string           `json:"idp_certificate,omitempty"`
+	IDPIssuer          string           `json:"idp_issuer,omitempty"`
+	IDPSingleSignOnURL string           `json:"idp_sso_url,omitempty"`
+	MetadataURL        string           `json:"metadata_url,omitempty"`
 	Mappings           Mappings         `json:"mappings"`
 	AdvancedSettings   AdvancedSettings `json:"advanced_settings"`
 	SpEntityID         string           `json:"sp_entity_id"`
@@ -26,11 +26,12 @@ type Mappings struct {
 }
 
 type AdvancedSettings struct {
-	AuthnContextEnabled       bool   `json:"authn_context_enabled"`
-	IDPSingleLogoutURL        string `json:"idp_single_logout_url"`
-	RelayState                string `json:"relay_state"`
-	ServiceProviderPrivateKey string `json:"service_provider_private_key"`
-	ServiceProviderPublicCert string `json:"service_provider_public_cert"`
+	AuthnContextEnabled       bool   `json:"authn_context_enabled,omitempty"`
+	IDPSingleLogoutURL        string `json:"idp_single_logout_url,omitempty"`
+	RelayState                string `json:"relay_state,omitempty"`
+	ServiceProviderPrivateKey string `json:"service_provider_private_key,omitempty"`
+	ServiceProviderPublicCert string `json:"service_provider_public_cert,omitempty"`
+	ForceAuthn 				  bool   `json:"force_authn,omitempty"`
 }
 
 // ListIDPMetadataRequest is the request for listing IDP metadata.
@@ -55,10 +56,10 @@ type CreateAuthSettingsRequest struct {
 	Domain             string           `json:"domain"`
 	Mappings           Mappings         `json:"mappings"`
 	AdvancedSettings   AdvancedSettings `json:"advanced_settings"`
-	IDPSingleSignOnURL string           `json:"idp_sso_url"`
-	IDPCertificate     string           `json:"idp_certificate"`
-	IDPIssuer          string           `json:"idp_issuer"`
-	MetadataURL        string           `json:"metadata_url"`
+	IDPSingleSignOnURL string           `json:"idp_sso_url,omitempty"`
+	IDPCertificate     string           `json:"idp_certificate,omitempty"`
+	IDPIssuer          string           `json:"idp_issuer,omitempty"`
+	MetadataURL        string           `json:"metadata_url,omitempty"`
 }
 
 // UpdateAuthSettingsRequest is the request for updating auth settings.
@@ -70,10 +71,10 @@ type UpdateAuthSettingsRequest struct {
 	NewDomain          string           `json:"new_domain_value"`
 	Mappings           Mappings         `json:"mappings"`
 	AdvancedSettings   AdvancedSettings `json:"advanced_settings"`
-	IDPSingleSignOnURL string           `json:"idp_sso_url"`
-	IDPCertificate     string           `json:"idp_certificate"`
-	IDPIssuer          string           `json:"idp_issuer"`
-	MetadataURL        string           `json:"metadata_url"`
+	IDPSingleSignOnURL string           `json:"idp_sso_url,omitempty"`
+	IDPCertificate     string           `json:"idp_certificate,omitempty"`
+	IDPIssuer          string           `json:"idp_issuer,omitempty"`
+	MetadataURL        string           `json:"metadata_url,omitempty"`
 }
 
 // DeleteAuthSettingsRequest is the request for deleting auth settings.

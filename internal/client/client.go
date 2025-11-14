@@ -360,9 +360,9 @@ type DoOptions struct {
 
 // Do performs the given API request.
 //
-// This is the core method for making authenticated calls to the Cortex Cloud
+// This is the core method for making authenticated HTTP calls to the Cortex Cloud
 // API. It returns the raw response body and a structured SDK error if any
-// error occurs (network, HTTP status, or unmarshaling).
+// error occurs.
 func (c *Client) Do(ctx context.Context, method string, endpoint string, pathParams *[]string, queryParams *url.Values, input, output any, opts *DoOptions) ([]byte, error) {
 	if c.httpClient == nil {
 		return nil, errors.NewInternalSDKError(

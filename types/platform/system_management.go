@@ -12,29 +12,96 @@ type User struct {
 }
 
 type Scope struct {
-	Endpoints   Endpoints   `json:"endpoints"`
-	CasesIssues CasesIssues `json:"cases_issues"`
+	Assets       *Assets       `json:"assets"`
+	DatasetsRows *DatasetsRows `json:"datasets_rows"`
+	Endpoints    *Endpoints    `json:"endpoints"`
+	CasesIssues  *CasesIssues  `json:"cases_issues"`
+}
+
+type Assets struct {
+	Mode        string            `json:"mode"`
+	AssetGroups []ScopeAssetGroup `json:"asset_groups"`
+}
+
+type ScopeAssetGroup struct {
+	ID   int    `json:"asset_group_id"`
+	Name string `json:"asset_group_name"`
+}
+
+type DatasetsRows struct {
+	DefaultFilterMode string   `json:"default_filter_mode"`
+	Filters           []Filter `json:"filters"`
+}
+
+type Filter struct {
+	Dataset string `json:"dataset"`
+	Filter  string `json:"filter"`
 }
 
 type Endpoints struct {
-	EndpointGroups EndpointGroups `json:"endpoint_groups"`
-	EndpointTags   EndpointTags   `json:"endpoint_tags"`
-	Mode           string         `json:"mode"`
+	EndpointGroups *EndpointGroups `json:"endpoint_groups"`
+	EndpointTags   *EndpointTags   `json:"endpoint_tags"`
 }
 
 type EndpointGroups struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode"`
+	Tags []Tag  `json:"tags"`
 }
 
 type EndpointTags struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode"`
+	Tags []Tag  `json:"tags"`
 }
 
 type CasesIssues struct {
-	IDs  []string `json:"ids"`
-	Mode string   `json:"mode"`
+	Mode string `json:"mode"`
+	Tags []Tag  `json:"tags"`
+}
+
+type Tag struct {
+	TagID   string `json:"tag_id"`
+	TagName string `json:"tag_name"`
+}
+
+type EditScopeRequest struct {
+	RequestData EditScopeRequestData `json:"request_data"`
+}
+
+type EditScopeRequestData struct {
+	Endpoints    *EditEndpoints    `json:"endpoints"`
+	CasesIssues  *EditCasesIssues  `json:"cases_issues"`
+	Assets       *EditAssets       `json:"assets"`
+	DatasetsRows *EditDatasetsRows `json:"datasets_rows"`
+}
+
+type EditEndpoints struct {
+	EndpointGroups *EditEndpointGroups `json:"endpoint_groups"`
+	EndpointTags   *EditEndpointTags   `json:"endpoint_tags"`
+}
+
+type EditEndpointGroups struct {
+	Names []string `json:"names"`
+	Mode  string   `json:"mode"`
+}
+
+type EditEndpointTags struct {
+	Names []string `json:"names"`
+	Mode  string   `json:"mode"`
+}
+
+type EditCasesIssues struct {
+	Mode  string   `json:"mode"`
+	Names []string `json:"names"`
+}
+
+type EditAssets struct {
+	Mode          string `json:"mode"`
+	AssetGroupIDs []int  `json:"asset_group_ids"`
+}
+
+type EditDatasetsRows struct {
+	Filters           []Filter `json:"filters"`
+	DefaultFilterMode string   `json:"default_filter_mode"`
 }
 
 type Reason struct {
@@ -43,18 +110,6 @@ type Reason struct {
 	Severity    string `json:"severity"`
 	Status      string `json:"status"`
 	Points      int    `json:"points"`
-}
-
-type Role struct {
-	PrettyName  string   `json:"pretty_name"`
-	Permissions []string `json:"permissions"`
-	InsertTime  int      `json:"insert_time"`
-	UpdateTime  int      `json:"update_time"`
-	CreatedBy   string   `json:"created_by"`
-	Description string   `json:"description"`
-	Tags        string   `json:"tags"`
-	Groups      []string `json:"groups"`
-	Users       []string `json:"users"`
 }
 
 // GetUserRequest is the request for getting a user.
@@ -149,10 +204,187 @@ type GetUserGroupRequest struct {
 	GroupNames []string `json:"group_names"`
 }
 
-// UserGroup defines a user group.
-type UserGroup struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Users       []string `json:"users"`
-	Role        string   `json:"role"`
+// NestedGroup represents a child group within a user group.
+type NestedGroup struct {
+	GroupID   string `json:"group_id"`
+	GroupName string `json:"group_name"`
 }
+
+// UserGroup defines the structure for a single user group.
+type UserGroup struct {
+	GroupID        string        `json:"group_id"`
+	GroupName      string        `json:"group_name"`
+	Description    string        `json:"description"`
+	RoleName       string        `json:"role_id"`
+	PrettyRoleName string        `json:"pretty_role_name"`
+	CreatedBy      string        `json:"created_by"`
+	CreatedTS      int64         `json:"created_ts"`
+	UpdatedTS      int64         `json:"updated_ts"`
+	Users          []string      `json:"users"`
+	GroupType      string        `json:"group_type"`
+	NestedGroups   []NestedGroup `json:"nested_groups"`
+	IDPGroups      []string      `json:"idp_groups"`
+}
+
+// UserGroupCreateRequest defines the request for creating a user group.
+type UserGroupCreateRequest struct {
+	GroupName    string   `json:"group_name"`
+	RoleName     string   `json:"role_id,omitempty"`
+	Description  string   `json:"description,omitempty"`
+	Users        []string `json:"users,omitempty"`
+	NestedGroups []string `json:"nested_group_ids,omitempty"`
+	IDPGroups    []string `json:"idp_groups,omitempty"`
+}
+
+// UserGroupCreateResponse is the response from the UserGroupCreate API.
+type UserGroupCreateResponse struct {
+	Message    string   `json:"message"`
+}
+
+// UserGroupEditRequest defines the request for editing a user group.
+type UserGroupEditRequest struct {
+	GroupName      string   `json:"group_name,omitempty"`
+	RoleName       string   `json:"role_id,omitempty"`
+	Description    string   `json:"description,omitempty"`
+	Users          []string `json:"users,omitempty"`
+	NestedGroupIDs []string `json:"nested_group_ids,omitempty"`
+	IDPGroups      []string `json:"idp_groups,omitempty"`
+}
+
+// UserGroupEditResponse is the response from the UserGroupEdit API.
+type UserGroupEditResponse struct {
+	Message string `json:"message"`
+}
+
+// UserGroupDeleteResponse is the response from the UserGroupDelete API.
+type UserGroupDeleteResponse struct {
+	Message string `json:"message"`
+}
+
+// IamUserGroupInfo represents a group a user belongs to.
+type IamUserGroupInfo struct {
+	GroupID   int    `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
+// IamUser represents a user account in the platform.
+type IamUser struct {
+	Email        string        `json:"user_email"`
+	FirstName    string        `json:"user_first_name"`
+	LastName     string        `json:"user_last_name"`
+	PhoneNumber  string        `json:"phone_number"`
+	Status       string        `json:"status"`
+	RoleName     string        `json:"role_name"`
+	LastLoggedIn int64         `json:"last_logged_in"`
+	Hidden       bool          `json:"is_hidden"`
+	UserType     string        `json:"user_type"`
+	Groups       []NestedGroup `json:"groups"`
+}
+
+// IamUsersMetadata contains metadata for a list of users.
+type IamUsersMetadata struct {
+	TotalCount int `json:"total_count"`
+}
+
+// ListIamUsersResponse is the response from the ListIAMUsers API.
+type ListIamUsersResponse struct {
+	Data     []IamUser        `json:"data"`
+	Metadata IamUsersMetadata `json:"metadata"`
+}
+
+// GetIamUserResponse is the response from the GetIAMUser API.
+type GetIamUserResponse struct {
+	Data IamUser `json:"data"`
+}
+
+// IamUserEditRequest defines the request for editing a user.
+type IamUserEditRequest struct {
+	FirstName   *string  `json:"user_first_name,omitempty"`
+	LastName    *string  `json:"user_last_name,omitempty"`
+	RoleId      *string  `json:"role_id,omitempty"`
+	PhoneNumber *string  `json:"phone_number,omitempty"`
+	Status      *string  `json:"status,omitempty"`
+	Hidden      *bool    `json:"is_hidden,omitempty"`
+	UserGroups  []string `json:"user_groups,omitempty"`
+}
+
+type RoleListItem struct {
+	RoleID      string `json:"role_id"`
+	PrettyName  string `json:"pretty_name"`
+	Description string `json:"description"`
+	IsCustom    bool   `json:"is_custom"`
+	CreatedBy   string `json:"created_by"`
+	CreatedTs   int64  `json:"created_ts"`
+	UpdatedTs   int64  `json:"updated_ts"`
+}
+
+type ListRolesResponse struct {
+	Data     []RoleListItem `json:"data"`
+	Metadata struct {
+		TotalCount int `json:"total_count"`
+	} `json:"metadata"`
+}
+
+type DatasetPermission struct {
+	Category    string   `json:"category"`
+	AccessAll   bool     `json:"access_all"`
+	Permissions []string `json:"permissions"`
+}
+
+type RoleCreateRequestData struct {
+	ComponentPermissions []string            `json:"component_permissions"`
+	DatasetPermissions   []DatasetPermission `json:"dataset_permissions,omitempty"`
+	PrettyName           string              `json:"pretty_name"`
+	Description          string              `json:"description,omitempty"`
+}
+
+type RoleCreateRequest struct {
+	RequestData RoleCreateRequestData `json:"request_data"`
+}
+
+type RoleCreateResponse struct {
+	RoleID      string `json:"role_id"`
+	PrettyName  string `json:"pretty_name"`
+	Description string `json:"description"`
+	IsCustom    bool   `json:"is_custom"`
+	CreatedBy   string `json:"created_by"`
+	CreatedTs   int64  `json:"created_ts"`
+	UpdatedTs   int64  `json:"updated_ts"`
+}
+
+type PermissionConfig struct {
+	Name           string          `json:"name"`
+	ViewName       string          `json:"view_name"`
+	ActionName     string          `json:"action_name"`
+	SubPermissions []SubPermission `json:"sub_permissions"`
+}
+
+type SubPermission struct {
+	ActionName string `json:"action_name"`
+	Name       string `json:"name"`
+}
+
+type SubCategory struct {
+	SubCategoryName string             `json:"sub_category_name"`
+	Permissions     []PermissionConfig `json:"permissions"`
+}
+
+type RbacPermission struct {
+	CategoryName  string        `json:"category_name"`
+	SubCategories []SubCategory `json:"sub_categories"`
+}
+
+type DatasetGroup struct {
+	Datasets        []string `json:"datasets"`
+	DatasetCategory string   `json:"dataset_category"`
+}
+
+type PermissionConfigsResponseData struct {
+	RbacPermissions []RbacPermission `json:"rbac_permissions"`
+	DatasetGroups   []DatasetGroup   `json:"datasetGroups"`
+}
+
+type ListPermissionConfigsResponse struct {
+	Data PermissionConfigsResponseData `json:"data"`
+}
+
