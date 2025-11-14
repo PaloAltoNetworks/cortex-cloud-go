@@ -4,6 +4,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -69,9 +70,54 @@ type CortexCloudAPIError struct {
 }
 
 type CortexCloudAPIErrorReply struct {
-	Code    int                        `json:"err_code"`
-	Message string                     `json:"err_msg"`
-	Extra   []CortexCloudAPIErrorExtra `json:"err_extra"`
+	Code    int             `json:"err_code"`
+	Message string          `json:"err_msg"`
+	Extra   ErrorExtraField `json:"err_extra"`
+}
+
+// ErrorExtraField handles both string and array formats for err_extra field
+type ErrorExtraField struct {
+	values []CortexCloudAPIErrorExtra
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling to handle both string and array formats
+func (e *ErrorExtraField) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as array of error objects first
+	var arr []CortexCloudAPIErrorExtra
+	if err := json.Unmarshal(data, &arr); err == nil {
+		e.values = arr
+		return nil
+	}
+
+	// Try to unmarshal as a simple string
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		// Convert string to a single error extra object with the string as the message
+		if str != "" {
+			e.values = []CortexCloudAPIErrorExtra{
+				{
+					Type:    "string_error",
+					Message: str,
+				},
+			}
+		} else {
+			e.values = []CortexCloudAPIErrorExtra{}
+		}
+		return nil
+	}
+
+	// If both fail, return error
+	return fmt.Errorf("err_extra must be either a string or an array of error objects")
+}
+
+// MarshalJSON implements custom JSON marshaling
+func (e ErrorExtraField) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.values)
+}
+
+// Values returns the underlying slice of error extra objects
+func (e ErrorExtraField) Values() []CortexCloudAPIErrorExtra {
+	return e.values
 }
 
 type CortexCloudAPIErrorExtra struct {
@@ -141,7 +187,7 @@ func (e CortexCloudAPIError) Error() string {
 		sb.WriteString(fmt.Sprintf("Error Code: %d\n", e.Reply.Code))
 		sb.WriteString(fmt.Sprintf("Error Message: %s\n", e.Reply.Message))
 		sb.WriteString("Error Details:\n")
-		for _, extra := range e.Reply.Extra {
+		for _, extra := range e.Reply.Extra.Values() {
 			sb.WriteString(fmt.Sprintf("  - Type: \"%s\"\n", extra.Type))
 			sb.WriteString(fmt.Sprintf("    Location: [\"%s\"]\n", strings.Join(extra.locationAsStringSlice(), "\", \"")))
 			sb.WriteString(fmt.Sprintf("    Message: \"%s\"\n", extra.Message))
