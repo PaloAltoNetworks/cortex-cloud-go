@@ -61,10 +61,53 @@ func TestAccAssessmentProfileLifecycle(t *testing.T) {
 	standardsResp, err := client.ListStandards(ctx, listStandardsReq)
 	require.NoError(t, err, "failed to list standards")
 	require.NotNil(t, standardsResp, "standards response is nil")
-	require.Greater(t, len(standardsResp.Standards), 0, "no standards available for testing")
 
-	standardID := standardsResp.Standards[0].ID
-	t.Logf("Using standard ID: %s", standardID)
+	var standardID string
+	var createdStandard bool
+
+	if len(standardsResp.Standards) == 0 {
+		// No standards exist, create one for testing
+		t.Log("No existing standards found, creating one for testing")
+		standardName := fmt.Sprintf("go-sdk-acctest-standard-%s", timestamp)
+		createStandardReq := types.CreateStandardRequest{
+			StandardName: standardName,
+			Description:  "Temporary standard for acceptance testing",
+			Labels:       []string{},
+			ControlsIDs:  []string{},
+		}
+		createSuccess, err := client.CreateStandard(ctx, createStandardReq)
+		require.NoError(t, err, "failed to create standard")
+		require.True(t, createSuccess, "standard creation unsuccessful")
+
+		// List again to get the created standard's ID
+		standardsResp, err = client.ListStandards(ctx, listStandardsReq)
+		require.NoError(t, err, "failed to list standards after creation")
+		require.Greater(t, len(standardsResp.Standards), 0, "created standard not found")
+
+		standardID = standardsResp.Standards[0].ID
+		createdStandard = true
+		t.Logf("Created and using standard ID: %s", standardID)
+	} else {
+		standardID = standardsResp.Standards[0].ID
+		t.Logf("Using existing standard ID: %s", standardID)
+	}
+
+	// Defer cleanup of created standard if we created one
+	if createdStandard {
+		defer func() {
+			deleteStandardReq := types.DeleteStandardRequest{
+				ID: standardID,
+			}
+			deleteSuccess, err := client.DeleteStandard(ctx, deleteStandardReq)
+			if err != nil {
+				t.Logf("Warning: failed to delete standard: %s", err.Error())
+			} else if !deleteSuccess {
+				t.Logf("Warning: standard deletion unsuccessful")
+			} else {
+				t.Logf("Successfully deleted standard: %s", standardID)
+			}
+		}()
+	}
 
 	// For asset group, we'll use a default value of "1" which typically exists
 	// In a real scenario, you might want to list asset groups first

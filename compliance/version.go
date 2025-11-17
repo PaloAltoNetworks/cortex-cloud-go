@@ -3,5 +3,14 @@
 
 package compliance
 
-// Version is the version of the compliance module.
-const Version = "0.1.0"
+import (
+	"runtime"
+)
+
+var (
+	GitCommit           = "NOCOMMIT"
+	CortexServerVersion = ""
+	CortexPAPIVersion   = ""
+	GoVersion           = runtime.Version()
+	BuildDate           = ""
+)

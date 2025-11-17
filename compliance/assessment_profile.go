@@ -7,16 +7,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	commontypes "github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
 )
 
 // CreateAssessmentProfile creates a new compliance assessment profile.
 func (c *Client) CreateAssessmentProfile(ctx context.Context, req types.CreateAssessmentProfileRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateAssessmentProfileEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
@@ -51,13 +52,9 @@ func (c *Client) UpdateAssessmentProfile(ctx context.Context, req types.UpdateAs
 	}
 
 	// Normalize ReportType - API returns "None" but requires "NONE" for updates
-	reportType := existingProfile.ReportType
-	if reportType == "None" {
-		reportType = "NONE"
-	}
-	// Allow override from request
+	reportType := strings.ToUpper(existingProfile.ReportType)
 	if req.ReportType != "" {
-		reportType = req.ReportType
+		reportType = strings.ToUpper(req.ReportType)
 	}
 
 	// Create a new update request with all fields from the existing profile
@@ -71,7 +68,7 @@ func (c *Client) UpdateAssessmentProfile(ctx context.Context, req types.UpdateAs
 
 	// Convert AssetGroupID from int to string
 	if existingProfile.AssetGroupID != 0 {
-		mergedReq.AssetGroupID = fmt.Sprintf("%d", existingProfile.AssetGroupID)
+		mergedReq.AssetGroupID = strconv.Itoa(existingProfile.AssetGroupID)
 	}
 
 	// IMPORTANT: Only set evaluation_frequency and report_targets if report_type is NOT "NONE"
@@ -114,9 +111,7 @@ func (c *Client) UpdateAssessmentProfile(ctx context.Context, req types.UpdateAs
 		}
 	}
 
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err = c.internalClient.Do(ctx, http.MethodPost, UpdateAssessmentProfileEndpoint, nil, nil, mergedReq, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
@@ -126,9 +121,7 @@ func (c *Client) UpdateAssessmentProfile(ctx context.Context, req types.UpdateAs
 
 // DeleteAssessmentProfile deletes an assessment profile.
 func (c *Client) DeleteAssessmentProfile(ctx context.Context, req types.DeleteAssessmentProfileRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteAssessmentProfileEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
