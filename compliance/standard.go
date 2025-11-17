@@ -9,14 +9,13 @@ import (
 	"net/http"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	commontypes "github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
 )
 
 // CreateStandard creates a new compliance standard.
 func (c *Client) CreateStandard(ctx context.Context, req types.CreateStandardRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateStandardEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
@@ -81,9 +80,7 @@ func (c *Client) UpdateStandard(ctx context.Context, req types.UpdateStandardReq
 		mergedReq.ControlsIDs = req.ControlsIDs
 	}
 
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err = c.internalClient.Do(ctx, http.MethodPost, UpdateStandardEndpoint, nil, nil, mergedReq, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
@@ -93,9 +90,7 @@ func (c *Client) UpdateStandard(ctx context.Context, req types.UpdateStandardReq
 
 // DeleteStandard deletes a standard.
 func (c *Client) DeleteStandard(ctx context.Context, req types.DeleteStandardRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteStandardEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},

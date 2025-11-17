@@ -8,14 +8,13 @@ import (
 	"net/http"
 
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
+	commontypes "github.com/PaloAltoNetworks/cortex-cloud-go/types"
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
 )
 
 // CreateControl creates a new compliance control.
 func (c *Client) CreateControl(ctx context.Context, req types.CreateControlRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, CreateControlEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
@@ -38,9 +37,7 @@ func (c *Client) GetControl(ctx context.Context, req types.GetControlRequest) (*
 
 // UpdateControl updates an existing compliance control.
 func (c *Client) UpdateControl(ctx context.Context, req types.UpdateControlRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, UpdateControlEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
@@ -50,9 +47,7 @@ func (c *Client) UpdateControl(ctx context.Context, req types.UpdateControlReque
 
 // DeleteControl deletes a control.
 func (c *Client) DeleteControl(ctx context.Context, req types.DeleteControlRequest) (bool, error) {
-	var resp struct {
-		Success bool `json:"success"`
-	}
+	var resp commontypes.SuccessResponse
 	_, err := c.internalClient.Do(ctx, http.MethodPost, DeleteControlEndpoint, nil, nil, req, &resp, &client.DoOptions{
 		RequestWrapperKeys:  []string{"request_data"},
 		ResponseWrapperKeys: []string{"reply"},
