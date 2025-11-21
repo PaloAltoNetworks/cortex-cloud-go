@@ -31,6 +31,7 @@ type transport struct {
 // It logs HTTP requests and responses based on the client's configured log level.
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
+	requestID := GetRequestID(ctx)
 
 	// Check if debug-level logging is enabled for detailed request/response dumps.
 	logLevelIsDebug := t.client.LogLevelIsSetTo("debug")
@@ -39,7 +40,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if logLevelIsDebug {
 		reqData, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
-			t.client.Log(ctx, "debug", fmt.Sprintf(logReqMsg, prettyPrintJsonLines(reqData)))
+			t.client.Log(ctx, "debug", fmt.Sprintf(logReqMsg, requestID, prettyPrintJsonLines(reqData)))
 		} else {
 			t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] Failed to dump HTTP request: %v", err))
 		}
@@ -49,7 +50,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.transport.RoundTrip(req)
 	if err != nil {
 		// Log network/transport errors at the "error" level.
-		t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] HTTP request failed: %v", err))
+		t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] [%s] HTTP request failed: %v", requestID, err))
 		return resp, err
 	}
 
@@ -57,7 +58,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if logLevelIsDebug {
 		respData, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			t.client.Log(ctx, "debug", fmt.Sprintf(logRespMsg, prettyPrintJsonLines(respData)))
+			t.client.Log(ctx, "debug", fmt.Sprintf(logRespMsg, requestID, prettyPrintJsonLines(respData)))
 		} else {
 			t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] Failed to dump HTTP response: %v", err))
 		}
@@ -90,11 +91,11 @@ func prettyPrintJsonLines(b []byte) string {
 }
 
 const logReqMsg = `
----[ REQUEST ]---------------------------------------
+---[ REQUEST %s ]-----------------------------
 %s
 -----------------------------------------------------`
 
 const logRespMsg = `
----[ RESPONSE ]--------------------------------------
+---[ RESPONSE %s ]----------------------------
 %s
 -----------------------------------------------------`

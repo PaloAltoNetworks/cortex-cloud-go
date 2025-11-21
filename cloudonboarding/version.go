@@ -3,10 +3,27 @@
 
 package cloudonboarding
 
+const (
+	// Version is the semantic version of this module
+	Version = "1.0.0"
+
+	// ModuleName is the canonical name of this module
+	ModuleName = "cloudonboarding"
+)
+
 var (
-	GitCommit           = "NOCOMMIT"
-	CortexServerVersion = "UNKNOWN"
-	CortexPAPIVersion   = "UNKNOWN"
-	GoVersion           = "UNKNOWN"
-	BuildDate           = "UNKNOWN"
+	// GitCommit is the git commit hash (set via ldflags)
+	GitCommit = "dev"
+
+	// CortexServerVersion is the target Cortex server version
+	CortexServerVersion = "unknown"
+
+	// CortexPAPIVersion is the target PAPI version
+	CortexPAPIVersion = "unknown"
+
+	// GoVersion is the Go version used to build
+	GoVersion = "unknown"
+
+	// BuildDate is the build timestamp
+	BuildDate = "unknown"
 )

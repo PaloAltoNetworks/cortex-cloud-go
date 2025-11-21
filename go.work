@@ -12,4 +12,5 @@ use (
 	./log
 	./platform
 	./types
+	./version
 )

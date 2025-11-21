@@ -41,6 +41,10 @@ UNIT_TEST_NAME				?= ""
 
 define LDFLAGS_template
 -s -w \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.GitCommit=$(GIT_COMMIT)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.BuildDate=$(BUILD_DATE)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.CortexServerVersion=$(CORTEX_SERVER_VERSION)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.CortexPAPIVersion=$(CORTEX_PAPI_VERSION)' \
 -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(GIT_COMMIT)' \
 -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexServerVersion=$(CORTEX_SERVER_VERSION)' \
 -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexPAPIVersion=$(CORTEX_PAPI_VERSION)' \
@@ -50,6 +54,10 @@ endef
 
 define TEST_LDFLAGS_template
 -s -w \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.GitCommit=$(TEST_GIT_COMMIT)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.BuildDate=$(TEST_BUILD_DATE)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.CortexServerVersion=$(TEST_CORTEX_SERVER_VERSION)' \
+-X 'github.com/PaloAltoNetworks/cortex-cloud-go/version.CortexPAPIVersion=$(TEST_CORTEX_PAPI_VERSION)' \
 -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(TEST_GIT_COMMIT)' \
 -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexServerVersion=$(TEST_CORTEX_SERVER_VERSION)' \
 -X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexPAPIVersion=$(TEST_CORTEX_PAPI_VERSION)' \
@@ -78,6 +86,8 @@ format: ## Format all Go source files.
 # DO NOT CHANGE THIS ORDER
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
+	@echo "  - version"
+	@(cd ./version && rm -f go.sum && go mod tidy)
 	@echo "  - log"
 	@(cd ./log && rm -f go.sum && go mod tidy)
 	@echo "  - errors"
@@ -96,6 +106,10 @@ tidy: ## Tidy all go.mod files.
 	@(cd ./cloudonboarding && rm -f go.sum && go mod tidy)
 	@echo "  - cwp"
 	@(cd ./cwp && rm -f go.sum && go mod tidy)
+	@echo "  - compliance"
+	@(cd ./compliance && rm -f go.sum && go mod tidy)
+	@echo "  - platform"
+	@(cd ./platform && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
 
 lint: ## Lint all modules with go vet.

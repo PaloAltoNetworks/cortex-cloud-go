@@ -10,6 +10,7 @@ import (
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/version"
 )
 
 // API endpoint path specification.
@@ -73,6 +74,10 @@ func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
 
 // NewClient returns a new client for this namespace.
 func NewClient(opts ...Option) (*Client, error) {
+	// Prepend User-Agent option if not already set
+	userAgentOpt := config.WithAgent(version.UserAgent(ModuleName, Version))
+	opts = append([]config.Option{userAgentOpt}, opts...)
+
 	cfg := config.NewConfig(opts...)
 	internalClient, err := client.NewClientFromConfig(cfg)
 	return &Client{internalClient: internalClient}, err
