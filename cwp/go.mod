@@ -7,6 +7,7 @@ replace (
 	github.com/PaloAltoNetworks/cortex-cloud-go/client => ../internal/client
 	github.com/PaloAltoNetworks/cortex-cloud-go/cloudonboarding => ../cloudonboarding
 	github.com/PaloAltoNetworks/cortex-cloud-go/config => ../internal/config
+	github.com/PaloAltoNetworks/cortex-cloud-go/cwp => ../cwp
 	github.com/PaloAltoNetworks/cortex-cloud-go/enums => ../enums
 	github.com/PaloAltoNetworks/cortex-cloud-go/errors => ../errors
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/client => ../internal/client
@@ -17,7 +18,6 @@ replace (
 )
 
 require (
-	dario.cat/mergo v1.0.2
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v0.0.0-00010101000000-000000000000
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v0.0.0-00010101000000-000000000000
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.0-00010101000000-000000000000
@@ -26,7 +26,10 @@ require (
 )
 
 require (
+	github.com/PaloAltoNetworks/cortex-cloud-go/appsec v0.0.0-00010101000000-000000000000
+	github.com/PaloAltoNetworks/cortex-cloud-go/enums v0.0.0-00010101000000-000000000000
 	github.com/PaloAltoNetworks/cortex-cloud-go/errors v0.0.0 // indirect
+	github.com/PaloAltoNetworks/cortex-cloud-go/platform v0.0.0-00010101000000-000000000000
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect

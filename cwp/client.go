@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	ListPoliciesEndpoint  = "public_api/v1/cwp/get_policies"
+	ListPoliciesEndpoint  = "public_api/v1/cwp/policies"
 	CreatePolicyEndpoint  = "public_api/v1/cwp/policies"
-	GetPolicyByIDEndpoint = "public_api/v1/cwp/get_policy_details"
-	EditPolicyEndpoint    = "public_api/v1/cwp/edit_policy"
-	DeletePolicyEndpoint  = "public_api/v1/cwp/delete_policy"
+	GetPolicyByIDEndpoint = "public_api/v1/cwp/policies"
+	EditPolicyEndpoint    = "public_api/v1/cwp/policies"
+	DeletePolicyEndpoint  = "public_api/v1/cwp/policies"
 )
 
 // Option is a functional option for configuring the client.
