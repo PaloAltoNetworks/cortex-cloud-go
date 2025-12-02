@@ -12,10 +12,10 @@ type User struct {
 }
 
 type Scope struct {
-	Assets       *Assets       `json:"assets"`
-	DatasetsRows *DatasetsRows `json:"datasets_rows"`
-	Endpoints    *Endpoints    `json:"endpoints"`
-	CasesIssues  *CasesIssues  `json:"cases_issues"`
+	Assets       *Assets       `json:"assets,omitempty"`
+	DatasetsRows *DatasetsRows `json:"datasets_rows,omitempty"`
+	Endpoints    *Endpoints    `json:"endpoints,omitempty"`
+	CasesIssues  *CasesIssues  `json:"cases_issues,omitempty"`
 }
 
 type Assets struct {
@@ -238,7 +238,7 @@ type UserGroupCreateRequest struct {
 
 // UserGroupCreateResponse is the response from the UserGroupCreate API.
 type UserGroupCreateResponse struct {
-	Message    string   `json:"message"`
+	Message string `json:"message"`
 }
 
 // UserGroupEditRequest defines the request for editing a user group.
@@ -387,4 +387,3 @@ type PermissionConfigsResponseData struct {
 type ListPermissionConfigsResponse struct {
 	Data PermissionConfigsResponseData `json:"data"`
 }
-

@@ -11,27 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//func testServerURLtoCortexAPI(serverURL string) (string, error) {
-//	parsedURL, err := url.Parse(serverURL)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	return fmt.Sprintf("https://api-%s", parsedURL.Hostname()), nil
-//}
-
 func setupTest(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
 	t.Helper()
 
 	server := httptest.NewServer(handler)
-	//cortexAPIURL, err := testServerURLtoCortexAPI(server.URL)
-	//if err != nil {
-	//	t.Fatalf("failed to convert test server URL: %s", err.Error())
-	//}
-	//server.URL = cortexAPIURL
-
-	t.Logf("[%s] Test server URL %s", t.Name(), server.URL)
-
 	client, err := NewClient(
 		WithCortexAPIURL(server.URL),
 		WithCortexAPIKey("test-key"),

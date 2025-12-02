@@ -18,6 +18,7 @@ replace (
 )
 
 require (
+	dario.cat/mergo v1.0.2
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v0.0.0-00010101000000-000000000000
 	github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v0.0.0-00010101000000-000000000000
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v0.0.0-00010101000000-000000000000
