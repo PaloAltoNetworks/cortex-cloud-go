@@ -3,7 +3,6 @@ go 1.25.0
 use (
 	./appsec
 	./cloudonboarding
-	./compliance
 	./cwp
 	./enums
 	./errors

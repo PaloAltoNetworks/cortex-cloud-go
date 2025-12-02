@@ -12,7 +12,9 @@ import (
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
 )
 
+// API endpoint path specification.
 const (
+	// Policies
 	ListPoliciesEndpoint  = "public_api/v1/cwp/policies"
 	CreatePolicyEndpoint  = "public_api/v1/cwp/policies"
 	GetPolicyByIDEndpoint = "public_api/v1/cwp/policies"
