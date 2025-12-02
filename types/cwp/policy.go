@@ -13,14 +13,14 @@ type Policy struct {
 	Description         string   `json:"description"`
 	EvaluationModes     []string `json:"evaluationModes"`
 	EvaluationStage     string   `json:"evaluationStage"`
-	RulesIDs            []string `json:"rulesIds"` // lowercase "i"
+	RulesIDs            []string `json:"rulesIds"`
 	Condition           string   `json:"condition"`
 	Exception           string   `json:"exception"`
 	AssetScope          string   `json:"assetScope"`
-	AssetGroupIDs       []int    `json:"assetGroupsIDs"` // "s" before IDs
+	AssetGroupIDs       []int    `json:"assetGroupsIDs"`
 	AssetGroups         []string `json:"assetGroups"`
-	PolicyAction        string   `json:"action"`   // not "policy_action"
-	PolicySeverity      string   `json:"severity"` // not "policy_severity"
+	PolicyAction        string   `json:"action"`
+	PolicySeverity      string   `json:"severity"`
 	RemediationGuidance string   `json:"remediationGuidance"`
 }
 
@@ -31,14 +31,14 @@ type CreatePolicyRequest struct {
 	Description         string   `json:"description"`
 	EvaluationModes     []string `json:"evaluationModes,omitempty"`
 	EvaluationStage     string   `json:"evaluationStage"`
-	RulesIDs            []string `json:"rulesIds,omitempty"` // note lowercase "i"
+	RulesIDs            []string `json:"rulesIds,omitempty"`
 	Condition           string   `json:"condition,omitempty"`
 	Exception           string   `json:"exception,omitempty"`
 	AssetScope          string   `json:"assetScope,omitempty"`
-	AssetGroupIDs       []int    `json:"assetGroupsIDs,omitempty"` // note "s" before "IDs"
+	AssetGroupIDs       []int    `json:"assetGroupsIDs,omitempty"`
 	AssetGroups         []string `json:"assetGroups,omitempty"`
-	PolicyAction        string   `json:"action"`   // maps to "action"
-	PolicySeverity      string   `json:"severity"` // maps to "severity"
+	PolicyAction        string   `json:"action"`
+	PolicySeverity      string   `json:"severity"`
 	RemediationGuidance string   `json:"remediationGuidance,omitempty"`
 }
 
