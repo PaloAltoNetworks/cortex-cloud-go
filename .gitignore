@@ -1,0 +1,33 @@
+# Gemini
+GEMINI.md
+
+# Misc
+.DS_Store
+test/
+.meta/
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Backups
+*.bak
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# env file
+.env
+
+# Editor/IDE
+.idea/
+.vscode/

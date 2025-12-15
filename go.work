@@ -1,0 +1,12 @@
+go 1.25.0
+
+use (
+	./cloudonboarding
+	./enums
+	./errors
+	./internal/client
+	./internal/config
+	./log
+	./platform
+	./types
+)
