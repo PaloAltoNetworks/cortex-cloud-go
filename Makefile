@@ -78,20 +78,25 @@ format: ## Format all Go source files.
 # DO NOT CHANGE THIS ORDER
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@echo "  - log"
+	@echo "    - Base modules"
+	@echo "        - log"
 	@(cd ./log && rm -f go.sum && go mod tidy)
-	@echo "  - errors"
+	@echo "        - errors"
 	@(cd ./errors && rm -f go.sum && go mod tidy)
-	@echo "  - enums"
+	@echo "        - enums"
 	@(cd ./enums && rm -f go.sum && go mod tidy)
-	@echo "  - types"
+	@echo "    - Core modules"
+	@echo "        - types"
 	@(cd ./types && rm -f go.sum && go mod tidy)
-	@echo "  - internal/config"
+	@echo "        - internal/config"
 	@(cd ./internal/config && rm -f go.sum && go mod tidy)
-	@echo "  - internal/client"
+	@echo "        - internal/client"
 	@(cd ./internal/client && rm -f go.sum && go mod tidy)
-	@echo "  - cloudonboarding"
+	@echo "    - Feature/API modules"
+	@echo "        - cloudonboarding"
 	@(cd ./cloudonboarding && rm -f go.sum && go mod tidy)
+	@echo "        - platform"
+	@(cd ./platform && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
 
 lint: ## Lint all modules with go vet.
