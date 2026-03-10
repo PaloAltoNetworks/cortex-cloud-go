@@ -1,4 +1,5 @@
 github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.1/go.mod h1:pbNj8j0wMQjcjdXIvnLDzHpWtnN1vEp3pxjjqFkWvGU=
+<<<<<<< Updated upstream
 github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.3/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
 github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.1/go.mod h1:r9k28OrK39VVc0mK9ypSvNxnL/PRF2BzZf/9OZDssAk=
 github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.3/go.mod h1:DneG5OMxCK1fyoXWy2fiKKsruKdu8JjB+94zQTS2TsU=
@@ -6,9 +7,25 @@ github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.1/go.mod h1:cIh
 github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.3/go.mod h1:52QTH0gp1jpWOKhh2VP8czBjzQyjK6EA67XksaZtZyo=
 github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.1/go.mod h1:b+/PCE54c40XJmXFEoL8Y5pYAZ9PNS3pmAWtqpADQfQ=
 github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.3/go.mod h1:UYuGE2wh8zdSE4pcAuUmup0trUCJFqbwphA/S7B8Aks=
+=======
+github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.2/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
+github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.3/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
+github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.1/go.mod h1:r9k28OrK39VVc0mK9ypSvNxnL/PRF2BzZf/9OZDssAk=
+github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.2/go.mod h1:DneG5OMxCK1fyoXWy2fiKKsruKdu8JjB+94zQTS2TsU=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.1/go.mod h1:cIh9dtbE5JLNBO61fmC14o/hW+zoq9hpxDg0ER9q8dA=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.2/go.mod h1:M/yZwoCndYx/2HwjYJ9efqAn296HznJVGcDlUlgsGAE=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.3/go.mod h1:52QTH0gp1jpWOKhh2VP8czBjzQyjK6EA67XksaZtZyo=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.1/go.mod h1:b+/PCE54c40XJmXFEoL8Y5pYAZ9PNS3pmAWtqpADQfQ=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.2/go.mod h1:iQEtX5a9fNg171eZSh6hZYfmlqQIiS8boB767T+UmyU=
+>>>>>>> Stashed changes
 github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.1/go.mod h1:rp5lAAFpZ9aW08lOrbFfpvS1Ae8qI1858GfukLiddA4=
+github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.2/go.mod h1:ayOoRk1kNc5KHj6otxGQGeMbKj10Gk6smV3bZCXx3OQ=
 github.com/PaloAltoNetworks/cortex-cloud-go/types v1.0.1/go.mod h1:vKSngxvyTfWG///97rIJ0EU+0AWp8uQEMhKUnKrLcJA=
+<<<<<<< Updated upstream
 github.com/PaloAltoNetworks/cortex-cloud-go/types v1.0.3/go.mod h1:FuUljFioDwXw6kiDYZv/gmCrd/RnaeTyXMD+2xbAFAA=
+=======
+github.com/PaloAltoNetworks/cortex-cloud-go/types v1.0.2/go.mod h1:43KC+sZbJPEiTpdneZwZ6Wn9MuCuN1UlkzRPrGkVjeQ=
+>>>>>>> Stashed changes
 github.com/creack/pty v1.1.9 h1:uDmaGzcdjhF4i/plgjmEsriH11Y0o7RKapEf/LDaM3w=
 github.com/hashicorp/terraform-plugin-log v0.9.0/go.mod h1:rKL8egZQ/eXSyDqzLUuwUYLVdlYeamldAHSxjUFADow=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
