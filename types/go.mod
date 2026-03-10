@@ -2,7 +2,7 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/types
 
 go 1.25.0
 
-require github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.2
+require github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.3
 
 require (
 	github.com/fatih/color v1.18.0 // indirect
