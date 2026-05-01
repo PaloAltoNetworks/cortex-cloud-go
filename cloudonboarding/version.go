@@ -10,3 +10,8 @@ var (
 	GoVersion           = "UNKNOWN"
 	BuildDate           = "UNKNOWN"
 )
+
+const (
+	// ModuleName is the canonical name of this module
+	ModuleName = "cloudonboarding"
+)

@@ -1,9 +1,13 @@
+// Copyright (c) Palo Alto Networks, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package types
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+
 	//"path"
 	"regexp"
 
@@ -143,6 +147,7 @@ type CreateIntegrationTemplateRequest struct {
 	collectionConfiguration CollectionConfiguration
 	customResourcesTags     []Tag
 	instanceName            *string
+	outpostID               *string
 	scanMode                string
 	scope                   string
 	scopeModifications      ScopeModifications
@@ -202,6 +207,13 @@ func WithInstanceName(instanceName string) CreateIntegrationTemplateRequestOptio
 	}
 }
 
+// WithOutpostID sets the outpost ID for the request.
+func WithOutpostID(outpostID string) CreateIntegrationTemplateRequestOption {
+	return func(r *CreateIntegrationTemplateRequest) {
+		r.outpostID = &outpostID
+	}
+}
+
 // WithScanMode sets the scan mode for the request.
 func WithScanMode(scanMode string) CreateIntegrationTemplateRequestOption {
 	return func(r *CreateIntegrationTemplateRequest) {
@@ -231,7 +243,8 @@ func (r *CreateIntegrationTemplateRequest) MarshalJSON() ([]byte, error) {
 		CloudProvider           string                  `json:"cloud_provider"`
 		CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
 		CustomResourcesTags     []Tag                   `json:"custom_resources_tags"`
-		InstanceName            *string                 `json:"instance_name"`
+		InstanceName            *string                 `json:"instance_name,omitempty"`
+		OutpostID               *string                 `json:"scan_env_id,omitempty"`
 		ScanMode                string                  `json:"scan_mode"`
 		Scope                   string                  `json:"scope"`
 		ScopeModifications      ScopeModifications      `json:"scope_modifications"`
@@ -242,7 +255,6 @@ func (r *CreateIntegrationTemplateRequest) MarshalJSON() ([]byte, error) {
 		accountDetails = r.accountDetails
 	}
 
-	//return json.Marshal(&alias{
 	resp, marshalErr := json.Marshal(&alias{
 		AccountDetails:          accountDetails,
 		AdditionalCapabilities:  r.additionalCapabilities,
@@ -250,6 +262,7 @@ func (r *CreateIntegrationTemplateRequest) MarshalJSON() ([]byte, error) {
 		CollectionConfiguration: r.collectionConfiguration,
 		CustomResourcesTags:     r.customResourcesTags,
 		InstanceName:            r.instanceName,
+		OutpostID:               r.outpostID,
 		ScanMode:                r.scanMode,
 		Scope:                   r.scope,
 		ScopeModifications:      r.scopeModifications,
@@ -455,10 +468,6 @@ type ListIntegrationInstancesResponse struct {
 	CreationTime            int    `json:"creation_time,omitempty"`
 	UpdateStatus            string `json:"update_status,omitempty"`
 	IsPendingChanges        int    `json:"is_pending_changes,omitempty"`
-	//ScopeModifications      ScopeModifications `json:"scope_modifications"`
-	//CloudPartition          string               `json:"cloud_partition"`
-	//ModifiedAt              int                  `json:"modified_at"`
-	//DefaultScanningScope DefaultScanningScope `json:"default_scanning_scope"`
 }
 
 func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstance, error) {
@@ -522,13 +531,14 @@ func (r ListIntegrationInstancesResponseWrapper) Marshal() ([]IntegrationInstanc
 
 // EditIntegrationInstanceRequest is the request for editing an integration instance.
 type EditIntegrationInstanceRequest struct {
-	instanceID              string
-	scanEnvID               string
-	instanceName            string
 	additionalCapabilities  AdditionalCapabilities
 	cloudProvider           string
-	customResourcesTags     []Tag
+	cloudPartition          string
 	collectionConfiguration CollectionConfiguration
+	customResourcesTags     []Tag
+	instanceID              string
+	instanceName            *string
+	outpostID               *string
 	scopeModifications      ScopeModifications
 }
 
@@ -546,17 +556,17 @@ func NewEditIntegrationInstanceRequest(instanceID string, options ...EditIntegra
 	return r
 }
 
-// WithScanEnvID sets the scan environment ID for the request.
-func WithScanEnvID(scanEnvID string) EditIntegrationInstanceRequestOption {
+// WithEditOutpostID sets the outpost ID for the request.
+func WithEditOutpostID(outpostID string) EditIntegrationInstanceRequestOption {
 	return func(r *EditIntegrationInstanceRequest) {
-		r.scanEnvID = scanEnvID
+		r.outpostID = &outpostID
 	}
 }
 
 // WithEditInstanceName sets the instance name for the request.
 func WithEditInstanceName(instanceName string) EditIntegrationInstanceRequestOption {
 	return func(r *EditIntegrationInstanceRequest) {
-		r.instanceName = instanceName
+		r.instanceName = &instanceName
 	}
 }
 
@@ -571,6 +581,13 @@ func WithEditAdditionalCapabilities(additionalCapabilities AdditionalCapabilitie
 func WithEditCloudProvider(cloudProvider string) EditIntegrationInstanceRequestOption {
 	return func(r *EditIntegrationInstanceRequest) {
 		r.cloudProvider = cloudProvider
+	}
+}
+
+// WithEditCloudPartition sets the cloud partition for the request.
+func WithEditCloudPartition(cloudPartition string) EditIntegrationInstanceRequestOption {
+	return func(r *EditIntegrationInstanceRequest) {
+		r.cloudPartition = cloudPartition
 	}
 }
 
@@ -599,10 +616,11 @@ func WithEditScopeModifications(scopeModifications ScopeModifications) EditInteg
 func (r *EditIntegrationInstanceRequest) MarshalJSON() ([]byte, error) {
 	type alias struct {
 		InstanceID              string                  `json:"id"`
-		ScanEnvID               string                  `json:"scan_env_id"`
-		InstanceName            string                  `json:"instance_name"`
+		OutpostID               *string                 `json:"scan_env_id,omitempty"`
+		InstanceName            *string                 `json:"instance_name,omitempty"`
 		AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
 		CloudProvider           string                  `json:"cloud_provider"`
+		CloudPartition          string                  `json:"cloud_partition,omitempty"`
 		CustomResourcesTags     []Tag                   `json:"custom_resources_tags"`
 		CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
 		ScopeModifications      ScopeModifications      `json:"scope_modifications"`
@@ -610,10 +628,11 @@ func (r *EditIntegrationInstanceRequest) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(&alias{
 		InstanceID:              r.instanceID,
-		ScanEnvID:               r.scanEnvID,
+		OutpostID:               r.outpostID,
 		InstanceName:            r.instanceName,
 		AdditionalCapabilities:  r.additionalCapabilities,
 		CloudProvider:           r.cloudProvider,
+		CloudPartition:          r.cloudPartition,
 		CustomResourcesTags:     r.customResourcesTags,
 		CollectionConfiguration: r.collectionConfiguration,
 		ScopeModifications:      r.scopeModifications,

@@ -93,7 +93,7 @@ func ContainsScanMode(s string) bool {
 // CloudProviderEnums
 // ==============================================================================
 
-// CloudProvider represents the cloud provider.
+// CloudProvider represents a Cloud Service Provider.
 type CloudProvider string
 
 const (
@@ -126,6 +126,51 @@ func AllCloudProviders() []string {
 // ContainsCloudProvider checks if the given string is a valid CloudProvider.
 func ContainsCloudProvider(s string) bool {
 	for _, provider := range allCloudProviders {
+		if string(provider) == s {
+			return true
+		}
+	}
+	return false
+}
+
+// ==============================================================================
+// OutpostCloudServiceProviderEnums
+// ==============================================================================
+
+// OutpostCloudServiceProvider represents the supported Cloud Service Providers
+// for outposts.
+type OutpostCloudServiceProvider string
+
+const (
+	OutpostCloudServiceProviderAWS   OutpostCloudServiceProvider = "AWS"
+	OutpostCloudServiceProviderAzure OutpostCloudServiceProvider = "AZURE"
+	OutpostCloudServiceProviderGCP   OutpostCloudServiceProvider = "GCP"
+)
+
+// allOutpostCloudServiceProviders holds all valid OutpostCloudServiceProvider values.
+var allOutpostCloudServiceProviders = []OutpostCloudServiceProvider{
+	OutpostCloudServiceProviderAWS,
+	OutpostCloudServiceProviderAzure,
+	OutpostCloudServiceProviderGCP,
+}
+
+// String returns the string representation of an OutpostCloudServiceProvider.
+func (cp OutpostCloudServiceProvider) String() string {
+	return string(cp)
+}
+
+// AllOutpostCloudServiceProviders returns a slice of all valid OutpostCloudServiceProvider string values.
+func AllOutpostCloudServiceProviders() []string {
+	result := make([]string, len(allOutpostCloudServiceProviders))
+	for i, cp := range allOutpostCloudServiceProviders {
+		result[i] = string(cp)
+	}
+	return result
+}
+
+// ContainsOutpostCloudServiceProvider checks if the given string is a valid OutpostCloudServiceProvider.
+func ContainsOutpostCloudServiceProvider(s string) bool {
+	for _, provider := range allOutpostCloudServiceProviders {
 		if string(provider) == s {
 			return true
 		}

@@ -7,6 +7,7 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -69,6 +70,10 @@ type CortexCloudAPIError struct {
 	Code    *string                     `json:"errorCode,omitempty"`
 	Message *string                     `json:"message,omitempty"`
 	Details *CortexCloudAPIErrorDetails `json:"details,omitempty"`
+	// Fields for root-level error format (e.g. CloudSec)
+	ErrCode  *int                         `json:"err_code,omitempty"`
+	ErrMsg   *string                      `json:"err_msg,omitempty"`
+	Metadata *CortexCloudAPIErrorMetadata `json:"metadata,omitempty"`
 }
 
 type CortexCloudAPIErrorReply struct {
@@ -133,11 +138,13 @@ func (e ErrorExtraField) Values() []CortexCloudAPIErrorExtra {
 }
 
 type CortexCloudAPIErrorExtra struct {
-	Type     string                     `json:"type"`
-	Location []any                      `json:"loc"`
-	Message  string                     `json:"msg"`
-	Input    any                        `json:"input"`
-	Context  CortexCloudAPIErrorContext `json:"ctx"`
+	Type        string                     `json:"type,omitempty"`
+	Location    []any                      `json:"loc,omitempty"`
+	Message     string                     `json:"msg,omitempty"`
+	MessageFull string                     `json:"message,omitempty"`
+	Field       any                        `json:"field,omitempty"`
+	Input       any                        `json:"input,omitempty"`
+	Context     CortexCloudAPIErrorContext `json:"ctx,omitempty"`
 }
 
 type CortexCloudAPIErrorContext struct {
@@ -145,12 +152,66 @@ type CortexCloudAPIErrorContext struct {
 	MinLength int    `json:"min_length,omitempty"`
 }
 
+// CortexCloudAPIErrorDetails handles both the legacy "params" shape and the
+// AppSec-style per-field map shape returned by HTTP 422 ValidateError responses.
+//
+// Legacy "params" shape:
+//
+//	"details": { "params": { "message": "..." } }
+//
+// AppSec per-field map shape (e.g. policy CREATE/UPDATE 422):
+//
+//	"details": {
+//	  "policy.triggers.ciImage":       { "message": "'ciImage' is required" },
+//	  "policy.triggers.imageRegistry": { "message": "'imageRegistry' is required" }
+//	}
+//
+// Fields populated by UnmarshalJSON depend on which shape was returned.
 type CortexCloudAPIErrorDetails struct {
-	Params CortexCloudAPIErrorParams `json:"params"`
+	// Params is set when the "params" key is present (legacy shape).
+	Params CortexCloudAPIErrorParams `json:"-"`
+	// Fields is the parsed per-field validation map. Each entry is
+	// "field path" -> { message: "..." }. Empty when no per-field details
+	// were returned.
+	Fields map[string]CortexCloudAPIErrorParams `json:"-"`
 }
 
 type CortexCloudAPIErrorParams struct {
 	Message string `json:"message"`
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling that accepts:
+//   - {"params": {"message": "..."}}                          -> Params
+//   - {"<fieldPath>": {"message": "..."}, ...}                -> Fields
+//   - mixed (params + arbitrary other keys)                   -> both
+func (d *CortexCloudAPIErrorDetails) UnmarshalJSON(data []byte) error {
+	var raw map[string]CortexCloudAPIErrorParams
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	for k, v := range raw {
+		if k == "params" {
+			d.Params = v
+			continue
+		}
+		if d.Fields == nil {
+			d.Fields = make(map[string]CortexCloudAPIErrorParams)
+		}
+		d.Fields[k] = v
+	}
+	return nil
+}
+
+// MarshalJSON implements custom JSON marshaling that round-trips both shapes.
+func (d CortexCloudAPIErrorDetails) MarshalJSON() ([]byte, error) {
+	out := map[string]CortexCloudAPIErrorParams{}
+	if d.Params.Message != "" {
+		out["params"] = d.Params
+	}
+	for k, v := range d.Fields {
+		out[k] = v
+	}
+	return json.Marshal(out)
 }
 
 type CortexCloudAPIErrorDetail struct {
@@ -195,55 +256,134 @@ func NewCortexCloudAPIError(code string, message string, details CortexCloudAPIE
 func (e CortexCloudAPIError) Error() string {
 	var sb strings.Builder
 
+	//
+	// Case 1: CloudSec Reply-based error (err_code / err_msg / err_extra)
+	//
 	if e.Reply != nil {
 		sb.WriteString(fmt.Sprintf("Error Code: %d\n", e.Reply.Code))
 		sb.WriteString(fmt.Sprintf("Error Message: %s\n", e.Reply.Message))
 		sb.WriteString("Error Details:\n")
+
 		for _, extra := range e.Reply.Extra.Values() {
 			appendExtraError(&sb, extra)
 		}
-	} else if e.Data != nil {
+		return sb.String()
+	}
+
+	//
+	// Case 2: Data + Metadata error (newer CloudSec error format)
+	//
+	if e.Data != nil {
+		// Metadata contains err_code + err_extra
 		if e.Data.Metadata != nil {
 			sb.WriteString(fmt.Sprintf("Error Code: %d\n", e.Data.Metadata.Code))
 		}
+
+		// err_msg
 		sb.WriteString(fmt.Sprintf("Error Message: %s\n", e.Data.Message))
+
 		if e.Data.Metadata != nil {
 			sb.WriteString("Error Details:\n")
 			for _, extra := range e.Data.Metadata.Extra.Values() {
 				appendExtraError(&sb, extra)
 			}
 		}
-	} else {
-		var (
-			code    string
-			message string
-			details CortexCloudAPIErrorDetails
-		)
+		return sb.String()
+	}
 
-		if e.Code != nil {
-			code = *e.Code
-		}
-		if e.Message != nil {
-			message = *e.Message
-		}
-		if e.Details != nil {
-			details = *e.Details
+	//
+	// Case 3: Root-level ErrCode/ErrMsg + Metadata (CloudSec variant)
+	//
+	if e.ErrCode != nil || e.ErrMsg != nil || e.Metadata != nil {
+		// Print error code from root level if present, otherwise from metadata
+		if e.ErrCode != nil && *e.ErrCode != 0 {
+			sb.WriteString(fmt.Sprintf("Error Code: %d\n", *e.ErrCode))
+		} else if e.Metadata != nil && e.Metadata.Code != 0 {
+			sb.WriteString(fmt.Sprintf("Error Code: %d\n", e.Metadata.Code))
 		}
 
-		sb.WriteString(fmt.Sprintf("Error Code: %s\n", code))
-		sb.WriteString(fmt.Sprintf("Error Message: %s\n", message))
-		sb.WriteString(fmt.Sprintf("Error Details: %v\n", details))
+		if e.ErrMsg != nil {
+			sb.WriteString(fmt.Sprintf("Error Message: %s\n", *e.ErrMsg))
+		}
+
+		if e.Metadata != nil && len(e.Metadata.Extra.Values()) > 0 {
+			sb.WriteString("Error Details:\n")
+			for _, extra := range e.Metadata.Extra.Values() {
+				appendExtraError(&sb, extra)
+			}
+		}
+		return sb.String()
+	}
+
+	//
+	// Case 4: Root-level ErrMsg only (CloudSec variant without metadata)
+	//
+	if e.ErrMsg != nil {
+		sb.WriteString(fmt.Sprintf("Error Message: %s\n", *e.ErrMsg))
+		return sb.String()
+	}
+
+	//
+	// Case 4: Fallback error (Code, Message, Details)
+	//
+	code := ""
+	msg := ""
+	var details CortexCloudAPIErrorDetails
+
+	if e.Code != nil {
+		code = *e.Code
+	}
+	if e.Message != nil {
+		msg = *e.Message
+	}
+	if e.Details != nil {
+		details = *e.Details
+	}
+
+	sb.WriteString(fmt.Sprintf("Error Code: %s\n", code))
+	sb.WriteString(fmt.Sprintf("Error Message: %s\n", msg))
+	if details.Params.Message != "" {
+		sb.WriteString(fmt.Sprintf("Error Details: %s\n", details.Params.Message))
+	}
+	if len(details.Fields) > 0 {
+		sb.WriteString("Error Details:\n")
+		// Sort keys for deterministic output
+		keys := make([]string, 0, len(details.Fields))
+		for k := range details.Fields {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			sb.WriteString(fmt.Sprintf("  - %s: %s\n", k, details.Fields[k].Message))
+		}
+	}
+	if details.Params.Message == "" && len(details.Fields) == 0 {
+		sb.WriteString("Error Details: \n")
 	}
 
 	return sb.String()
 }
 
 func appendExtraError(sb *strings.Builder, extra CortexCloudAPIErrorExtra) {
-	sb.WriteString(fmt.Sprintf("  - Type: \"%s\"\n", extra.Type))
+	if extra.Type != "" {
+		sb.WriteString(fmt.Sprintf("  - Type: \"%s\"\n", extra.Type))
+	}
+	if extra.Field != nil {
+		fieldStr, err := convertInterfaceToString(extra.Field)
+		if err == nil && fieldStr != "" {
+			sb.WriteString(fmt.Sprintf("  - Field: \"%s\"\n", fieldStr))
+		}
+	}
 	if len(extra.Location) > 0 {
 		sb.WriteString(fmt.Sprintf("    Location: [\"%s\"]\n", strings.Join(extra.locationAsStringSlice(), "\", \"")))
 	}
-	sb.WriteString(fmt.Sprintf("    Message: \"%s\"\n", extra.Message))
+
+	msg := extra.Message
+	if msg == "" {
+		msg = extra.MessageFull
+	}
+	sb.WriteString(fmt.Sprintf("    Message: \"%s\"\n", msg))
+
 	if extra.Input != nil {
 		sb.WriteString(fmt.Sprintf("    Input: \"%s\"\n", extra.inputAsString()))
 	}
@@ -256,6 +396,25 @@ func appendExtraError(sb *strings.Builder, extra CortexCloudAPIErrorExtra) {
 	}
 }
 
+// ToBuiltin converts the CortexCloudAPIError to a standard Go error.
+// It ensures that the error message contains all relevant details.
 func (e CortexCloudAPIError) ToBuiltin() error {
-	return fmt.Errorf("%+v", e.Error())
+	// If we have a structured error, use its string representation
+	if e.Reply != nil || e.Data != nil || e.Code != nil || e.Message != nil || e.ErrCode != nil || e.ErrMsg != nil || e.Metadata != nil {
+		return fmt.Errorf("%s", e.Error())
+	}
+	// Fallback for empty error objects
+	return fmt.Errorf("unknown API error")
+}
+
+// Policy API error shape (always).
+type policyAPIError struct {
+	ErrMsg   string `json:"err_msg"`
+	Metadata struct {
+		ErrCode  int `json:"err_code,omitempty"`
+		ErrExtra []struct {
+			Field   string `json:"field"`
+			Message string `json:"message"`
+		} `json:"err_extra"`
+	} `json:"metadata"`
 }

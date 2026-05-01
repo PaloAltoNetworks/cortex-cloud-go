@@ -163,6 +163,65 @@ func TestErrorExtraField_UnmarshalJSON_ArrayFormatDetails(t *testing.T) {
 	}
 }
 
+// TestErrorExtraField_UnmarshalJSON_IntegerField tests array format with integer field
+func TestErrorExtraField_UnmarshalJSON_IntegerField(t *testing.T) {
+	jsonData := `{
+		"err_msg": "The request contains invalid parameters",
+		"metadata": {
+			"err_extra": [
+				{
+					"field": 0,
+					"message": "Input should be a valid UUID"
+				},
+				{
+					"field": 1,
+					"message": "Input should be a valid UUID"
+				}
+			]
+		}
+	}`
+
+	var apiErr CortexCloudAPIError
+	err := json.Unmarshal([]byte(jsonData), &apiErr)
+	if err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if apiErr.Data == nil || apiErr.Data.Metadata == nil {
+		// The structure might be parsed differently depending on how CortexCloudAPIError unmarshals.
+		// Let's check if we can access the extra values via the Metadata field if it was populated directly
+		// or if we need to check how it was unmarshaled.
+		// Wait, CortexCloudAPIError has Data *CortexCloudAPIErrorData.
+		// The JSON above matches the structure for Data/Metadata if we look at api.go:
+		// type CortexCloudAPIErrorData struct { Message string; Metadata *CortexCloudAPIErrorMetadata }
+		// But the JSON has "err_msg" and "metadata" at the top level, which matches CortexCloudAPIError struct fields:
+		// ErrMsg *string `json:"err_msg,omitempty"`
+		// Metadata *CortexCloudAPIErrorMetadata `json:"metadata,omitempty"`
+	}
+
+	if apiErr.Metadata == nil {
+		t.Fatal("Expected Metadata to be populated")
+	}
+
+	values := apiErr.Metadata.Extra.Values()
+	if len(values) != 2 {
+		t.Fatalf("Expected 2 error extra values, got %d", len(values))
+	}
+
+	// Field is now 'any', so it should hold the float64 (default for JSON numbers) or int
+	// We can check the string representation via appendExtraError logic or direct type assertion
+	// json.Unmarshal unmarshals numbers to float64 by default for interface{}
+
+	// Let's verify the Error() string output contains the field info
+	errStr := apiErr.Error()
+	if !contains(errStr, "Field: \"0\"") {
+		t.Errorf("Error string should contain 'Field: \"0\"', got: %s", errStr)
+	}
+	if !contains(errStr, "Input should be a valid UUID") {
+		t.Errorf("Error string should contain message, got: %s", errStr)
+	}
+}
+
 // TestErrorExtraField_UnmarshalJSON_InvalidFormat tests error handling for invalid formats
 func TestErrorExtraField_UnmarshalJSON_InvalidFormat(t *testing.T) {
 	tests := []struct {
@@ -211,7 +270,7 @@ func TestErrorExtraField_MarshalJSON(t *testing.T) {
 					},
 				},
 			},
-			wantJSON: `[{"type":"missing","loc":null,"msg":"Field required","input":null,"ctx":{}}]`,
+			wantJSON: `[{"type":"missing","msg":"Field required","ctx":{}}]`,
 		},
 		{
 			name: "empty array",
@@ -359,6 +418,140 @@ func TestBackwardCompatibility(t *testing.T) {
 	if count != 1 {
 		t.Errorf("Expected to iterate over 1 item, got %d", count)
 	}
+}
+
+// TestCortexCloudAPIError_Error_FallbackFormat tests Error() method with fallback format
+func TestCortexCloudAPIError_Error_FallbackFormat(t *testing.T) {
+	jsonData := `{
+		"errorCode": "404",
+		"message": "Resource not found",
+		"details": {
+			"params": {
+				"message": "Policy ID not found"
+			}
+		}
+	}`
+
+	var apiErr CortexCloudAPIError
+	err := json.Unmarshal([]byte(jsonData), &apiErr)
+	if err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	errStr := apiErr.Error()
+	if errStr == "" {
+		t.Error("Error() returned empty string")
+	}
+
+	// Verify the error string contains key information
+	if !contains(errStr, "Error Code: 404") {
+		t.Error("Error string should contain error code")
+	}
+	if !contains(errStr, "Error Message: Resource not found") {
+		t.Error("Error string should contain error message")
+	}
+	if !contains(errStr, "Policy ID not found") {
+		t.Error("Error string should contain details message")
+	}
+}
+
+// TestCortexCloudAPIError_Details_PerFieldMapShape exercises the AppSec-style
+// 422 response where details is a map of "field path" -> { message: "..." }.
+//
+// Real example from POST /public_api/appsec/v1/policies on JP:
+//
+//	{
+//	  "errorCode": "ValidateError",
+//	  "message":   "Validation Failed",
+//	  "details": {
+//	    "policy.triggers.ciImage":       { "message": "'ciImage' is required" },
+//	    "policy.triggers.imageRegistry": { "message": "'imageRegistry' is required" }
+//	  }
+//	}
+func TestCortexCloudAPIError_Details_PerFieldMapShape(t *testing.T) {
+	jsonData := `{
+		"errorCode": "ValidateError",
+		"message": "Validation Failed",
+		"details": {
+			"policy.triggers.ciImage":       { "message": "'ciImage' is required" },
+			"policy.triggers.imageRegistry": { "message": "'imageRegistry' is required" }
+		}
+	}`
+
+	var apiErr CortexCloudAPIError
+	if err := json.Unmarshal([]byte(jsonData), &apiErr); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if apiErr.Details == nil {
+		t.Fatal("Details was nil; expected populated Fields map")
+	}
+	if len(apiErr.Details.Fields) != 2 {
+		t.Fatalf("expected 2 field entries, got %d", len(apiErr.Details.Fields))
+	}
+	if got := apiErr.Details.Fields["policy.triggers.ciImage"].Message; got != "'ciImage' is required" {
+		t.Errorf("ciImage message: expected %q, got %q", "'ciImage' is required", got)
+	}
+	if got := apiErr.Details.Fields["policy.triggers.imageRegistry"].Message; got != "'imageRegistry' is required" {
+		t.Errorf("imageRegistry message: expected %q, got %q", "'imageRegistry' is required", got)
+	}
+
+	errStr := apiErr.Error()
+	for _, want := range []string{
+		"Error Code: ValidateError",
+		"Error Message: Validation Failed",
+		"policy.triggers.ciImage",
+		"'ciImage' is required",
+		"policy.triggers.imageRegistry",
+		"'imageRegistry' is required",
+	} {
+		if !contains(errStr, want) {
+			t.Errorf("Error() missing %q in:\n%s", want, errStr)
+		}
+	}
+}
+
+// TestCortexCloudAPIErrorDetails_RoundTrip ensures both shapes survive marshal+unmarshal.
+func TestCortexCloudAPIErrorDetails_RoundTrip(t *testing.T) {
+	t.Run("params shape", func(t *testing.T) {
+		original := CortexCloudAPIErrorDetails{
+			Params: CortexCloudAPIErrorParams{Message: "foo"},
+		}
+		data, err := json.Marshal(original)
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		var rt CortexCloudAPIErrorDetails
+		if err := json.Unmarshal(data, &rt); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if rt.Params.Message != "foo" {
+			t.Errorf("Params.Message: expected 'foo', got %q", rt.Params.Message)
+		}
+	})
+
+	t.Run("fields map shape", func(t *testing.T) {
+		original := CortexCloudAPIErrorDetails{
+			Fields: map[string]CortexCloudAPIErrorParams{
+				"a.b.c": {Message: "msg-1"},
+				"x.y":   {Message: "msg-2"},
+			},
+		}
+		data, err := json.Marshal(original)
+		if err != nil {
+			t.Fatalf("marshal: %v", err)
+		}
+		var rt CortexCloudAPIErrorDetails
+		if err := json.Unmarshal(data, &rt); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if rt.Fields["a.b.c"].Message != "msg-1" {
+			t.Errorf("Fields[a.b.c]: expected 'msg-1', got %q", rt.Fields["a.b.c"].Message)
+		}
+		if rt.Fields["x.y"].Message != "msg-2" {
+			t.Errorf("Fields[x.y]: expected 'msg-2', got %q", rt.Fields["x.y"].Message)
+		}
+	})
 }
 
 // Helper function to check if a string contains a substring

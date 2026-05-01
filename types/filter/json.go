@@ -1,3 +1,6 @@
+// Copyright (c) Palo Alto Networks, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package types
 
 import (
@@ -13,12 +16,20 @@ func unmarshalFilter(b []byte) (Filter, error) {
 	}
 
 	if _, ok := probe["SEARCH_FIELD"]; ok {
-		if val, ok := probe["SEARCH_VALUE"]; ok && len(val) > 0 && val[0] == '{' {
-			var f FilterTimespan
-			if err := json.Unmarshal(b, &f); err != nil {
-				return nil, err
+		if val, ok := probe["SEARCH_VALUE"]; ok && len(val) > 0 {
+			if val[0] == '{' {
+				var f FilterTimespan
+				if err := json.Unmarshal(b, &f); err != nil {
+					return nil, err
+				}
+				return f, nil
+			} else if string(val) == "true" || string(val) == "false" {
+				var f FilterBoolValue
+				if err := json.Unmarshal(b, &f); err != nil {
+					return nil, err
+				}
+				return f, nil
 			}
-			return f, nil
 		}
 		var f FilterGeneric
 		if err := json.Unmarshal(b, &f); err != nil {

@@ -1,3 +1,6 @@
+// Copyright (c) Palo Alto Networks, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package types
 
 import (
@@ -10,7 +13,6 @@ import (
 type CortexClient interface {
 	IsCortexClient()
 	ValidateAPIKey(ctx context.Context) (bool, error)
-	FQDN() string
 	APIURL() string
 	APIKeyType() string
 	SkipSSLVerify() bool

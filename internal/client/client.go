@@ -23,7 +23,8 @@ import (
 	"github.com/PaloAltoNetworks/cortex-cloud-go/errors"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
-	"github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
+	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/version"
 )
 
 const (
@@ -54,14 +55,14 @@ type Client struct {
 // Marker method for CortexClient interface compliance.
 func (Client) IsCortexClient() {}
 
-// FQDN returns the FQDN of the Cortex tenant.
-func (c *Client) FQDN() string { return c.config.CortexFQDN() }
-
 // APIURL returns the API URL for the Cortex.
 func (c *Client) APIURL() string { return c.config.CortexAPIURL() }
 
 // APIKeyType returns the Cortex API key type.
 func (c *Client) APIKeyType() string { return c.config.CortexAPIKeyType() }
+
+// APIKeyID returns the Cortex API key ID.
+func (c *Client) APIKeyID() int { return c.config.CortexAPIKeyID() }
 
 // SkipSSLVerify returns whether to skip TLS certificate verification.
 func (c *Client) SkipSSLVerify() bool { return c.config.SkipSSLVerify() }
@@ -104,11 +105,6 @@ func NewClientFromConfig(cfg *config.Config) (*Client, error) {
 	}
 
 	cfg.SetDefaults()
-
-	// Populate API URL using FQDN if not configured
-	//if cfg.CortexAPIURL() == "" {
-	//	cfg.CortexAPIURL
-	//}
 
 	// Set up the HTTP transport based on config
 	transport := cfg.Transport()
@@ -210,16 +206,27 @@ func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
 
 // generateHeaders creates all header key-value pairs for the current request
 // using the client's configuration.
-func (c *Client) generateHeaders(setContentType bool) (map[string]string, error) {
+func (c *Client) generateHeaders(ctx context.Context, setContentType bool) (map[string]string, error) {
 	headers := make(map[string]string)
 
 	if setContentType {
 		headers["Content-Type"] = "application/json"
 	}
 
+	// User-Agent: Use configured or generate default
 	if c.config.Agent() != "" {
 		headers["User-Agent"] = c.config.Agent()
+	} else {
+		// Fallback to basic SDK User-Agent
+		headers["User-Agent"] = version.UserAgent("sdk")
 	}
+
+	// X-Request-ID: Generate or retrieve from context
+	requestID := GetRequestID(ctx)
+	if requestID == "" {
+		requestID = generateRequestID()
+	}
+	headers["X-Request-ID"] = requestID
 
 	headers["x-xdr-auth-id"] = c.apiKeyId
 
@@ -280,6 +287,14 @@ func (c *Client) calculateRetryDelay(attempt int) time.Duration {
 // buildRequestURL constructs and validates the complete API URL from
 // the base URL, endpoint, path parameters, and query parameters.
 func (c *Client) buildRequestURL(endpoint string, pathParams *[]string, queryParams *url.Values) (string, error) {
+	if c == nil {
+		return "", fmt.Errorf("self is nil")
+	}
+
+	if c.config == nil {
+		return "", fmt.Errorf("config is nil")
+	}
+
 	// Validate base URL
 	baseURL, err := url.Parse(c.config.CortexAPIURL())
 	if err != nil {
@@ -373,6 +388,16 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 		)
 	}
 
+	// Ensure request ID is in context
+	ctx, requestID := GetOrGenerateRequestID(ctx)
+
+	// Log request start with request ID
+	c.config.Logger().Info(ctx, "API request started", map[string]any{
+		"request_id": requestID,
+		"method":     method,
+		"endpoint":   endpoint,
+	})
+
 	var (
 		err  error
 		body []byte
@@ -439,7 +464,7 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 			}
 
 			// Generate authentication headers
-			authHeaders, err := c.generateHeaders(input != nil)
+			authHeaders, err := c.generateHeaders(ctx, input != nil)
 			if err != nil {
 				return nil, errors.NewInternalSDKError(
 					errors.CodeAuthenticationHeaderGenerationFailure,
@@ -465,10 +490,17 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 					)
 				}
 				// Network or client-side errors (e.g., connection refused, timeout) are generally retryable
-				c.config.Logger().Debug(ctx, fmt.Sprintf("[ERROR] HTTP request failed (attempt %d/%d): %v", attempt+1, c.config.MaxRetries()+1, err))
+				c.config.Logger().Debug(ctx, fmt.Sprintf("[ERROR] HTTP request failed (attempt %d/%d): %v", attempt+1, c.config.MaxRetries()+1, err), map[string]any{
+					"request_id":  requestID,
+					"attempt":     attempt + 1,
+					"max_retries": c.config.MaxRetries() + 1,
+				})
 				if attempt < c.config.MaxRetries() {
 					sleepDelay := c.calculateRetryDelay(attempt)
-					c.config.Logger().Debug(ctx, fmt.Sprintf("[INFO] Sleeping %v before retry (attempt %d/%d)", sleepDelay, attempt+1, c.config.MaxRetries()+1))
+					c.config.Logger().Debug(ctx, fmt.Sprintf("[INFO] Sleeping %v before retry", sleepDelay), map[string]any{
+						"request_id": requestID,
+						"delay_ms":   sleepDelay.Milliseconds(),
+					})
 					if len(c.testData) == 0 { // Only sleep if not in test mode
 						time.Sleep(sleepDelay)
 					}
@@ -507,6 +539,12 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 			if isRetryableHTTPStatus(resp.StatusCode) && attempt < c.config.MaxRetries() {
 				c.config.Logger().Debug(ctx, fmt.Sprintf("[INFO] API returned retryable status %d; sleeping %v before retry (attempt %d/%d)", resp.StatusCode, c.calculateRetryDelay(attempt), attempt+1, c.config.MaxRetries()+1))
 				sleepDelay := c.calculateRetryDelay(attempt)
+				c.config.Logger().Debug(ctx, fmt.Sprintf("[INFO] API returned retryable status %d", resp.StatusCode), map[string]any{
+					"request_id":  requestID,
+					"status_code": resp.StatusCode,
+					"attempt":     attempt + 1,
+					"delay_ms":    sleepDelay.Milliseconds(),
+				})
 
 				// Skip sleeping between retries if we're in a test
 				if len(c.testData) == 0 {
@@ -522,6 +560,12 @@ func (c *Client) Do(ctx context.Context, method string, endpoint string, pathPar
 		// Exit the retry loop on success
 		break
 	}
+
+	// Log successful completion
+	c.config.Logger().Info(ctx, "API request completed", map[string]any{
+		"request_id":  requestID,
+		"status_code": resp.StatusCode,
+	})
 
 	// Unmarshal the response data into output if output is provided and response data exists
 	if output != nil && len(body) > 0 {

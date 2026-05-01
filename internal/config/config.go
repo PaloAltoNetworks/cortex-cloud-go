@@ -17,7 +17,6 @@ import (
 )
 
 const (
-	CORTEXCLOUD_FQDN_ENV_VAR                   = "CORTEXCLOUD_FQDN"
 	CORTEXCLOUD_API_URL_ENV_VAR                = "CORTEXCLOUD_API_URL"
 	CORTEXCLOUD_API_KEY_ENV_VAR                = "CORTEXCLOUD_API_KEY"
 	CORTEXCLOUD_API_KEY_ID_ENV_VAR             = "CORTEXCLOUD_API_KEY_ID"
@@ -35,27 +34,22 @@ const (
 )
 
 type Config struct {
-	checkEnvironmentVars bool
-	cortexFQDN           string            `json:"fqdn"`
-	cortexAPIURL         string            `json:"api_url"`
-	cortexAPIKey         string            `json:"api_key"`
-	cortexAPIKeyID       int               `json:"api_key_id"`
-	cortexAPIKeyType     string            `json:"api_key_type"`
-	headers              map[string]string `json:"headers"`
-	agent                string            `json:"agent"`
-	skipSSLVerify        bool              `json:"skip_ssl_verify"`
-	transport            *http.Transport   `json:"-"`
-	timeout              int               `json:"timeout"`
-	maxRetries           int               `json:"max_retries"`
-	retryMaxDelay        int               `json:"retry_max_delay"`
-	crashStackDir        string            `json:"crash_stack_dir"`
-	logLevel             string            `json:"log_level"`
-	logger               cortexLog.Logger  `json:"-"`
-	skipLoggingTransport bool              `json:"skip_logging_transport"`
+	cortexAPIURL         string
+	cortexAPIKey         string
+	cortexAPIKeyID       int
+	cortexAPIKeyType     string
+	headers              map[string]string
+	agent                string
+	skipSSLVerify        bool
+	transport            *http.Transport
+	timeout              int
+	maxRetries           int
+	retryMaxDelay        int
+	crashStackDir        string
+	logLevel             string
+	logger               cortexLog.Logger
+	skipLoggingTransport bool
 }
-
-// CortexFQDN returns the FQDN of the Cortex tenant.
-func (c *Config) CortexFQDN() string { return c.cortexFQDN }
 
 // CortexAPIURL returns the API URL for the Cortex.
 func (c *Config) CortexAPIURL() string { return c.cortexAPIURL }
@@ -102,10 +96,50 @@ func (c *Config) Logger() cortexLog.Logger { return c.logger }
 // SkipLoggingTransport returns whether to skip logging transport.
 func (c *Config) SkipLoggingTransport() bool { return c.skipLoggingTransport }
 
+// UnmarshalJSON unmarshals the provided byte array into the calling Config struct.
+func (c *Config) UnmarshalJSON(data []byte) error {
+	type Alias struct {
+		CortexAPIURL         string            `json:"api_url"`
+		CortexAPIKey         string            `json:"api_key"`
+		CortexAPIKeyID       int               `json:"api_key_id"`
+		CortexAPIKeyType     string            `json:"api_key_type"`
+		Headers              map[string]string `json:"headers"`
+		Agent                string            `json:"agent"`
+		SkipSSLVerify        bool              `json:"skip_ssl_verify"`
+		Transport            *http.Transport   `json:"-"`
+		Timeout              int               `json:"timeout"`
+		MaxRetries           int               `json:"max_retries"`
+		RetryMaxDelay        int               `json:"retry_max_delay"`
+		CrashStackDir        string            `json:"crash_stack_dir"`
+		LogLevel             string            `json:"log_level"`
+		Logger               cortexLog.Logger  `json:"-"`
+		SkipLoggingTransport bool              `json:"skip_logging_transport"`
+	}
+
+	var aux Alias
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return fmt.Errorf("failed to unmarshal JSON data into Config: %s", err.Error())
+	}
+
+	c.cortexAPIURL = aux.CortexAPIURL
+	c.cortexAPIKey = aux.CortexAPIKey
+	c.cortexAPIKeyID = aux.CortexAPIKeyID
+	c.cortexAPIKeyType = aux.CortexAPIKeyType
+	c.headers = aux.Headers
+	c.agent = aux.Agent
+	c.skipSSLVerify = aux.SkipSSLVerify
+	c.timeout = aux.Timeout
+	c.maxRetries = aux.MaxRetries
+	c.retryMaxDelay = aux.RetryMaxDelay
+	c.crashStackDir = aux.CrashStackDir
+	c.logLevel = aux.LogLevel
+	c.skipLoggingTransport = aux.SkipLoggingTransport
+
+	return nil
+}
+
 func NewConfig(opts ...Option) *Config {
 	config := &Config{
-		checkEnvironmentVars: true,
-		cortexFQDN:           "",
 		cortexAPIURL:         "",
 		cortexAPIKeyType:     "advanced",
 		headers:              make(map[string]string),
@@ -121,24 +155,16 @@ func NewConfig(opts ...Option) *Config {
 		skipLoggingTransport: false,
 	}
 
+	config.overwriteFromEnvVars()
+
 	for _, opt := range opts {
 		opt(config)
-	}
-
-	if config.checkEnvironmentVars {
-		config.overwriteFromEnvVars()
-	}
-
-	// Populate API URL using FQDN if no value is configured
-	//if config.cortexAPIURL == "" || !strings.HasPrefix(config.cortexAPIURL, "https://api-") {
-	if config.cortexAPIURL == "" {
-		config.cortexAPIURL = fqdnToAPIURL(config.cortexFQDN)
 	}
 
 	return config
 }
 
-func NewConfigFromFile(filepath string, checkEnvironment bool) (*Config, error) {
+func NewConfigFromFile(filepath string) (*Config, error) {
 	cBytes, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading configuration file: %s", err)
@@ -149,16 +175,11 @@ func NewConfigFromFile(filepath string, checkEnvironment bool) (*Config, error) 
 		return nil, fmt.Errorf("Error unmarshalling configuration file: %s", err)
 	}
 
-	if cFile.cortexAPIURL == "" || !strings.HasPrefix(cFile.cortexAPIURL, "https://api-") {
-		cFile.cortexAPIURL = fqdnToAPIURL(cFile.cortexFQDN)
-	}
 	return NewConfig(
-		WithCortexFQDN(cFile.cortexFQDN),
 		WithCortexAPIURL(cFile.cortexAPIURL),
 		WithCortexAPIKey(cFile.cortexAPIKey),
 		WithCortexAPIKeyID(cFile.cortexAPIKeyID),
 		WithCortexAPIKeyType(cFile.cortexAPIKeyType),
-		WithCheckEnvironment(checkEnvironment),
 		WithHeaders(cFile.headers),
 		WithAgent(cFile.agent),
 		WithSkipSSLVerify(cFile.skipSSLVerify),
@@ -175,7 +196,6 @@ func NewConfigFromFile(filepath string, checkEnvironment bool) (*Config, error) 
 
 func (c *Config) GetOptions() []Option {
 	return []Option{
-		WithCortexFQDN(c.cortexFQDN),
 		WithCortexAPIURL(c.cortexAPIURL),
 		WithCortexAPIKey(c.cortexAPIKey),
 		WithCortexAPIKeyID(c.cortexAPIKeyID),
@@ -195,11 +215,24 @@ func (c *Config) GetOptions() []Option {
 }
 
 func (c Config) Validate() error {
-	if c.cortexFQDN == "" && c.cortexAPIURL == "" {
-		return fmt.Errorf("must define at least one of the FQDN and API URL fields")
+	if c.cortexAPIURL == "" {
+		return fmt.Errorf("API URL not set")
 	}
-	if c.cortexFQDN != "" && c.cortexAPIURL == "" {
-		return fmt.Errorf("API URL value not set")
+
+	if c.cortexAPIKey == "" {
+		return fmt.Errorf("API key not set")
+	}
+
+	if c.cortexAPIKeyID == 0 {
+		return fmt.Errorf("API key ID not set")
+	}
+
+	if c.cortexAPIKeyID < 0 {
+		return fmt.Errorf("Invalid API key ID: %d", c.cortexAPIKeyID)
+	}
+
+	if c.cortexAPIKeyType != "standard" && c.cortexAPIKeyType != "advanced" {
+		return fmt.Errorf("Invalid API key type: %s", c.cortexAPIKeyType)
 	}
 
 	return nil
@@ -216,9 +249,6 @@ func (c *Config) SetDefaults() {
 }
 
 func (c *Config) overwriteFromEnvVars() {
-	if envFQDN, ok := os.LookupEnv(CORTEXCLOUD_FQDN_ENV_VAR); ok {
-		c.cortexFQDN = envFQDN
-	}
 	if envAPIURL, ok := os.LookupEnv(CORTEXCLOUD_API_URL_ENV_VAR); ok {
 		c.cortexAPIURL = envAPIURL
 	}
@@ -304,28 +334,4 @@ func (c *Config) overwriteFromEnvVars() {
 			fmt.Printf("Warning: Invalid value for %s environment variable: %s. Expected true/false.\n", CORTEXCLOUD_SKIP_LOGGING_TRANSPORT_ENV_VAR, envSkipLoggingTransport)
 		}
 	}
-}
-
-func fqdnToAPIURL(fqdn string) string {
-	fqdnLowercase := strings.ToLower(fqdn)
-	if strings.HasPrefix(fqdnLowercase, "https://api-") {
-		return fqdn
-	}
-
-	ensureAPIPrefix := func(hostname string) string {
-		if !strings.HasPrefix(hostname, "api-") {
-			return "api-" + hostname
-		}
-		return hostname
-	}
-
-	if !strings.HasPrefix(strings.ToLower(fqdn), "https://") {
-		fqdnParts := strings.SplitN(fqdn, "://", 2)
-		if len(fqdnParts) != 2 {
-			return "https://" + ensureAPIPrefix(fqdn)
-		}
-		return "https://" + ensureAPIPrefix(fqdnParts[1])
-	}
-
-	return ensureAPIPrefix(fqdn)
 }

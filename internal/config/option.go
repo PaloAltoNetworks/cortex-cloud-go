@@ -13,13 +13,6 @@ import (
 
 type Option func(*Config)
 
-// WithCortexFQDN returns an Option that sets the CortexFQDN field.
-func WithCortexFQDN(fqdn string) Option {
-	return func(c *Config) {
-		c.cortexFQDN = fqdn
-	}
-}
-
 // WithCortexAPIURL returns an Option that sets the CortexAPIURL field.
 func WithCortexAPIURL(apiURL string) Option {
 	return func(c *Config) {
@@ -44,14 +37,9 @@ func WithCortexAPIKeyID(apiKeyID int) Option {
 // WithCortexAPIKeyType returns an Option that sets the CortexAPIKeyType field.
 func WithCortexAPIKeyType(keyType string) Option {
 	return func(c *Config) {
-		c.cortexAPIKeyType = keyType
-	}
-}
-
-// WithCheckEnvironment returns an Option that sets the checkEnvironmentVars field.
-func WithCheckEnvironment(check bool) Option {
-	return func(c *Config) {
-		c.checkEnvironmentVars = check
+		if keyType != "" {
+			c.cortexAPIKeyType = keyType
+		}
 	}
 }
 

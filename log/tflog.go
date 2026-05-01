@@ -5,6 +5,7 @@ package log
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 

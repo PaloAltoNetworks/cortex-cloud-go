@@ -19,9 +19,9 @@ import (
 )
 
 func setupAcceptanceTest(t *testing.T) *Client {
-	apiUrl := os.Getenv("CORTEXCLOUD_API_URL_TEST")
-	apiKey := os.Getenv("CORTEXCLOUD_API_KEY_TEST")
-	apiKeyIDStr := os.Getenv("CORTEXCLOUD_API_KEY_ID_TEST")
+	apiUrl := os.Getenv("TEST_CORTEX_API_URL")
+	apiKey := os.Getenv("TEST_CORTEX_API_KEY")
+	apiKeyIDStr := os.Getenv("TEST_CORTEX_API_KEY_ID")
 
 	apiKeyID, err := strconv.Atoi(apiKeyIDStr)
 	if err != nil {
@@ -32,6 +32,7 @@ func setupAcceptanceTest(t *testing.T) *Client {
 		WithCortexAPIURL(apiUrl),
 		WithCortexAPIKey(apiKey),
 		WithCortexAPIKeyID(apiKeyID),
+		WithCortexAPIKeyType("standard"),
 		WithLogLevel("debug"),
 	)
 	assert.NoError(t, err)

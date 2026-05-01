@@ -1,3 +1,6 @@
+// Copyright (c) Palo Alto Networks, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package types
 
 import (
@@ -24,12 +27,12 @@ type CreateOutpostTemplateRequest struct {
 type CreateOutpostTemplateRequestOption func(*CreateOutpostTemplateRequest)
 
 // NewCreateOutpostTemplateRequest creates a new CreateOutpostTemplateRequest.
-func NewCreateOutpostTemplateRequest(cloudProvider string, options ...CreateOutpostTemplateRequestOption) *CreateOutpostTemplateRequest {
-	r := &CreateOutpostTemplateRequest{
+func NewCreateOutpostTemplateRequest(cloudProvider string, options ...CreateOutpostTemplateRequestOption) CreateOutpostTemplateRequest {
+	r := CreateOutpostTemplateRequest{
 		cloudProvider: cloudProvider,
 	}
 	for _, option := range options {
-		option(r)
+		option(&r)
 	}
 	return r
 }
@@ -42,7 +45,7 @@ func WithCustomResourceTags(tags []Tag) CreateOutpostTemplateRequestOption {
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (r *CreateOutpostTemplateRequest) MarshalJSON() ([]byte, error) {
+func (r CreateOutpostTemplateRequest) MarshalJSON() ([]byte, error) {
 	type alias struct {
 		CloudProvider      string `json:"cloud_provider"`
 		CustomResourceTags []Tag  `json:"custom_resources_tags,omitempty"`
@@ -66,13 +69,13 @@ type UpdateOutpostRequest struct {
 type UpdateOutpostRequestOption func(*UpdateOutpostRequest)
 
 // NewUpdateOutpostRequest creates a new UpdateOutpostRequest.
-func NewUpdateOutpostRequest(outpostID, cloudProvider string, options ...UpdateOutpostRequestOption) *UpdateOutpostRequest {
-	r := &UpdateOutpostRequest{
+func NewUpdateOutpostRequest(outpostID, cloudProvider string, options ...UpdateOutpostRequestOption) UpdateOutpostRequest {
+	r := UpdateOutpostRequest{
 		outpostID:     outpostID,
 		cloudProvider: cloudProvider,
 	}
 	for _, option := range options {
-		option(r)
+		option(&r)
 	}
 	return r
 }
@@ -85,7 +88,7 @@ func WithUpdateCustomResourceTags(tags []Tag) UpdateOutpostRequestOption {
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (r *UpdateOutpostRequest) MarshalJSON() ([]byte, error) {
+func (r UpdateOutpostRequest) MarshalJSON() ([]byte, error) {
 	type alias struct {
 		OutpostID          string `json:"outpost_id"`
 		CloudProvider      string `json:"cloud_provider"`
@@ -108,10 +111,10 @@ type ListOutpostsRequest struct {
 type ListOutpostsRequestOption func(*ListOutpostsRequest)
 
 // NewListOutpostsRequest creates a new ListOutpostsRequest.
-func NewListOutpostsRequest(options ...ListOutpostsRequestOption) *ListOutpostsRequest {
-	r := &ListOutpostsRequest{}
+func NewListOutpostsRequest(options ...ListOutpostsRequestOption) ListOutpostsRequest {
+	r := ListOutpostsRequest{}
 	for _, option := range options {
-		option(r)
+		option(&r)
 	}
 	return r
 }
@@ -124,7 +127,7 @@ func WithOutpostFilterData(filterData filterTypes.FilterData) ListOutpostsReques
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (r *ListOutpostsRequest) MarshalJSON() ([]byte, error) {
+func (r ListOutpostsRequest) MarshalJSON() ([]byte, error) {
 	type alias struct {
 		FilterData filterTypes.FilterData `json:"filter_data"`
 	}

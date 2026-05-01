@@ -12,6 +12,7 @@ import (
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/client"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/internal/config"
 	"github.com/PaloAltoNetworks/cortex-cloud-go/log"
+	"github.com/PaloAltoNetworks/cortex-cloud-go/version"
 )
 
 // API endpoint path specification.
@@ -38,8 +39,6 @@ const (
 type Option = config.Option
 
 var (
-	// WithCortexFQDN is an option to set the Cortex FQDN.
-	WithCortexFQDN = config.WithCortexFQDN
 	// WithCortexAPIURL is an option to set the Cortex API URL.
 	WithCortexAPIURL = config.WithCortexAPIURL
 	// WithCortexAPIKey is an option to set the Cortex API key.
@@ -88,28 +87,32 @@ func (c *Client) ValidateAPIKey(ctx context.Context) (bool, error) {
 
 // NewClient returns a new client for this namespace.
 func NewClient(opts ...Option) (*Client, error) {
+	// Prepend User-Agent option if not already set
+	userAgentOpt := config.WithAgent(version.UserAgent(ModuleName))
+	opts = append([]config.Option{userAgentOpt}, opts...)
+
 	cfg := config.NewConfig(opts...)
 	internalClient, err := client.NewClientFromConfig(cfg)
 	return &Client{internalClient: internalClient}, err
 }
 
 // NewClientFromFile creates a new client from a configuration file.
-func NewClientFromFile(filepath string, checkEnvironment bool) (*Client, error) {
-	config, err := config.NewConfigFromFile(filepath, checkEnvironment)
+func NewClientFromFile(filepath string) (*Client, error) {
+	config, err := config.NewConfigFromFile(filepath)
 	if err != nil {
 		return nil, err
 	}
 	return NewClient(config.GetOptions()...)
 }
 
-// FQDN returns the FQDN of the Cortex tenant.
-func (c *Client) FQDN() string { return c.internalClient.FQDN() }
-
 // APIURL returns the API URL for the Cortex.
 func (c *Client) APIURL() string { return c.internalClient.APIURL() }
 
 // APIKeyType returns the Cortex API key type.
 func (c *Client) APIKeyType() string { return c.internalClient.APIKeyType() }
+
+// APIKeyID returns the Cortex API key ID.
+func (c *Client) APIKeyID() int { return c.internalClient.APIKeyID() }
 
 // SkipSSLVerify returns whether to skip TLS certificate verification.
 func (c *Client) SkipSSLVerify() bool { return c.internalClient.SkipSSLVerify() }

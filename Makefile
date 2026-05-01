@@ -78,24 +78,34 @@ format: ## Format all Go source files.
 # DO NOT CHANGE THIS ORDER
 tidy: ## Tidy all go.mod files.
 	@echo "Tidying all modules..."
-	@echo "    - Base modules"
-	@echo "        - log"
+	@echo "  - Utility modules"
+	@echo "    - version"
+	@(cd ./version && rm -f go.sum && go mod tidy)
+	@echo "    - log"
 	@(cd ./log && rm -f go.sum && go mod tidy)
-	@echo "        - errors"
+	@echo "    - errors"
 	@(cd ./errors && rm -f go.sum && go mod tidy)
-	@echo "        - enums"
+	@echo "    - enums"
 	@(cd ./enums && rm -f go.sum && go mod tidy)
-	@echo "    - Core modules"
-	@echo "        - types"
+	@echo "  - Core modules"
+	@echo "    - types"
 	@(cd ./types && rm -f go.sum && go mod tidy)
-	@echo "        - internal/config"
+	@echo "    - internal/config"
 	@(cd ./internal/config && rm -f go.sum && go mod tidy)
-	@echo "        - internal/client"
+	@echo "    - internal/client"
 	@(cd ./internal/client && rm -f go.sum && go mod tidy)
-	@echo "    - Feature/API modules"
-	@echo "        - cloudonboarding"
+	@echo "    - internal/tests"
+	@(cd ./internal/tests && rm -f go.sum && go mod tidy)
+	@echo "  - API modules"
+	@echo "    - appsec"
+	@(cd ./appsec && rm -f go.sum && go mod tidy)
+	@echo "    - cloudonboarding"
 	@(cd ./cloudonboarding && rm -f go.sum && go mod tidy)
-	@echo "        - platform"
+	@echo "    - cwp"
+	@(cd ./cwp && rm -f go.sum && go mod tidy)
+	@echo "    - compliance"
+	@(cd ./compliance && rm -f go.sum && go mod tidy)
+	@echo "    - platform"
 	@(cd ./platform && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
 

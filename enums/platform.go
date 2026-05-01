@@ -37,8 +37,8 @@ func AllAssetGroupTypes() []string {
 
 // ContainsAssetGroupType checks if the given string is a valid AssetGroupType.
 func ContainsAssetGroupType(s string) bool {
-	for _, policyType := range allAssetGroupTypes {
-		if string(policyType) == s {
+	for _, assetGroupType := range allAssetGroupTypes {
+		if string(assetGroupType) == s {
 			return true // Includes empty string check
 		}
 	}

@@ -5,26 +5,11 @@ package platform
 
 import (
 	"os"
-	//"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-//func TestBuildInfo(t *testing.T) {
-//	if os.Getenv("CI") == "" {
-//		t.Skip("Skipping build info test on local machine.")
-//	}
-//	expectedGitCommit := "test123"
-//	expectedGoVersion := runtime.Version()
-//	expectedBuildDate := "0000-00-00T00:00:00+0000"
-//
-//	t.Run("should return expected build info", func(t *testing.T) {
-//		assert.Equal(t, expectedGitCommit, GitCommit)
-//		assert.Equal(t, expectedGoVersion, GoVersion)
-//		assert.Equal(t, expectedBuildDate, BuildDate)
-//	})
-//}
 
 func TestNewClient(t *testing.T) {
 	t.Run("should create new client with valid config", func(t *testing.T) {
@@ -33,9 +18,11 @@ func TestNewClient(t *testing.T) {
 			WithCortexAPIKey("test-key"),
 			WithCortexAPIKeyID(123),
 		)
-		assert.NoError(t, err)
-		assert.NotNil(t, client)
-		assert.NotNil(t, client.internalClient)
+		require.NoError(t, err)
+		require.NotNil(t, client)
+		assert.Equal(t, "https://api.example.com", client.APIURL())
+		assert.Equal(t, 123, client.APIKeyID())
+		assert.Equal(t, "advanced", client.APIKeyType())
 	})
 }
 
@@ -45,7 +32,8 @@ func TestNewClientFromFile(t *testing.T) {
 		content := []byte(`{
 			"api_url": "https://api.from.file",
 			"api_key": "key-from-file",
-			"api_key_id": 456
+			"api_key_id": 456,
+			"api_key_type": "standard"
 		}`)
 		tmpfile, err := os.CreateTemp("", "test-config-*.json")
 		if err != nil {
@@ -61,14 +49,16 @@ func TestNewClientFromFile(t *testing.T) {
 		}
 
 		// Create client from file
-		client, err := NewClientFromFile(tmpfile.Name(), false)
-		assert.NoError(t, err)
-		assert.NotNil(t, client)
-		assert.NotNil(t, client.internalClient)
+		client, err := NewClientFromFile(tmpfile.Name())
+		require.NoError(t, err)
+		require.NotNil(t, client)
+		assert.Equal(t, "https://api.from.file", client.APIURL())
+		assert.Equal(t, 456, client.APIKeyID())
+		assert.Equal(t, "standard", client.APIKeyType())
 	})
 
 	t.Run("should return error for non-existent file", func(t *testing.T) {
-		client, err := NewClientFromFile("/non/existent/file.json", false)
+		client, err := NewClientFromFile("/non/existent/file.json")
 		assert.Error(t, err)
 		assert.Nil(t, client)
 	})

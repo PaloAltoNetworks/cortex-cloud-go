@@ -1,12 +1,19 @@
 go 1.25.0
 
 use (
+	./appsec
 	./cloudonboarding
+	./cloudsec
+	./compliance
+	./cwp
 	./enums
 	./errors
 	./internal/client
 	./internal/config
+	./internal/tests
 	./log
 	./platform
 	./types
+	./version
+	./vulnerability
 )
