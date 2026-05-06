@@ -1,3 +1,12 @@
+github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.4/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
+github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.4/go.mod h1:DneG5OMxCK1fyoXWy2fiKKsruKdu8JjB+94zQTS2TsU=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.4/go.mod h1:54LnqTZEsyuZtcf7wA8zYqsNP+gnsF+v1+6eC2JYOHI=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.4/go.mod h1:rD8WkCberjmrymzBxbsxImeMv5cxpdb1HvTIXpyX79M=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.5/go.mod h1:rD8WkCberjmrymzBxbsxImeMv5cxpdb1HvTIXpyX79M=
+github.com/PaloAltoNetworks/cortex-cloud-go/internal/tests v1.0.4/go.mod h1:xJ5WF3qyvkJMX1F4dZBouObzGAblzSAfHghQeDBXL1g=
+github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.4/go.mod h1:ayOoRk1kNc5KHj6otxGQGeMbKj10Gk6smV3bZCXx3OQ=
+github.com/PaloAltoNetworks/cortex-cloud-go/types v1.0.4/go.mod h1:Ryoply+tmkxWTgE/Qmb0UCpwZD5Nr5xcP1baBvUzB5U=
+github.com/PaloAltoNetworks/cortex-cloud-go/version v1.0.4/go.mod h1:h+Yu0LIEhNMAI9wGouDDwX3k8CUwD9Ct9hQIMHpu/YQ=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=

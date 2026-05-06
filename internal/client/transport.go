@@ -5,7 +5,7 @@ package client
 
 import (
 	"bytes"
-	"context" // Import context
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,10 +13,7 @@ import (
 	"strings"
 )
 
-// InternalClient is an interface that the transport layer uses to interact
-// with the core client's logging and validation settings.
-// This interface allows for a clean separation of concerns and avoids direct
-// dependency on the concrete Client struct, promoting testability.
+// InternalClient abstracts the core client's logging and log-level settings.
 type InternalClient interface {
 	LogLevelIsSetTo(string) bool
 	Log(ctx context.Context, level, msg string)
@@ -27,38 +24,48 @@ type transport struct {
 	client    InternalClient
 }
 
-// RoundTrip implements the http.RoundTripper interface.
-// It logs HTTP requests and responses based on the client's configured log level.
+// sensitiveRequestHeaders lists header names whose values are redacted in debug logs.
+var sensitiveRequestHeaders = map[string]struct{}{
+	"Authorization": {},
+	"X-Xdr-Auth-Id": {},
+}
+
+// sensitiveResponseHeaders lists response header names whose values are redacted in debug logs.
+var sensitiveResponseHeaders = map[string]struct{}{
+	"Set-Cookie":    {},
+	"Authorization": {},
+}
+
+const redactedValue = "[REDACTED]"
+
+// RoundTrip implements http.RoundTripper, logging requests and responses at debug level.
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	requestID := GetRequestID(ctx)
 
-	// Check if debug-level logging is enabled for detailed request/response dumps.
 	logLevelIsDebug := t.client.LogLevelIsSetTo("debug")
 
-	// Log request as debug message
 	if logLevelIsDebug {
 		reqData, err := httputil.DumpRequestOut(req, true)
 		if err == nil {
-			t.client.Log(ctx, "debug", fmt.Sprintf(logReqMsg, requestID, prettyPrintJsonLines(reqData)))
+			redacted := redactSensitiveHeaders(reqData, sensitiveRequestHeaders)
+			t.client.Log(ctx, "debug", fmt.Sprintf(logReqMsg, requestID, prettyPrintJsonLines(redacted)))
 		} else {
 			t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] Failed to dump HTTP request: %v", err))
 		}
 	}
 
-	// Execute request
 	resp, err := t.transport.RoundTrip(req)
 	if err != nil {
-		// Log network/transport errors at the "error" level.
 		t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] [%s] HTTP request failed: %v", requestID, err))
 		return resp, err
 	}
 
-	// Log response as debug message
 	if logLevelIsDebug {
 		respData, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			t.client.Log(ctx, "debug", fmt.Sprintf(logRespMsg, requestID, prettyPrintJsonLines(respData)))
+			redacted := redactSensitiveHeaders(respData, sensitiveResponseHeaders)
+			t.client.Log(ctx, "debug", fmt.Sprintf(logRespMsg, requestID, prettyPrintJsonLines(redacted)))
 		} else {
 			t.client.Log(ctx, "error", fmt.Sprintf("[ERROR] Failed to dump HTTP response: %v", err))
 		}
@@ -67,17 +74,47 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-// NewTransport creates a wrapper around an http.RoundTripper,
-// designed to be used for the `Transport` field of http.Client.
-//
-// This logs each pair of HTTP request/response that it handles.
-// The logging is done via the `InternalClient` interface.
+// NewTransport wraps t with debug-level request/response logging via client.
 func NewTransport(t http.RoundTripper, client InternalClient) *transport {
 	return &transport{t, client}
 }
 
-// prettyPrintJsonLines iterates through a []byte line-by-line,
-// transforming any lines that are complete JSON into pretty-printed JSON.
+// redactSensitiveHeaders replaces the value of any header in dump whose name
+// (case-insensitive) appears in sensitive with redactedValue. Only the header
+// section (before \r\n\r\n) is scanned; body bytes are never modified. Returns
+// dump unchanged if no header terminator is found.
+func redactSensitiveHeaders(dump []byte, sensitive map[string]struct{}) []byte {
+	const headerEnd = "\r\n\r\n"
+
+	bodyStart := bytes.Index(dump, []byte(headerEnd))
+	if bodyStart < 0 {
+		return dump
+	}
+
+	headerSection := dump[:bodyStart]
+	rest := dump[bodyStart:]
+
+	lines := bytes.Split(headerSection, []byte("\r\n"))
+	for i, line := range lines {
+		if i == 0 { // skip the request/status line
+			continue
+		}
+		colon := bytes.IndexByte(line, ':')
+		if colon <= 0 {
+			continue
+		}
+		name := string(bytes.TrimSpace(line[:colon]))
+		if _, isSensitive := sensitive[http.CanonicalHeaderKey(name)]; !isSensitive {
+			continue
+		}
+		lines[i] = []byte(name + ": " + redactedValue)
+	}
+
+	out := bytes.Join(lines, []byte("\r\n"))
+	return append(out, rest...)
+}
+
+// prettyPrintJsonLines pretty-prints any line in b that is valid JSON.
 func prettyPrintJsonLines(b []byte) string {
 	parts := strings.Split(string(b), "\n")
 	for i, p := range parts {

@@ -145,6 +145,7 @@ type internalClientAdapter struct {
 // logLevelStringToInt maps string log levels to an integer for comparison.
 // Higher integer means higher severity.
 // This helper is internal to the logging logic.
+// TODO: change log level consts to iotas
 func logLevelStringToInt(level string) int {
 	switch strings.ToLower(level) {
 	case "quiet":
