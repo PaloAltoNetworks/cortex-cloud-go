@@ -2,7 +2,7 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/internal/tests
 
 go 1.25.0
 
-require github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.4
+require github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.5
 
 require (
 	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.4 // indirect
