@@ -518,6 +518,10 @@ func TestAccPolicy_Pagination(t *testing.T) {
 	})
 }
 
+// TestAccPolicy_CreateDisabledBugDetection tests for the known bug where
+// the enabled field is ignored during policy creation. This test should FAIL when
+// the bug is fixed and the workaround in the Create() function of the
+// Terraform resource is no longer needed. See CRTX-228580 for more information.
 func TestAccPolicy_CreateDisabledBugDetection(t *testing.T) {
 	skipIfNotAcceptance(t)
 
@@ -553,5 +557,5 @@ func TestAccPolicy_CreateDisabledBugDetection(t *testing.T) {
 		t.Fatalf("Get failed: %v", err)
 	}
 
-	require.True(t, policy.Enabled, "policy should be created in the enabled state")
+	require.True(t, policy.Enabled, "policy should be created in the enabled state -- check if the upstream API bug has been fixed!")
 }

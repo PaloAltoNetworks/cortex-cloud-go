@@ -62,6 +62,8 @@ func fullTriggers() types.PolicyTriggers {
 	}
 }
 
+// q2ExcessPropertyResponseBody mimics the exact 422 ValidateError shape
+// returned by Q2 stage-x5 when ciImage / imageRegistry are sent.
 const q2ExcessPropertyResponseBody = `{
   "errorCode": "VALIDATION_ERROR",
   "message": "Validation failed",
@@ -71,6 +73,8 @@ const q2ExcessPropertyResponseBody = `{
   }
 }`
 
+// unrelatedValidationResponseBody is a 422 that does NOT mention
+// ciImage / imageRegistry — used to verify we do not retry.
 const unrelatedValidationResponseBody = `{
   "errorCode": "VALIDATION_ERROR",
   "message": "Validation failed",
@@ -150,6 +154,7 @@ func TestCreatePolicy_Q2RetryOmitsCIImageAndImageRegistry(t *testing.T) {
 		switch n {
 		case 1:
 			firstBody = body
+			// Q2 rejects the 5-trigger payload as excess properties.
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprint(w, q2ExcessPropertyResponseBody)
 		case 2:
@@ -234,6 +239,10 @@ func TestCreatePolicy_NoRetryOnNon422Error(t *testing.T) {
 
 	_, err := client.CreatePolicy(context.Background(), validCreateRequest())
 	assert.Error(t, err)
+	// 500 may be retried by the internal HTTP client but never by our
+	// legacy-trigger code path. Assert that the error path did not double
+	// the call count due to OUR retry: at most the internal retries
+	// configured on the client (default behaviour).
 	got := calls.Load()
 	assert.LessOrEqual(t, got, int32(4), "no extra legacy-trigger retry expected")
 	assert.GreaterOrEqual(t, got, int32(1), "request must be attempted at least once")
@@ -305,6 +314,10 @@ func TestUpdatePolicy_NoRetryOnUnrelatedValidationError(t *testing.T) {
 }
 
 func TestUpdatePolicy_NoRetryWhenTriggersNil(t *testing.T) {
+	// Even if the API returns a Q2-style excess-property error, when the
+	// caller did not include any triggers payload there is nothing
+	// meaningful to retry — we should pass the original error through
+	// rather than spuriously rebuilding the body.
 	var calls atomic.Int32
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -156,6 +156,17 @@ func (t PolicyTriggers) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// marshalPolicyTriggersLegacy emits ONLY periodic / pr / cicd, omitting
+// ciImage and imageRegistry. Used internally by the appsec client to retry
+// CREATE/UPDATE on tenants whose API does not yet support the new triggers
+// (e.g. Q2 release-train) — the API rejects the new keys as excess properties
+// with HTTP 422 ValidateError.
+//
+// This helper is intentionally NOT a method on PolicyTriggers (and NOT
+// exported) to keep it invisible to public SDK consumers. The public
+// MarshalJSON above continues to emit all five trigger keys unconditionally.
+//
+// Relates to CRTX-245320.
 func marshalPolicyTriggersLegacy(t PolicyTriggers) ([]byte, error) {
 	type periodicActions struct {
 		ReportIssue bool `json:"reportIssue"`
@@ -208,14 +219,34 @@ func marshalPolicyTriggersLegacy(t PolicyTriggers) ([]byte, error) {
 	})
 }
 
+// MarshalCreatePolicyRequestLegacy serializes a CreatePolicyRequest using the
+// 3-trigger payload (no ciImage, no imageRegistry). Exported for use by the
+// appsec client retry path; not intended for direct use by SDK consumers.
+//
+// Relates to CRTX-245320.
 func MarshalCreatePolicyRequestLegacy(input CreatePolicyRequest) ([]byte, error) {
 	return marshalPolicyRequestWithLegacyTriggers(input)
 }
 
+// MarshalUpdatePolicyRequestLegacy serializes an UpdatePolicyRequest using the
+// 3-trigger payload (no ciImage, no imageRegistry). When input.Triggers is
+// nil, the resulting body has no "triggers" field at all. Exported for use
+// by the appsec client retry path; not intended for direct use by SDK
+// consumers.
+//
+// Relates to CRTX-245320.
 func MarshalUpdatePolicyRequestLegacy(input UpdatePolicyRequest) ([]byte, error) {
 	return marshalPolicyRequestWithLegacyTriggers(input)
 }
 
+// marshalPolicyRequestWithLegacyTriggers serializes a request struct, then
+// rewrites the "triggers" field (if present) using the legacy 3-trigger
+// shape. The strategy is: marshal the struct normally (which uses the public
+// PolicyTriggers.MarshalJSON), unmarshal into a generic map, then overwrite
+// the triggers entry with the legacy bytes, and re-marshal.
+//
+// This lets us reuse all the per-field omitempty / required-presence rules
+// from the request struct tags while only mutating the triggers shape.
 func marshalPolicyRequestWithLegacyTriggers(input any) ([]byte, error) {
 	full, err := json.Marshal(input)
 	if err != nil {
@@ -227,6 +258,9 @@ func marshalPolicyRequestWithLegacyTriggers(input any) ([]byte, error) {
 		return nil, err
 	}
 
+	// Replace triggers field if it was emitted. UpdatePolicyRequest uses
+	// *PolicyTriggers with omitempty, so a nil triggers field is simply
+	// absent from the map — which is the correct behaviour (don't add it).
 	if _, ok := asMap["triggers"]; ok {
 		triggers := extractPolicyTriggers(input)
 		legacyTriggers, err := marshalPolicyTriggersLegacy(triggers)
@@ -311,6 +345,9 @@ type PolicyFindingTypes struct {
 // ---------------------------
 
 // CreatePolicyRequest handles input for the CreatePolicy function.
+// Note: The POST endpoint rejects "developerSuppressionAffects" as an excess
+// property, so it is intentionally excluded from this struct. Use the UPDATE
+// endpoint (PUT) to set it after creation.
 type CreatePolicyRequest struct {
 	Name          string          `json:"name"`
 	Description   string          `json:"description,omitempty"`

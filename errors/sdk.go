@@ -37,6 +37,8 @@ type CortexCloudSdkError struct {
 
 // Error implements the error interface for CortexCloudSdkError.
 // It returns a formatted string representation of the error.
+// TODO: add optional pretty-print logic
+// TODO: add optional to toggle including underlying errors (should be off by default)
 func (e *CortexCloudSdkError) Error() string {
 	if e == nil {
 		return "unknown"
@@ -52,6 +54,7 @@ func (e *CortexCloudSdkError) Error() string {
 		err        error
 	)
 	if detailsStr, err = e.DetailsToJSON(); err != nil {
+		// TODO: is there a better way to handle this?
 		detailsStr = ""
 	}
 
@@ -60,6 +63,7 @@ func (e *CortexCloudSdkError) Error() string {
 		errorStr   string
 	)
 	if e.Err != nil {
+		// TODO: fix this returning "{}"
 		if errorBytes, err = json.Marshal(e.Err.Error()); err != nil {
 			errorStr = "unknown"
 		}

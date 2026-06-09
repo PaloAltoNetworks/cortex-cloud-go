@@ -69,7 +69,8 @@ type GetAssessmentProfileResponse struct {
 type ListAssessmentProfilesRequest struct {
 	Filters    []Filter    `json:"filters,omitempty"`
 	Sort       *SortFilter `json:"sort,omitempty"`
-	Pagination *Pagination `json:"pagination,omitempty"`
+	SearchFrom *int        `json:"search_from,omitempty"`
+	SearchTo   *int        `json:"search_to,omitempty"`
 }
 
 // Filter represents a filter condition for compliance API queries.
@@ -92,7 +93,13 @@ type ListAssessmentProfilesResponse struct {
 	AssessmentProfiles []AssessmentProfile `json:"assessment_profiles"`
 }
 
-// Pagination represents pagination parameters.
+// Pagination is retained as a no-op deprecation shim. The compliance
+// List*Request structs no longer wrap pagination in a nested object; set
+// SearchFrom and SearchTo on the request directly instead.
+//
+// Deprecated: use ListAssessmentProfilesRequest.SearchFrom / .SearchTo (and
+// the equivalent root-level fields on ListStandardsRequest and
+// ListControlsRequest). This type will be removed in a future major release.
 type Pagination struct {
 	SearchFrom int `json:"search_from,omitempty"`
 	SearchTo   int `json:"search_to,omitempty"`

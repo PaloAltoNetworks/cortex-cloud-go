@@ -62,7 +62,8 @@ type GetStandardResponse struct {
 type ListStandardsRequest struct {
 	Filters    []Filter    `json:"filters,omitempty"`
 	Sort       *SortFilter `json:"sort,omitempty"`
-	Pagination *Pagination `json:"pagination,omitempty"`
+	SearchFrom *int        `json:"search_from,omitempty"`
+	SearchTo   *int        `json:"search_to,omitempty"`
 }
 
 // ListStandardsResponse is the response for listing standards.

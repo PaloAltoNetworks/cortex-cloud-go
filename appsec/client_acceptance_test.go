@@ -17,6 +17,7 @@ package appsec
 //)
 //
 //func setupAcceptanceTest(t *testing.T) *Client {
+//	// TODO: parameterize
 //	client, err := NewClient(
 //		WithCortexAPIURL(""),
 //		WithCortexAPIKey(""),

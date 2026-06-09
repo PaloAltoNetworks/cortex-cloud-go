@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
+	util "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -334,9 +335,10 @@ func TestClient_ListStandards(t *testing.T) {
 			var req requestWrapper
 			err := json.NewDecoder(r.Body).Decode(&req)
 			require.NoError(t, err)
-			require.NotNil(t, req.RequestData.Pagination)
-			assert.Equal(t, 0, req.RequestData.Pagination.SearchFrom)
-			assert.Equal(t, 24, req.RequestData.Pagination.SearchTo)
+			require.NotNil(t, req.RequestData.SearchFrom)
+			require.NotNil(t, req.RequestData.SearchTo)
+			assert.Equal(t, 0, *req.RequestData.SearchFrom)
+			assert.Equal(t, 24, *req.RequestData.SearchTo)
 			require.NotNil(t, req.RequestData.Sort)
 			assert.Equal(t, "insertion_time", req.RequestData.Sort.Field)
 			assert.Equal(t, "desc", req.RequestData.Sort.Keyword)
@@ -348,10 +350,8 @@ func TestClient_ListStandards(t *testing.T) {
 		defer server.Close()
 
 		listReq := types.ListStandardsRequest{
-			Pagination: &types.Pagination{
-				SearchFrom: 0,
-				SearchTo:   24,
-			},
+			SearchFrom: util.ToPointer(0),
+			SearchTo:   util.ToPointer(24),
 			Sort: &types.SortFilter{
 				Field:   "insertion_time",
 				Keyword: "desc",
