@@ -183,9 +183,13 @@ func (r ListRequest) ToQueryValues() url.Values {
 }
 
 // ListResponse handles the output for the List function.
+//
+// NextOffset is nil on the final page; otherwise it is the offset to send
+// on the next list request to advance pagination.
 type ListResponse struct {
-	Offset float64 `json:"offset"`
-	Rules  []Rule  `json:"rules"`
+	Offset     float64 `json:"offset"`
+	NextOffset *int    `json:"nextOffset"`
+	Rules      []Rule  `json:"rules"`
 }
 
 // UpdateRequest handles input for the Update function.

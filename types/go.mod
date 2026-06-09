@@ -3,8 +3,8 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/types
 go 1.25.0
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.4
-	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.4
+	github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.7
+	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.7
 )
 
 require (

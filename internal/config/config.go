@@ -228,7 +228,7 @@ func (c Config) Validate() error {
 	}
 
 	if c.cortexAPIKeyID < 0 {
-		return fmt.Errorf("Invalid API key ID: must be a positive integer")
+		return fmt.Errorf("Invalid API key ID: %d", c.cortexAPIKeyID)
 	}
 
 	if c.cortexAPIKeyType != "standard" && c.cortexAPIKeyType != "advanced" {

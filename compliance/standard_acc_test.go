@@ -13,6 +13,7 @@ import (
 	"time"
 
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
+	util "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -139,10 +140,8 @@ func TestAccStandardLifecycle(t *testing.T) {
 				Value:    updatedStandardName,
 			},
 		},
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   10,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	filteredListResp, err := client.ListStandards(ctx, listWithFilterReq)
@@ -170,10 +169,8 @@ func TestAccStandardList(t *testing.T) {
 
 	// Test basic list without filters
 	listReq := types.ListStandardsRequest{
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   5,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(5),
 	}
 
 	listResp, err := client.ListStandards(ctx, listReq)
@@ -210,10 +207,8 @@ func TestAccStandardFilterByLabels(t *testing.T) {
 				Value:    "aws",
 			},
 		},
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   10,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	listResp, err := client.ListStandards(ctx, listReq)
@@ -245,10 +240,8 @@ func TestAccStandardSorting(t *testing.T) {
 			Field:   "insertion_time",
 			Keyword: "desc",
 		},
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   10,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	listResp, err := client.ListStandards(ctx, listReq)
@@ -282,10 +275,8 @@ func TestAccStandardFilterByCustom(t *testing.T) {
 				Value:    []string{"no"},
 			},
 		},
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   5,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(5),
 	}
 
 	listResp, err := client.ListStandards(ctx, listReq)

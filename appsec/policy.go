@@ -21,11 +21,19 @@ import (
 //
 // Policies define conditions for when findings should trigger actions.
 // Scope and AssetGroupIds are mutually exclusive - use one or the other.
+//
+// On legacy stacks (e.g. Q2 release-train) the API rejects the new
+// "ciImage" and "imageRegistry" trigger keys as excess properties with
+// HTTP 422 ValidateError. When this specific error is detected, the call
+// is silently retried with the legacy 3-trigger payload (periodic / pr /
+// cicd only). The retry is invisible to SDK consumers; only the standard
+// CreatePolicy(input) signature is exposed.
 func (c *Client) CreatePolicy(ctx context.Context, input types.CreatePolicyRequest) (types.Policy, error) {
 	pol, err := c.createPolicyOnce(ctx, input, false /* legacyMode */)
 	if err != nil && isLegacyTriggerExcessPropertyError(err) {
 		c.internalClient.Logger().Debug(ctx,
-			"AppSec Policy CREATE rejected new trigger keys (ciImage/imageRegistry); retrying with legacy 3-trigger payload")
+			"AppSec Policy CREATE rejected new trigger keys (ciImage/imageRegistry); "+
+				"retrying with legacy 3-trigger payload")
 		return c.createPolicyOnce(ctx, input, true /* legacyMode */)
 	}
 	return pol, err
@@ -65,11 +73,19 @@ func (c *Client) ListPolicies(ctx context.Context, input types.ListPoliciesReque
 // UpdatePolicy updates an existing Application Security policy.
 //
 // All fields in the request are optional. Only provided fields will be updated.
+//
+// On legacy stacks (e.g. Q2 release-train) the API rejects the new
+// "ciImage" and "imageRegistry" trigger keys as excess properties with
+// HTTP 422 ValidateError. When this specific error is detected and the
+// request actually included a triggers payload, the call is silently
+// retried with the legacy 3-trigger payload (periodic / pr / cicd only).
+//
 func (c *Client) UpdatePolicy(ctx context.Context, policyID string, input types.UpdatePolicyRequest) (types.Policy, error) {
 	pol, err := c.updatePolicyOnce(ctx, policyID, input, false /* legacyMode */)
 	if err != nil && input.Triggers != nil && isLegacyTriggerExcessPropertyError(err) {
 		c.internalClient.Logger().Debug(ctx,
-			"AppSec Policy UPDATE rejected new trigger keys (ciImage/imageRegistry); retrying with legacy 3-trigger payload")
+			"AppSec Policy UPDATE rejected new trigger keys (ciImage/imageRegistry); "+
+				"retrying with legacy 3-trigger payload")
 		return c.updatePolicyOnce(ctx, policyID, input, true /* legacyMode */)
 	}
 	return pol, err
@@ -156,6 +172,13 @@ func (m jsonRawMessage) MarshalJSON() ([]byte, error) {
 // *errors.CortexCloudAPIError whose Details.Fields map contains a key
 // referencing the new "ciImage" or "imageRegistry" trigger keys with a
 // message indicating an excess-property rejection.
+//
+// Examples of legacy-stack rejections (Q2):
+//
+//	"policy.triggers.ciImage":       { "message": "'ciImage' is not a valid property" }
+//	"policy.triggers.imageRegistry": { "message": "extra fields not permitted" }
+//
+//
 func isLegacyTriggerExcessPropertyError(err error) bool {
 	if err == nil {
 		return false
