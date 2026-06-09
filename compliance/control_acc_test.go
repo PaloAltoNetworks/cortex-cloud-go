@@ -13,6 +13,7 @@ import (
 	"time"
 
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
+	util "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -125,8 +126,8 @@ func TestAccControlLifecycle(t *testing.T) {
 				Value:    updatedControlName,
 			},
 		},
-		SearchFrom: 0,
-		SearchTo:   10,
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	filteredListResp, err := client.ListControls(ctx, listWithFilterReq)
@@ -154,8 +155,8 @@ func TestAccControlList(t *testing.T) {
 
 	// Test basic list without filters
 	listReq := types.ListControlsRequest{
-		SearchFrom: 0,
-		SearchTo:   5,
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(5),
 	}
 
 	listResp, err := client.ListControls(ctx, listReq)
@@ -198,8 +199,8 @@ func TestAccControlFilterByCategory(t *testing.T) {
 				Value:    category,
 			},
 		},
-		SearchFrom: 0,
-		SearchTo:   10,
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	listResp, err := client.ListControls(ctx, listReq)
@@ -224,8 +225,8 @@ func TestAccControlSorting(t *testing.T) {
 			Field:   "creation_time",
 			Keyword: "desc",
 		},
-		SearchFrom: 0,
-		SearchTo:   10,
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	listResp, err := client.ListControls(ctx, listReq)
@@ -259,8 +260,8 @@ func TestAccControlFilterByCustom(t *testing.T) {
 				Value:    []string{"no"},
 			},
 		},
-		SearchFrom: 0,
-		SearchTo:   5,
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(5),
 	}
 
 	listResp, err := client.ListControls(ctx, listReq)

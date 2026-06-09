@@ -79,8 +79,8 @@ type GetControlResponse struct {
 type ListControlsRequest struct {
 	Filters    []Filter    `json:"filters,omitempty"`
 	Sort       *SortFilter `json:"sort,omitempty"`
-	SearchFrom int         `json:"search_from,omitempty"`
-	SearchTo   int         `json:"search_to,omitempty"`
+	SearchFrom *int        `json:"search_from,omitempty"`
+	SearchTo   *int        `json:"search_to,omitempty"`
 }
 
 // ListControlsResponse is the response for listing controls.

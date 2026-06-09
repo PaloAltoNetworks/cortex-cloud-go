@@ -49,6 +49,8 @@ func fullTriggersForLegacyTests() PolicyTriggers {
 	}
 }
 
+// TestMarshalPolicyTriggersLegacy_OmitsNewKeys verifies the private legacy
+// marshaler emits only periodic / pr / cicd.
 func TestMarshalPolicyTriggersLegacy_OmitsNewKeys(t *testing.T) {
 	data, err := marshalPolicyTriggersLegacy(fullTriggersForLegacyTests())
 	if err != nil {
@@ -81,6 +83,8 @@ func TestMarshalPolicyTriggersLegacy_OmitsNewKeys(t *testing.T) {
 	}
 }
 
+// TestMarshalJSON_StillEmitsAllFiveKeys confirms the public PolicyTriggers
+// MarshalJSON behaviour is unchanged.
 func TestMarshalJSON_StillEmitsAllFiveKeys(t *testing.T) {
 	data, err := json.Marshal(fullTriggersForLegacyTests())
 	if err != nil {

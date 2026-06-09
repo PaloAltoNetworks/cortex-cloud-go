@@ -14,6 +14,7 @@ import (
 	"time"
 
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
+	util "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -53,10 +54,8 @@ func TestAccAssessmentProfileLifecycle(t *testing.T) {
 	// First, we need to get a valid standard ID and asset group ID
 	// List standards to get a valid standard ID
 	listStandardsReq := types.ListStandardsRequest{
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   1,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(1),
 	}
 	standardsResp, err := client.ListStandards(ctx, listStandardsReq)
 	require.NoError(t, err, "failed to list standards")
@@ -227,10 +226,8 @@ func TestAccAssessmentProfileLifecycle(t *testing.T) {
 				Value:    updatedProfileName,
 			},
 		},
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   10,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	filteredListResp, err := client.ListAssessmentProfiles(ctx, listWithFilterReq)
@@ -257,10 +254,8 @@ func TestAccAssessmentProfileList(t *testing.T) {
 
 	// Test basic list without filters
 	listReq := types.ListAssessmentProfilesRequest{
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   5,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(5),
 	}
 
 	listResp, err := client.ListAssessmentProfiles(ctx, listReq)
@@ -294,10 +289,8 @@ func TestAccAssessmentProfileSorting(t *testing.T) {
 			Field:   "creation_time",
 			Keyword: "desc",
 		},
-		Pagination: &types.Pagination{
-			SearchFrom: 0,
-			SearchTo:   10,
-		},
+		SearchFrom: util.ToPointer(0),
+		SearchTo:   util.ToPointer(10),
 	}
 
 	listResp, err := client.ListAssessmentProfiles(ctx, listReq)

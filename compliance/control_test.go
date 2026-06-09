@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	types "github.com/PaloAltoNetworks/cortex-cloud-go/types/compliance"
+	util "github.com/PaloAltoNetworks/cortex-cloud-go/types/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -328,8 +329,10 @@ func TestClient_ListControls(t *testing.T) {
 			var req requestWrapper
 			err := json.NewDecoder(r.Body).Decode(&req)
 			require.NoError(t, err)
-			assert.Equal(t, 0, req.RequestData.SearchFrom)
-			assert.Equal(t, 49, req.RequestData.SearchTo)
+			require.NotNil(t, req.RequestData.SearchFrom)
+			require.NotNil(t, req.RequestData.SearchTo)
+			assert.Equal(t, 0, *req.RequestData.SearchFrom)
+			assert.Equal(t, 49, *req.RequestData.SearchTo)
 			require.NotNil(t, req.RequestData.Sort)
 			assert.Equal(t, "creation_time", req.RequestData.Sort.Field)
 			assert.Equal(t, "desc", req.RequestData.Sort.Keyword)
@@ -341,8 +344,8 @@ func TestClient_ListControls(t *testing.T) {
 		defer server.Close()
 
 		listReq := types.ListControlsRequest{
-			SearchFrom: 0,
-			SearchTo:   49,
+			SearchFrom: util.ToPointer(0),
+			SearchTo:   util.ToPointer(49),
 			Sort: &types.SortFilter{
 				Field:   "creation_time",
 				Keyword: "desc",
