@@ -568,3 +568,70 @@ func findSubstring(s, substr string) bool {
 	}
 	return false
 }
+
+// TestHasContent verifies that HasContent correctly detects whether any
+// known error field was populated during JSON unmarshaling.
+func TestHasContent(t *testing.T) {
+	t.Run("empty struct has no content", func(t *testing.T) {
+		var e CortexCloudAPIError
+		if e.HasContent() {
+			t.Error("expected HasContent() == false for zero-value struct")
+		}
+	})
+
+	t.Run("unrecognised JSON keys produce no content", func(t *testing.T) {
+		// This is the exact scenario that caused CCTF-004/005: the API
+		// returns valid JSON with keys we don't map to any struct field.
+		var e CortexCloudAPIError
+		err := json.Unmarshal([]byte(`{"error":"something went wrong","status":400}`), &e)
+		if err != nil {
+			t.Fatalf("Unmarshal should succeed on valid JSON: %v", err)
+		}
+		if e.HasContent() {
+			t.Error("expected HasContent() == false when JSON keys don't match struct fields")
+		}
+	})
+
+	t.Run("empty JSON object produces no content", func(t *testing.T) {
+		var e CortexCloudAPIError
+		err := json.Unmarshal([]byte(`{}`), &e)
+		if err != nil {
+			t.Fatalf("Unmarshal should succeed on empty object: %v", err)
+		}
+		if e.HasContent() {
+			t.Error("expected HasContent() == false for empty JSON object")
+		}
+	})
+
+	t.Run("errorCode field produces content", func(t *testing.T) {
+		var e CortexCloudAPIError
+		_ = json.Unmarshal([]byte(`{"errorCode":"ValidateError","message":"Validation Failed"}`), &e)
+		if !e.HasContent() {
+			t.Error("expected HasContent() == true when errorCode is present")
+		}
+	})
+
+	t.Run("reply field produces content", func(t *testing.T) {
+		var e CortexCloudAPIError
+		_ = json.Unmarshal([]byte(`{"reply":{"err_code":500,"err_msg":"Internal error"}}`), &e)
+		if !e.HasContent() {
+			t.Error("expected HasContent() == true when reply is present")
+		}
+	})
+
+	t.Run("err_code field produces content", func(t *testing.T) {
+		var e CortexCloudAPIError
+		_ = json.Unmarshal([]byte(`{"err_code":400,"err_msg":"Bad Request"}`), &e)
+		if !e.HasContent() {
+			t.Error("expected HasContent() == true when err_code is present")
+		}
+	})
+
+	t.Run("data field produces content", func(t *testing.T) {
+		var e CortexCloudAPIError
+		_ = json.Unmarshal([]byte(`{"data":{"err_msg":"something"}}`), &e)
+		if !e.HasContent() {
+			t.Error("expected HasContent() == true when data is present")
+		}
+	})
+}

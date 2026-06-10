@@ -145,7 +145,6 @@ type internalClientAdapter struct {
 // logLevelStringToInt maps string log levels to an integer for comparison.
 // Higher integer means higher severity.
 // This helper is internal to the logging logic.
-// TODO: change log level consts to iotas
 func logLevelStringToInt(level string) int {
 	switch strings.ToLower(level) {
 	case "quiet":
@@ -359,14 +358,23 @@ func (c *Client) handleResponseStatus(ctx context.Context, statusCode int, body 
 	var apiError errors.CortexCloudAPIError
 	unmarshalErr := json.Unmarshal(body, &apiError)
 
-	if unmarshalErr == nil {
+	if unmarshalErr == nil && apiError.HasContent() {
 		return &apiError
-	} else {
+	}
+
+	// Either JSON unmarshaling failed, or it succeeded but none of the
+	// known error fields were populated (e.g. the API returned a JSON
+	// shape we don't recognise).  Fall back to including the raw HTTP
+	// status code and response body so the user always sees actionable
+	// diagnostic information.
+	if unmarshalErr != nil {
 		c.config.Logger().Error(ctx, fmt.Sprintf("Failed to unmarshal API error response (HTTP %d): %v, raw body: %s", statusCode, unmarshalErr, string(body)))
-		return &errors.CortexCloudAPIError{
-			Code:    types.ToPointer(errors.CodeAPIResponseParsingFailure),
-			Message: types.ToPointer(fmt.Sprintf("Failed to parse API error response (HTTP %d): %s", statusCode, string(body))),
-		}
+	} else {
+		c.config.Logger().Error(ctx, fmt.Sprintf("API error response (HTTP %d) did not match any known error format, raw body: %s", statusCode, string(body)))
+	}
+	return &errors.CortexCloudAPIError{
+		Code:    types.ToPointer(fmt.Sprintf("HTTP_%d", statusCode)),
+		Message: types.ToPointer(fmt.Sprintf("API error (HTTP %d): %s", statusCode, string(body))),
 	}
 }
 
