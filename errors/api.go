@@ -253,6 +253,24 @@ func NewCortexCloudAPIError(code string, message string, details CortexCloudAPIE
 	}
 }
 
+// HasContent reports whether at least one of the known error fields was
+// populated during JSON unmarshaling.  When json.Unmarshal succeeds on
+// valid JSON that uses none of the expected keys (e.g. `{"error":"msg"}`),
+// every pointer field stays nil and HasContent returns false.  Callers
+// should treat this as "unrecognised error format" and fall back to
+// including the raw HTTP response body so the user is never shown an
+// empty error.
+func (e CortexCloudAPIError) HasContent() bool {
+	return e.Reply != nil ||
+		e.Data != nil ||
+		e.Code != nil ||
+		e.Message != nil ||
+		e.Details != nil ||
+		e.ErrCode != nil ||
+		e.ErrMsg != nil ||
+		e.Metadata != nil
+}
+
 func (e CortexCloudAPIError) Error() string {
 	var sb strings.Builder
 
