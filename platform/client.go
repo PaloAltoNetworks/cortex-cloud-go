@@ -58,6 +58,11 @@ const (
 	// Syslog Integration Endpoints
 	CreateSyslogIntegrationEndpoint = "public_api/v1/integrations/syslog/create"
 	ListSyslogIntegrationsEndpoint  = "public_api/v1/integrations/syslog/get"
+
+	// BIOC (Behavioral Indicator of Compromise) Endpoints
+	InsertBIOCsEndpoint = "public_api/v1/bioc/insert"
+	ListBIOCsEndpoint   = "public_api/v1/bioc/get"
+	DeleteBIOCsEndpoint = "public_api/v1/bioc/delete"
 )
 
 // Option is a functional option for configuring the client.
