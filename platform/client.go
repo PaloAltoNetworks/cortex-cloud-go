@@ -58,6 +58,11 @@ const (
 	// Syslog Integration Endpoints
 	CreateSyslogIntegrationEndpoint = "public_api/v1/integrations/syslog/create"
 	ListSyslogIntegrationsEndpoint  = "public_api/v1/integrations/syslog/get"
+
+	// Indicator (IOC) Endpoints
+	InsertIndicatorsEndpoint = "public_api/v1/indicators/insert"
+	ListIndicatorsEndpoint   = "public_api/v1/indicators/get"
+	DeleteIndicatorsEndpoint = "public_api/v1/indicators/delete"
 )
 
 // Option is a functional option for configuring the client.
