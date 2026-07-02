@@ -32,7 +32,7 @@ type IntegrationInstance struct {
 	SecurityCapabilities    []SecurityCapability    `json:"security_capabilities"`
 	CollectionConfiguration CollectionConfiguration `json:"collection_configuration"`
 	AdditionalCapabilities  AdditionalCapabilities  `json:"additional_capabilities"`
-	CreationTime            int                     `json:"creation_time,omitempty"`
+	CreationTime            int64                   `json:"creation_time,omitempty"`
 	ProvisioningMethod      string                  `json:"provisioning_method,omitempty"`
 	UpdateStatus            string                  `json:"update_status,omitempty"`
 	UpgradeAvailable        bool                    `json:"upgrade_available,omitempty"`
@@ -463,9 +463,9 @@ type ListIntegrationInstancesResponse struct {
 	AdditionalCapabilities  string `json:"additional_capabilities"`
 	InstanceID              string `json:"instance_id"`
 	Status                  string `json:"status"`
-	DeletedAt               int    `json:"deleted_at"`
+	DeletedAt               int64  `json:"deleted_at"`
 	OutpostID               string `json:"outpost_id"`
-	CreationTime            int    `json:"creation_time,omitempty"`
+	CreationTime            int64  `json:"creation_time,omitempty"`
 	UpdateStatus            string `json:"update_status,omitempty"`
 	IsPendingChanges        int    `json:"is_pending_changes,omitempty"`
 }

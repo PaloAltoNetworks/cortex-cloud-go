@@ -13,7 +13,7 @@ import (
 type Outpost struct {
 	CloudProvider string `json:"cloud_provider"`
 	OutpostID     string `json:"outpost_id"`
-	CreatedAt     int    `json:"created_at"`
+	CreatedAt     int64  `json:"created_at"`
 	Type          string `json:"type"`
 }
 

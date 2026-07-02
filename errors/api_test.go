@@ -580,7 +580,7 @@ func TestHasContent(t *testing.T) {
 	})
 
 	t.Run("unrecognised JSON keys produce no content", func(t *testing.T) {
-		// This is the exact scenario that caused CCTF-004/005: the API
+		// This is the exact scenario that caused the empty-error bug: the API
 		// returns valid JSON with keys we don't map to any struct field.
 		var e CortexCloudAPIError
 		err := json.Unmarshal([]byte(`{"error":"something went wrong","status":400}`), &e)
