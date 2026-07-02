@@ -79,7 +79,6 @@ func (c *Client) ListPolicies(ctx context.Context, input types.ListPoliciesReque
 // HTTP 422 ValidateError. When this specific error is detected and the
 // request actually included a triggers payload, the call is silently
 // retried with the legacy 3-trigger payload (periodic / pr / cicd only).
-//
 func (c *Client) UpdatePolicy(ctx context.Context, policyID string, input types.UpdatePolicyRequest) (types.Policy, error) {
 	pol, err := c.updatePolicyOnce(ctx, policyID, input, false /* legacyMode */)
 	if err != nil && input.Triggers != nil && isLegacyTriggerExcessPropertyError(err) {
@@ -177,8 +176,6 @@ func (m jsonRawMessage) MarshalJSON() ([]byte, error) {
 //
 //	"policy.triggers.ciImage":       { "message": "'ciImage' is not a valid property" }
 //	"policy.triggers.imageRegistry": { "message": "extra fields not permitted" }
-//
-//
 func isLegacyTriggerExcessPropertyError(err error) bool {
 	if err == nil {
 		return false

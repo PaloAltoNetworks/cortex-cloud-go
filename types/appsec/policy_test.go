@@ -285,8 +285,12 @@ func TestCreatePolicyRequest_MarshalJSON_TriggersIncludeAllFields(t *testing.T) 
 		}
 		var decoded struct {
 			Triggers struct {
-				CIImage       struct{ IsEnabled bool `json:"isEnabled"` } `json:"ciImage"`
-				ImageRegistry struct{ IsEnabled bool `json:"isEnabled"` } `json:"imageRegistry"`
+				CIImage struct {
+					IsEnabled bool `json:"isEnabled"`
+				} `json:"ciImage"`
+				ImageRegistry struct {
+					IsEnabled bool `json:"isEnabled"`
+				} `json:"imageRegistry"`
 			} `json:"triggers"`
 		}
 		if err := json.Unmarshal(data, &decoded); err != nil {

@@ -5,7 +5,6 @@
 // modules.
 package types
 
-
 var (
 	GitCommit           = "NOCOMMIT"
 	CortexServerVersion = "UNKNOWN"

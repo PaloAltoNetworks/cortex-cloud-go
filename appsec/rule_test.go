@@ -196,6 +196,96 @@ func TestClient_CreateOrClone(t *testing.T) {
 		assert.Equal(t, "rule-456", rule.Id)
 		assert.Contains(t, rule.Name, "Clone")
 	})
+
+	t.Run("should serialize top-level cspmRuleId and populate read fields", func(t *testing.T) {
+		cspmRuleId := "ff6a26a5-f036-4d3a-a650-d5de1d568bab"
+
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, "/"+RulesEndpoint, r.URL.Path)
+
+			bodyBytes, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+
+			// cspmRuleId is a top-level field in the request payload (verified
+			// against the live API: framework-level placement is rejected with
+			// "excess property"; the scanner-object shape returns 422).
+			assert.Contains(t, string(bodyBytes), `"cspmRuleId":"`+cspmRuleId+`"`)
+
+			var req types.CreateOrCloneRequest
+			require.NoError(t, json.Unmarshal(bodyBytes, &req))
+			require.NotNil(t, req.CspmRuleId)
+			assert.Equal(t, cspmRuleId, *req.CspmRuleId)
+
+			// The API does NOT echo cspmRuleId back on the response (write-only),
+			// but does populate shortDescription and framework remediationIds /
+			// resourceTypes.
+			w.WriteHeader(http.StatusCreated)
+			rule := types.Rule{
+				Id:               "rule-cspm",
+				Name:             req.Name,
+				Severity:         req.Severity,
+				Scanner:          req.Scanner,
+				IsCustom:         true,
+				ShortDescription: "short desc",
+				Frameworks: []types.FrameworkData{
+					{
+						Name:           req.Frameworks[0].Name,
+						Definition:     req.Frameworks[0].Definition,
+						RemediationIds: []string{"rem-1"},
+						ResourceTypes:  []string{"aws_s3_bucket"},
+					},
+				},
+			}
+			require.NoError(t, json.NewEncoder(w).Encode(rule))
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		createReq := types.CreateOrCloneRequest{
+			Name:       "CSPM Mapped Rule",
+			Severity:   "HIGH",
+			Scanner:    "IAC",
+			CspmRuleId: &cspmRuleId,
+			Frameworks: []types.FrameworkData{
+				{
+					Name:       "TERRAFORM",
+					Definition: "resource \"aws_s3_bucket\" \"example\" {}",
+				},
+			},
+		}
+		rule, err := client.CreateOrClone(context.Background(), createReq)
+		assert.NoError(t, err)
+		assert.Equal(t, "rule-cspm", rule.Id)
+		assert.Equal(t, "short desc", rule.ShortDescription)
+		require.Len(t, rule.Frameworks, 1)
+		assert.Equal(t, []string{"rem-1"}, rule.Frameworks[0].RemediationIds)
+		assert.Equal(t, []string{"aws_s3_bucket"}, rule.Frameworks[0].ResourceTypes)
+	})
+
+	t.Run("should omit cspmRuleId from payload when unset", func(t *testing.T) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			bodyBytes, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			assert.NotContains(t, string(bodyBytes), "cspmRuleId")
+
+			w.WriteHeader(http.StatusCreated)
+			require.NoError(t, json.NewEncoder(w).Encode(types.Rule{Id: "rule-nocspm"}))
+		})
+		client, server := setupTest(t, handler)
+		defer server.Close()
+
+		createReq := types.CreateOrCloneRequest{
+			Name:     "No CSPM Rule",
+			Severity: "LOW",
+			Scanner:  "IAC",
+			Frameworks: []types.FrameworkData{
+				{Name: "TERRAFORM", Definition: "x"},
+			},
+		}
+		_, err := client.CreateOrClone(context.Background(), createReq)
+		assert.NoError(t, err)
+	})
 }
 
 func TestClient_Get(t *testing.T) {

@@ -310,3 +310,175 @@ func TestAccRule_ComplianceMetadata(t *testing.T) {
 
 	t.Logf("Retrieved rule has %d compliance_metadata entries", len(retrieved.ComplianceMetadata))
 }
+
+// TestAccRule_RecreateSameName reproduces the recreate-with-same-name failure.
+//
+// Scenario reported by the customer (UnitedHealth Group):
+//  1. A CloudSec rule is created via Terraform with a given name.
+//  2. The rule is deleted (via UI or Terraform).
+//  3. The SAME Terraform script is re-applied, attempting to create a rule
+//     with the IDENTICAL name.
+//
+// The customer observed a 409 ("A detection rule with the same name already
+// exists"), and 400/500 errors, despite the rule
+// no longer being visible in Cortex Cloud. This strongly suggests a stale,
+// name-keyed index on the backend that is not cleared on delete.
+//
+// This test exercises that exact create -> delete -> recreate-same-name path
+// against a live tenant so the backend behavior can be confirmed. The provider
+// SDK itself only issues POST (create) and DELETE (by id); it does no
+// name-based bookkeeping, so any failure here is server-side.
+//
+// Run with:
+//
+//	TF_ACC=1 CORTEX_API_URL=... CORTEX_API_KEY=... CORTEX_API_KEY_ID=... \
+//	  go test ./cloudsec -run TestAccRule_RecreateSameName -v
+func TestAccRule_RecreateSameName(t *testing.T) {
+	skipIfNotAcceptance(t)
+
+	ctx := context.Background()
+	config := tests.NewTestConfigFromEnv(t)
+	client, err := NewClient(config.GetOptions()...)
+	if err != nil {
+		t.Fatalf("failed to initialize client: %s", err.Error())
+	}
+
+	// Reuse a fixed name across the whole sequence to mirror the customer's
+	// Terraform script, which always renders the same rule name.
+	ruleName := fmt.Sprintf("recreate-samename-repro-%d", time.Now().Unix())
+
+	enabled := true
+	newCreateReq := func() types.CreateRuleRequest {
+		return types.CreateRuleRequest{
+			Name:        ruleName,
+			Description: "Repro rule for recreate-with-same-name",
+			Class:       enums.RuleClassConfig.String(),
+			Type:        "DETECTION",
+			AssetTypes:  []string{"S3_BUCKET"},
+			Severity:    enums.CloudSecSeverityHigh.String(),
+			Query: types.QueryRequest{
+				XQL: "dataset = asset_inventory | filter xdm.asset.provider = \"aws\" and xdm.asset.type.id = \"S3_BUCKET\" | fields xdm.asset.id as asset_id, xdm.asset.type.id as asset_type_id, xdm.asset.name as asset_name",
+			},
+			Metadata: &types.MetadataRequest{
+				Issue: &types.IssueRequest{
+					Recommendation: "Repro recommendation.",
+				},
+			},
+			Labels:  []string{"recreate-samename", "repro"},
+			Enabled: &enabled,
+		}
+	}
+
+	// Step 1: initial create (the customer's first successful apply).
+	first, err := client.Create(ctx, newCreateReq())
+	if err != nil {
+		t.Fatalf("initial Create failed: %v", err)
+	}
+	t.Logf("created rule id=%s name=%q", first.ID, first.Name)
+
+	// Step 2: delete the rule (the customer's delete via UI or Terraform).
+	if err := client.Delete(ctx, first.ID); err != nil {
+		// Cleanup is best-effort; fail loudly so we don't leak a rule.
+		t.Fatalf("Delete failed: %v", err)
+	}
+	t.Logf("deleted rule id=%s", first.ID)
+
+	// Confirm the rule is actually gone from the customer's point of view.
+	if _, err := client.Get(ctx, first.ID); err == nil {
+		t.Error("expected Get on deleted rule to fail, got nil error")
+	} else {
+		t.Logf("confirmed deletion: Get returned: %v", err)
+	}
+
+	// Give the backend a moment in case deletion / index cleanup is async.
+	time.Sleep(5 * time.Second)
+
+	// Step 3: re-create with the IDENTICAL name (the customer's second apply).
+	// Some environments return 409 here; others return 400/500.
+	second, recreateErr := client.Create(ctx, newCreateReq())
+
+	if recreateErr != nil {
+		// Bug reproduced: deleting then recreating the same name fails even
+		// though the rule no longer exists.
+		t.Fatalf("REPRODUCED: recreate with same name %q failed "+
+			"after delete: %v", ruleName, recreateErr)
+	}
+
+	// Not reproduced on this tenant: clean up the recreated rule.
+	t.Logf("recreate succeeded id=%s name=%q (issue NOT reproduced on this tenant)",
+		second.ID, second.Name)
+	if err := client.Delete(ctx, second.ID); err != nil {
+		t.Errorf("cleanup Delete of recreated rule failed: %v", err)
+	}
+}
+
+// TestAccRule_RecreateSameName_Race is an aggressive variant of the
+// recreate-with-same-name reproduction. The failures appear timing-sensitive, so
+// this test repeatedly does delete -> IMMEDIATE recreate (no delay) with the
+// SAME name across several iterations, trying to hit a stale, name-keyed index
+// window on the backend where the name is still considered "taken" right after
+// deletion.
+//
+// Run with:
+//
+//	TF_ACC=1 CORTEXCLOUD_API_URL_TEST=... CORTEXCLOUD_API_KEY_TEST=... \
+//	  CORTEXCLOUD_API_KEY_ID_TEST=... \
+//	  go test ./cloudsec -run TestAccRule_RecreateSameName_Race -v
+func TestAccRule_RecreateSameName_Race(t *testing.T) {
+	skipIfNotAcceptance(t)
+
+	ctx := context.Background()
+	config := tests.NewTestConfigFromEnv(t)
+	client, err := NewClient(config.GetOptions()...)
+	if err != nil {
+		t.Fatalf("failed to initialize client: %s", err.Error())
+	}
+
+	const iterations = 8
+	ruleName := fmt.Sprintf("recreate-samename-race-%d", time.Now().Unix())
+	enabled := true
+	newCreateReq := func() types.CreateRuleRequest {
+		return types.CreateRuleRequest{
+			Name:        ruleName,
+			Description: "Race repro for recreate-with-same-name",
+			Class:       enums.RuleClassConfig.String(),
+			Type:        "DETECTION",
+			AssetTypes:  []string{"S3_BUCKET"},
+			Severity:    enums.CloudSecSeverityHigh.String(),
+			Query: types.QueryRequest{
+				XQL: "dataset = asset_inventory | filter xdm.asset.provider = \"aws\" and xdm.asset.type.id = \"S3_BUCKET\" | fields xdm.asset.id as asset_id, xdm.asset.type.id as asset_type_id, xdm.asset.name as asset_name",
+			},
+			Labels:  []string{"recreate-samename", "race"},
+			Enabled: &enabled,
+		}
+	}
+
+	// Seed the first rule.
+	current, err := client.Create(ctx, newCreateReq())
+	if err != nil {
+		t.Fatalf("initial Create failed: %v", err)
+	}
+
+	for i := 0; i < iterations; i++ {
+		// Delete the current rule.
+		if err := client.Delete(ctx, current.ID); err != nil {
+			t.Fatalf("iter %d: Delete(id=%s) failed: %v", i, current.ID, err)
+		}
+
+		// IMMEDIATELY recreate with the same name (no delay) - this is the
+		// window the customer's repro seems to hit.
+		recreated, recreateErr := client.Create(ctx, newCreateReq())
+		if recreateErr != nil {
+			t.Fatalf("REPRODUCED on iteration %d: immediate recreate "+
+				"of name %q after delete failed: %v", i, ruleName, recreateErr)
+		}
+		t.Logf("iter %d: delete+immediate-recreate OK, new id=%s", i, recreated.ID)
+		current = recreated
+	}
+
+	// Final cleanup.
+	if err := client.Delete(ctx, current.ID); err != nil {
+		t.Errorf("final cleanup Delete failed: %v", err)
+	}
+	t.Logf("completed %d delete+immediate-recreate cycles with no failure (issue NOT reproduced)", iterations)
+}

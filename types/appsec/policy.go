@@ -165,8 +165,6 @@ func (t PolicyTriggers) MarshalJSON() ([]byte, error) {
 // This helper is intentionally NOT a method on PolicyTriggers (and NOT
 // exported) to keep it invisible to public SDK consumers. The public
 // MarshalJSON above continues to emit all five trigger keys unconditionally.
-//
-//
 func marshalPolicyTriggersLegacy(t PolicyTriggers) ([]byte, error) {
 	type periodicActions struct {
 		ReportIssue bool `json:"reportIssue"`
@@ -222,8 +220,6 @@ func marshalPolicyTriggersLegacy(t PolicyTriggers) ([]byte, error) {
 // MarshalCreatePolicyRequestLegacy serializes a CreatePolicyRequest using the
 // 3-trigger payload (no ciImage, no imageRegistry). Exported for use by the
 // appsec client retry path; not intended for direct use by SDK consumers.
-//
-//
 func MarshalCreatePolicyRequestLegacy(input CreatePolicyRequest) ([]byte, error) {
 	return marshalPolicyRequestWithLegacyTriggers(input)
 }
@@ -233,8 +229,6 @@ func MarshalCreatePolicyRequestLegacy(input CreatePolicyRequest) ([]byte, error)
 // nil, the resulting body has no "triggers" field at all. Exported for use
 // by the appsec client retry path; not intended for direct use by SDK
 // consumers.
-//
-//
 func MarshalUpdatePolicyRequestLegacy(input UpdatePolicyRequest) ([]byte, error) {
 	return marshalPolicyRequestWithLegacyTriggers(input)
 }

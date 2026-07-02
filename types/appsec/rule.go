@@ -16,31 +16,32 @@ import (
 
 // Rule represents an Application Security rule.
 type Rule struct {
-	Category        string           `json:"category"`
-	CloudProvider   string           `json:"cloudProvider"`
-	CreatedAt       CreatedUpdatedAt `json:"createdAt"`
-	Description     string           `json:"description"`
-	DetectionMethod *string          `json:"detectionMethod"`
-	DocLink         string           `json:"docLink"`
-	Domain          string           `json:"domain"`
-	FindingCategory string           `json:"findingCategory"`
-	FindingDocs     string           `json:"findingDocs"`
-	FindingTypeId   int              `json:"findingTypeId"`
-	FindingTypeName string           `json:"findingTypeName"`
-	Frameworks      []FrameworkData  `json:"frameworks"`
-	Id              string           `json:"id"`
-	IsCustom        bool             `json:"isCustom"`
-	IsEnabled       bool             `json:"isEnabled"`
-	Labels          *[]string        `json:"labels"`
-	MitreTactics    []string         `json:"mitreTactics"`
-	MitreTechniques []string         `json:"mitreTechniques"`
-	Name            string           `json:"name"`
-	Owner           string           `json:"owner"`
-	Scanner         string           `json:"scanner"`
-	Severity        string           `json:"severity"`
-	Source          string           `json:"source"`
-	SubCategory     string           `json:"subCategory"`
-	UpdatedAt       CreatedUpdatedAt `json:"updatedAt"`
+	Category         string           `json:"category"`
+	CloudProvider    string           `json:"cloudProvider"`
+	CreatedAt        CreatedUpdatedAt `json:"createdAt"`
+	Description      string           `json:"description"`
+	DetectionMethod  *string          `json:"detectionMethod"`
+	DocLink          string           `json:"docLink"`
+	Domain           string           `json:"domain"`
+	FindingCategory  string           `json:"findingCategory"`
+	FindingDocs      string           `json:"findingDocs"`
+	FindingTypeId    int              `json:"findingTypeId"`
+	FindingTypeName  string           `json:"findingTypeName"`
+	Frameworks       []FrameworkData  `json:"frameworks"`
+	Id               string           `json:"id"`
+	IsCustom         bool             `json:"isCustom"`
+	IsEnabled        bool             `json:"isEnabled"`
+	Labels           *[]string        `json:"labels"`
+	MitreTactics     []string         `json:"mitreTactics"`
+	MitreTechniques  []string         `json:"mitreTechniques"`
+	Name             string           `json:"name"`
+	Owner            string           `json:"owner"`
+	Scanner          string           `json:"scanner"`
+	Severity         string           `json:"severity"`
+	ShortDescription string           `json:"shortDescription"`
+	Source           string           `json:"source"`
+	SubCategory      string           `json:"subCategory"`
+	UpdatedAt        CreatedUpdatedAt `json:"updatedAt"`
 }
 
 // CreatedUpdatedAt represents the datetime value that the rule was created
@@ -64,6 +65,9 @@ type FrameworkData struct {
 	Definition             string `json:"definition"`
 	DefinitionLink         string `json:"definitionLink"`
 	RemediationDescription string `json:"remediationDescription"`
+	// RemediationIds and ResourceTypes are populated by the API on read.
+	RemediationIds []string `json:"remediationIds,omitempty"`
+	ResourceTypes  []string `json:"resourceTypes,omitempty"`
 }
 
 // ---------------------------
@@ -117,6 +121,10 @@ type CreateOrCloneRequest struct {
 	Scanner     string          `json:"scanner"`
 	Severity    string          `json:"severity"`
 	SubCategory string          `json:"subCategory"`
+	// CspmRuleId maps this custom rule to a Cloud Security (CSPM) rule. It is
+	// an optional, write-only field: the API accepts it on create but does not
+	// return it on read. Omitted from the payload when empty.
+	CspmRuleId *string `json:"cspmRuleId,omitempty"`
 }
 
 // ListRequest handles input for the List function.
@@ -212,6 +220,9 @@ type UpdateRequest struct {
 	Description string          `json:"description,omitempty"`
 	Frameworks  []FrameworkData `json:"frameworks,omitempty"`
 	Labels      []string        `json:"labels"`
+	// CspmRuleId maps this custom rule to a Cloud Security (CSPM) rule.
+	// Write-only: accepted on update, not returned on read. Omitted when empty.
+	CspmRuleId *string `json:"cspmRuleId,omitempty"`
 }
 
 func (r Rule) ToUpdateRequest() UpdateRequest {
