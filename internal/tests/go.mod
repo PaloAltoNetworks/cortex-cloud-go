@@ -2,10 +2,10 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/internal/tests
 
 go 1.25.0
 
-require github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.8
+require github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.9
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.8 // indirect
+	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.9 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.10.0 // indirect

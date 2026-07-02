@@ -3,17 +3,17 @@ module github.com/PaloAltoNetworks/cortex-cloud-go/appsec
 go 1.25.0
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/types v1.0.8
-	github.com/PaloAltoNetworks/cortex-cloud-go/version v1.0.8
+	github.com/PaloAltoNetworks/cortex-cloud-go/errors v1.0.9
+	github.com/PaloAltoNetworks/cortex-cloud-go/internal/client v1.0.9
+	github.com/PaloAltoNetworks/cortex-cloud-go/internal/config v1.0.9
+	github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.9
+	github.com/PaloAltoNetworks/cortex-cloud-go/types v1.0.9
+	github.com/PaloAltoNetworks/cortex-cloud-go/version v1.0.9
 	github.com/stretchr/testify v1.11.1
 )
 
 require (
-	github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.8 // indirect
+	github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.9 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
