@@ -1,7 +1,7 @@
-github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.8 h1:XnlxKwGB4NtPaqzOGTNJbabMxLDxI082FYh5v42qanw=
-github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.8/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
-github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.8 h1:RwTW4B6SeP8bh7oGYbGitknZVxwKFdq6+ABFC8lJ9UE=
-github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.8/go.mod h1:ayOoRk1kNc5KHj6otxGQGeMbKj10Gk6smV3bZCXx3OQ=
+github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.9 h1:n+oDaoKgxMQrzh2nBfpxlDvo5DHDn0a/yvG00n8MgsY=
+github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.9/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
+github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.9 h1:JN2ZIqI++qsLG9qhdC6n2o3Rh/JAFNLWJVv2qVzrZ1U=
+github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.9/go.mod h1:ayOoRk1kNc5KHj6otxGQGeMbKj10Gk6smV3bZCXx3OQ=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
