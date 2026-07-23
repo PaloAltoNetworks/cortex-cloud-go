@@ -1,7 +1,3 @@
-github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.9 h1:n+oDaoKgxMQrzh2nBfpxlDvo5DHDn0a/yvG00n8MgsY=
-github.com/PaloAltoNetworks/cortex-cloud-go/enums v1.0.9/go.mod h1:9szMdHh95t50wUBElUB3MrXNufd9NLloQrbFCkrW/T8=
-github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.9 h1:JN2ZIqI++qsLG9qhdC6n2o3Rh/JAFNLWJVv2qVzrZ1U=
-github.com/PaloAltoNetworks/cortex-cloud-go/log v1.0.9/go.mod h1:ayOoRk1kNc5KHj6otxGQGeMbKj10Gk6smV3bZCXx3OQ=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
@@ -40,6 +36,7 @@ golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.39.0 h1:CvCKL8MeisomCi6qNZ+wbb0DN9E5AATixKsvNtMoMFk=
 golang.org/x/sys v0.39.0/go.mod h1:OgkHotnGiDImocRcuBABYBEXf8A9a87e/uXjp9XT3ks=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=

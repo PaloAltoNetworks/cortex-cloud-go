@@ -311,16 +311,17 @@ func TestAccRule_ComplianceMetadata(t *testing.T) {
 	t.Logf("Retrieved rule has %d compliance_metadata entries", len(retrieved.ComplianceMetadata))
 }
 
-// TestAccRule_RecreateSameName reproduces the recreate-with-same-name failure.
+// TestAccRule_RecreateSameName reproduces a reported recreate-after-delete
+// failure.
 //
-// Scenario reported by the customer (UnitedHealth Group):
+// Scenario reported by a customer:
 //  1. A CloudSec rule is created via Terraform with a given name.
 //  2. The rule is deleted (via UI or Terraform).
 //  3. The SAME Terraform script is re-applied, attempting to create a rule
 //     with the IDENTICAL name.
 //
 // The customer observed a 409 ("A detection rule with the same name already
-// exists"), and 400/500 errors, despite the rule
+// exists"), and in other reports 400/500 errors, despite the rule
 // no longer being visible in Cortex Cloud. This strongly suggests a stale,
 // name-keyed index on the backend that is not cleared on delete.
 //
@@ -345,13 +346,13 @@ func TestAccRule_RecreateSameName(t *testing.T) {
 
 	// Reuse a fixed name across the whole sequence to mirror the customer's
 	// Terraform script, which always renders the same rule name.
-	ruleName := fmt.Sprintf("recreate-samename-repro-%d", time.Now().Unix())
+	ruleName := fmt.Sprintf("recreate-same-name-repro-%d", time.Now().Unix())
 
 	enabled := true
 	newCreateReq := func() types.CreateRuleRequest {
 		return types.CreateRuleRequest{
 			Name:        ruleName,
-			Description: "Repro rule for recreate-with-same-name",
+			Description: "Repro rule for recreate-after-delete",
 			Class:       enums.RuleClassConfig.String(),
 			Type:        "DETECTION",
 			AssetTypes:  []string{"S3_BUCKET"},
@@ -364,7 +365,7 @@ func TestAccRule_RecreateSameName(t *testing.T) {
 					Recommendation: "Repro recommendation.",
 				},
 			},
-			Labels:  []string{"recreate-samename", "repro"},
+			Labels:  []string{"recreate-repro", "repro"},
 			Enabled: &enabled,
 		}
 	}
@@ -394,13 +395,13 @@ func TestAccRule_RecreateSameName(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	// Step 3: re-create with the IDENTICAL name (the customer's second apply).
-	// Some environments return 409 here; others return 400/500.
+	// One report shows this returns 409; another shows 400/500.
 	second, recreateErr := client.Create(ctx, newCreateReq())
 
 	if recreateErr != nil {
 		// Bug reproduced: deleting then recreating the same name fails even
 		// though the rule no longer exists.
-		t.Fatalf("REPRODUCED: recreate with same name %q failed "+
+		t.Fatalf("REPRODUCED recreate-after-delete: recreate with same name %q failed "+
 			"after delete: %v", ruleName, recreateErr)
 	}
 
@@ -413,7 +414,7 @@ func TestAccRule_RecreateSameName(t *testing.T) {
 }
 
 // TestAccRule_RecreateSameName_Race is an aggressive variant of the
-// recreate-with-same-name reproduction. The failures appear timing-sensitive, so
+// recreate-after-delete reproduction. The customer's failures appear timing-sensitive, so
 // this test repeatedly does delete -> IMMEDIATE recreate (no delay) with the
 // SAME name across several iterations, trying to hit a stale, name-keyed index
 // window on the backend where the name is still considered "taken" right after
@@ -435,12 +436,12 @@ func TestAccRule_RecreateSameName_Race(t *testing.T) {
 	}
 
 	const iterations = 8
-	ruleName := fmt.Sprintf("recreate-samename-race-%d", time.Now().Unix())
+	ruleName := fmt.Sprintf("recreate-same-name-race-%d", time.Now().Unix())
 	enabled := true
 	newCreateReq := func() types.CreateRuleRequest {
 		return types.CreateRuleRequest{
 			Name:        ruleName,
-			Description: "Race repro for recreate-with-same-name",
+			Description: "Race repro for recreate-after-delete",
 			Class:       enums.RuleClassConfig.String(),
 			Type:        "DETECTION",
 			AssetTypes:  []string{"S3_BUCKET"},
@@ -448,7 +449,7 @@ func TestAccRule_RecreateSameName_Race(t *testing.T) {
 			Query: types.QueryRequest{
 				XQL: "dataset = asset_inventory | filter xdm.asset.provider = \"aws\" and xdm.asset.type.id = \"S3_BUCKET\" | fields xdm.asset.id as asset_id, xdm.asset.type.id as asset_type_id, xdm.asset.name as asset_name",
 			},
-			Labels:  []string{"recreate-samename", "race"},
+			Labels:  []string{"recreate-repro", "race"},
 			Enabled: &enabled,
 		}
 	}
@@ -469,7 +470,7 @@ func TestAccRule_RecreateSameName_Race(t *testing.T) {
 		// window the customer's repro seems to hit.
 		recreated, recreateErr := client.Create(ctx, newCreateReq())
 		if recreateErr != nil {
-			t.Fatalf("REPRODUCED on iteration %d: immediate recreate "+
+			t.Fatalf("REPRODUCED recreate-after-delete on iteration %d: immediate recreate "+
 				"of name %q after delete failed: %v", i, ruleName, recreateErr)
 		}
 		t.Logf("iter %d: delete+immediate-recreate OK, new id=%s", i, recreated.ID)
