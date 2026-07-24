@@ -159,12 +159,13 @@ func (t PolicyTriggers) MarshalJSON() ([]byte, error) {
 // marshalPolicyTriggersLegacy emits ONLY periodic / pr / cicd, omitting
 // ciImage and imageRegistry. Used internally by the appsec client to retry
 // CREATE/UPDATE on tenants whose API does not yet support the new triggers
-// (e.g. Q2 release-train) — the API rejects the new keys as excess properties
+// on some legacy stacks — the API rejects the new keys as excess properties
 // with HTTP 422 ValidateError.
 //
 // This helper is intentionally NOT a method on PolicyTriggers (and NOT
 // exported) to keep it invisible to public SDK consumers. The public
 // MarshalJSON above continues to emit all five trigger keys unconditionally.
+//
 func marshalPolicyTriggersLegacy(t PolicyTriggers) ([]byte, error) {
 	type periodicActions struct {
 		ReportIssue bool `json:"reportIssue"`
@@ -220,6 +221,7 @@ func marshalPolicyTriggersLegacy(t PolicyTriggers) ([]byte, error) {
 // MarshalCreatePolicyRequestLegacy serializes a CreatePolicyRequest using the
 // 3-trigger payload (no ciImage, no imageRegistry). Exported for use by the
 // appsec client retry path; not intended for direct use by SDK consumers.
+//
 func MarshalCreatePolicyRequestLegacy(input CreatePolicyRequest) ([]byte, error) {
 	return marshalPolicyRequestWithLegacyTriggers(input)
 }
@@ -229,6 +231,7 @@ func MarshalCreatePolicyRequestLegacy(input CreatePolicyRequest) ([]byte, error)
 // nil, the resulting body has no "triggers" field at all. Exported for use
 // by the appsec client retry path; not intended for direct use by SDK
 // consumers.
+//
 func MarshalUpdatePolicyRequestLegacy(input UpdatePolicyRequest) ([]byte, error) {
 	return marshalPolicyRequestWithLegacyTriggers(input)
 }

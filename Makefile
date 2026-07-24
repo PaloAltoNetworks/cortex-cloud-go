@@ -39,23 +39,24 @@ UNIT_TEST_NAME				?= ""
 # LDFLAGS (Linker Flags) Definitions
 #------------------------------------------------------------------------------
 
-define LDFLAGS_template
--s -w \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(GIT_COMMIT)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexServerVersion=$(CORTEX_SERVER_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexPAPIVersion=$(CORTEX_PAPI_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).BuildDate=$(BUILD_DATE)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GoVersion=$(GO_VERSION)'
-endef
+# The SDK is a single Go module; version variables live in the `version` package.
+VERSION_PKG := github.com/PaloAltoNetworks/cortex-cloud-go/version
 
-define TEST_LDFLAGS_template
+LDFLAGS := \
 -s -w \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GitCommit=$(TEST_GIT_COMMIT)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexServerVersion=$(TEST_CORTEX_SERVER_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).CortexPAPIVersion=$(TEST_CORTEX_PAPI_VERSION)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).BuildDate=$(TEST_BUILD_DATE)' \
--X 'github.com/PaloAltoNetworks/cortex-cloud-go/$(1).GoVersion=$(TEST_GO_VERSION)'
-endef
+-X '$(VERSION_PKG).GitCommit=$(GIT_COMMIT)' \
+-X '$(VERSION_PKG).CortexServerVersion=$(CORTEX_SERVER_VERSION)' \
+-X '$(VERSION_PKG).CortexPAPIVersion=$(CORTEX_PAPI_VERSION)' \
+-X '$(VERSION_PKG).BuildDate=$(BUILD_DATE)' \
+-X '$(VERSION_PKG).GoVersion=$(GO_VERSION)'
+
+TEST_LDFLAGS := \
+-s -w \
+-X '$(VERSION_PKG).GitCommit=$(TEST_GIT_COMMIT)' \
+-X '$(VERSION_PKG).CortexServerVersion=$(TEST_CORTEX_SERVER_VERSION)' \
+-X '$(VERSION_PKG).CortexPAPIVersion=$(TEST_CORTEX_PAPI_VERSION)' \
+-X '$(VERSION_PKG).BuildDate=$(TEST_BUILD_DATE)' \
+-X '$(VERSION_PKG).GoVersion=$(TEST_GO_VERSION)'
 
 #------------------------------------------------------------------------------
 # Phony Targets
@@ -109,20 +110,14 @@ tidy: ## Tidy all go.mod files.
 	@(cd ./platform && rm -f go.sum && go mod tidy)
 	@echo "Tidy successful."
 
-lint: ## Lint all modules with go vet.
-	@echo "Linting all modules..."
-	@$(foreach mod,$(MODULE_NAMES), \
-		echo "  - Linting $(mod)"; \
-		(cd $(mod) && go vet ./...) || exit 1; \
-	)
+lint: ## Lint the module with go vet.
+	@echo "Linting the module..."
+	@go vet ./...
 	@echo "Lint successful."
 
-build: ## Build all modules.
-	@echo "Building all modules..."
-	@$(foreach mod,$(MODULE_NAMES), \
-		echo "  - Building $(mod)"; \
-		go build -ldflags="$(call LDFLAGS_template,$(mod))" ./$(mod) || exit 1; \
-	)
+build: ## Build the module.
+	@echo "Building the module..."
+	@go build -ldflags="$(LDFLAGS)" ./...
 	@echo "Build successful."
 
 work: ## Initialize or update the Go workspace file (go.work).
@@ -163,17 +158,14 @@ test: test-unit test-acc # Run unit and acceptance tests.
 # To run only the "TestClient_GetUserGroup" unit test:
 #
 # UNIT_TEST_NAME=TestClient_GetUserGroup make test-unit
-test-unit: ## Run unit tests. Can be scoped to a specific module and/or test.
+test-unit: ## Run unit tests. Can be scoped to a specific package and/or test.
 ifeq ($(UNIT_TEST_MODULE), all)
 	@if [ -z "$(UNIT_TEST_NAME)" ]; then \
-		echo "Running unit tests for all modules..."; \
+		echo "Running unit tests..."; \
 	else \
-		echo "Running unit test \"$(UNIT_TEST_NAME)\" for all modules..."; \
+		echo "Running unit test \"$(UNIT_TEST_NAME)\"..."; \
 	fi
-	@$(foreach mod,$(MODULE_NAMES), \
-		echo "--- Running tests for $(mod) ---"; \
-		go test -v -race $(if $(UNIT_TEST_NAME),-run $(UNIT_TEST_NAME),) -ldflags="$(call TEST_LDFLAGS_template,$(mod))" ./$(mod) || exit 1; \
-	)
+	@go test -v -race $(if $(UNIT_TEST_NAME),-run $(UNIT_TEST_NAME),) -ldflags="$(TEST_LDFLAGS)" ./...
 	@echo "All unit tests passed."
 else
 	@if [ -z "$(UNIT_TEST_NAME)" ]; then \
@@ -181,7 +173,7 @@ else
 	else \
 		echo "--- Running test \"$(UNIT_TEST_NAME)\" for $(UNIT_TEST_MODULE) ---"; \
 	fi
-	@go test -v -race $(if $(UNIT_TEST_NAME),-run $(UNIT_TEST_NAME),) -ldflags="$(call TEST_LDFLAGS_template,$(UNIT_TEST_MODULE))" ./$(UNIT_TEST_MODULE)
+	@go test -v -race $(if $(UNIT_TEST_NAME),-run $(UNIT_TEST_NAME),) -ldflags="$(TEST_LDFLAGS)" ./$(UNIT_TEST_MODULE)/...
 endif
 
 test-acc: build ## Run acceptance tests.
@@ -192,10 +184,7 @@ test-acc: build ## Run acceptance tests.
 # go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
 docs: build ## Generate documentation. Requires gomarkdoc.
 	@echo "Generating documentation..."
-	@$(foreach mod,$(MODULE_NAMES), \
-		echo "  - $(mod)"; \
-		gomarkdoc --output ./docs/$(mod:internal/%=%).md ./$(mod); \
-	)
+	@gomarkdoc --output ./docs/cortex-cloud-go.md ./...
 	@echo "Documentation generation successful."
 
 clean: ## Clean up workspace files.

@@ -22,7 +22,7 @@ import (
 // Policies define conditions for when findings should trigger actions.
 // Scope and AssetGroupIds are mutually exclusive - use one or the other.
 //
-// On legacy stacks (e.g. Q2 release-train) the API rejects the new
+// On some legacy stacks the API rejects the new
 // "ciImage" and "imageRegistry" trigger keys as excess properties with
 // HTTP 422 ValidateError. When this specific error is detected, the call
 // is silently retried with the legacy 3-trigger payload (periodic / pr /
@@ -74,7 +74,7 @@ func (c *Client) ListPolicies(ctx context.Context, input types.ListPoliciesReque
 //
 // All fields in the request are optional. Only provided fields will be updated.
 //
-// On legacy stacks (e.g. Q2 release-train) the API rejects the new
+// On some legacy stacks the API rejects the new
 // "ciImage" and "imageRegistry" trigger keys as excess properties with
 // HTTP 422 ValidateError. When this specific error is detected and the
 // request actually included a triggers payload, the call is silently
@@ -172,7 +172,7 @@ func (m jsonRawMessage) MarshalJSON() ([]byte, error) {
 // referencing the new "ciImage" or "imageRegistry" trigger keys with a
 // message indicating an excess-property rejection.
 //
-// Examples of legacy-stack rejections (Q2):
+// Examples of legacy-stack rejections:
 //
 //	"policy.triggers.ciImage":       { "message": "'ciImage' is not a valid property" }
 //	"policy.triggers.imageRegistry": { "message": "extra fields not permitted" }

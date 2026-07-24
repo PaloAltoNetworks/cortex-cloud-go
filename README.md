@@ -17,11 +17,11 @@ It is recommended that you use an Advanced API key with the Cortex Cloud Go SDK,
 ### Installation
 
 * Create a module file in your project directory by running `go mod init` if there is not already a `go.mod` file present.
-* Install your desired Cortex Cloud Go SDK package by running the following command (replacing `platform` with your desired package):
+* Install the Cortex Cloud Go SDK by running the following command:
 ```bash
-go get github.com/PaloAltoNetworks/cortex-cloud-go/platform@latest
+go get github.com/PaloAltoNetworks/cortex-cloud-go@latest
 ```
-* Import the package(s) into your project with `import "github.com/paloaltonetworks/cortex-cloud-go/platform"`
+* Import the package(s) you need into your project, for example `import "github.com/PaloAltoNetworks/cortex-cloud-go/platform"`
 
 ### Example Usage
 
@@ -72,3 +72,4 @@ func main() {
 
 * [Cortex Cloud API Documentation](https://docs-cortex.paloaltonetworks.com/r/Cortex-Cloud-Platform-APIs/Create-a-new-API-key)
 * [Cortex Cloud Documentation Portal](https://docs-cortex.paloaltonetworks.com/p/Cortex+CLOUD)
+
